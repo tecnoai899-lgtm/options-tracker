@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Options Trading Tracker — Wabran</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --card: #1e293b;
+  --card-hover: #293548;
+  --border: #334155;
+  --text: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --green: #10b981;
+  --green-bg: rgba(16, 185, 129, 0.15);
+  --red: #ef4444;
+  --red-bg: rgba(239, 68, 68, 0.15);
+  --yellow: #f59e0b;
+  --yellow-bg: rgba(245, 158, 11, 0.15);
+  --blue: #3b82f6;
+  --blue-bg: rgba(59, 130, 246, 0.15);
+  --purple: #8b5cf6;
+  --radius: 12px;
+  --radius-sm: 6px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', Tahoma, 'Arial', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* ===== HEADER ===== */
+.header {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.brand-text h1 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.brand-text p {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.market-snapshot {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.snapshot-item {
+  text-align: center;
+}
+
+.snapshot-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.snapshot-value {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.snapshot-change {
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.refresh-btn {
+  background: var(--blue);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+
+.refresh-btn:hover { background: #2563eb; }
+.refresh-btn:disabled { background: var(--text-muted); cursor: not-allowed; }
+
+/* ===== TABS ===== */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 4px;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.tab {
+  flex: 1;
+  min-width: 100px;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tab.active {
+  background: var(--blue);
+  color: white;
+}
+
+.tab:not(.active):hover {
+  background: var(--bg-tertiary);
+  color: var(--text);
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ===== TRADE CARDS ===== */
+.trades-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 16px;
+}
+
+.trade-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all 0.2s;
+}
+
+.trade-card:hover {
+  border-color: var(--text-muted);
+  background: var(--card-hover);
+}
+
+.trade-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.trade-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.trade-number {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.trade-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.trade-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-call { background: var(--green-bg); color: var(--green); }
+.badge-put { background: var(--red-bg); color: var(--red); }
+.badge-hedge { background: var(--yellow-bg); color: var(--yellow); }
+
+.status-badge {
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-watching { background: var(--blue-bg); color: var(--blue); }
+.status-active { background: var(--yellow-bg); color: var(--yellow); }
+.status-target1 { background: var(--green-bg); color: var(--green); }
+.status-target2 { background: var(--green-bg); color: var(--green); }
+.status-stopped { background: var(--red-bg); color: var(--red); }
+.status-expired { background: var(--bg-tertiary); color: var(--text-muted); }
+
+/* ===== PRICE SECTION ===== */
+.price-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.price-box {
+  background: var(--bg-secondary);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.price-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.price-value {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: 'Consolas', monospace;
+}
+
+.price-change {
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.up { color: var(--green); }
+.down { color: var(--red); }
+.neutral { color: var(--text-secondary); }
+
+/* ===== PROGRESS BAR (المسار البصري) ===== */
+.progress-section {
+  margin: 16px 0;
+}
+
+.progress-title {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.progress-bar-container {
+  position: relative;
+  padding: 24px 0 32px 0;
+}
+
+.progress-bar {
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  position: relative;
+  overflow: visible;
+}
+
+.progress-fill {
+  position: absolute;
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), var(--green));
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+
+.progress-marker {
+  position: absolute;
+  top: -8px;
+  width: 4px;
+  height: 24px;
+  background: var(--blue);
+  border-radius: 2px;
+  transform: translateX(-50%);
+  z-index: 10;
+  box-shadow: 0 0 8px var(--blue);
+}
+
+.progress-marker::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid var(--blue);
+}
+
+.progress-level {
+  position: absolute;
+  top: -2px;
+  width: 2px;
+  height: 12px;
+  transform: translateX(-50%);
+}
+
+.progress-level::after {
+  content: attr(data-label);
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.progress-level::before {
+  content: attr(data-value);
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-family: 'Consolas', monospace;
+  white-space: nowrap;
+}
+
+.level-stop { background: var(--red); }
+.level-stop::after { color: var(--red); }
+.level-entry { background: var(--text); }
+.level-entry::after { color: var(--text); }
+.level-target { background: var(--green); }
+.level-target::after { color: var(--green); }
+
+/* ===== TRADE DETAILS ===== */
+.trade-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.detail-item {
+  background: var(--bg-secondary);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border);
+}
+
+.detail-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.detail-value {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Consolas', monospace;
+}
+
+/* ===== TRADE ACTIONS ===== */
+.trade-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.btn:hover { background: var(--bg-tertiary); border-color: var(--text-muted); }
+.btn-primary { background: var(--blue); border-color: var(--blue); }
+.btn-primary:hover { background: #2563eb; }
+
+/* ===== DISTANCE INDICATORS ===== */
+.distance-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 0;
+  padding: 8px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.distance-item {
+  text-align: center;
+  flex: 1;
+}
+
+.distance-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.distance-value {
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Consolas', monospace;
+}
+
+/* ===== CALENDAR ===== */
+.calendar-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.calendar-event {
+  display: grid;
+  grid-template-columns: 80px 80px 1fr auto;
+  gap: 16px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  align-items: center;
+  border-right: 4px solid var(--blue);
+}
+
+.calendar-event.urgent { border-right-color: var(--red); }
+.calendar-event.warning { border-right-color: var(--yellow); }
+.calendar-event.good { border-right-color: var(--green); }
+
+.event-date {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.event-day {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.event-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.event-impact {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+/* ===== SETTINGS ===== */
+.settings-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.form-help {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 13px;
+  font-family: 'Consolas', monospace;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+.alert {
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+  font-size: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.alert-info { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue); }
+.alert-warning { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow); }
+.alert-success { background: var(--green-bg); color: var(--green); border: 1px solid var(--green); }
+
+/* ===== JOURNAL ===== */
+.journal-empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}
+
+.journal-entry {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.journal-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.journal-trade-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.journal-date {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.journal-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.journal-stat {
+  text-align: center;
+}
+
+.journal-stat-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.journal-stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 24px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 24px;
+}
+
+/* ===== UTILITY ===== */
+.text-xs { font-size: 11px; }
+.text-sm { font-size: 12px; }
+.mb-2 { margin-bottom: 8px; }
+.mb-3 { margin-bottom: 12px; }
+.flex { display: flex; }
+.gap-2 { gap: 8px; }
+.text-center { text-align: center; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .trades-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .market-snapshot {
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .calendar-event {
+    grid-template-columns: 60px 60px 1fr;
+  }
+}
+
+/* Loading animation */
+.loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <div class="brand">
+    <div class="brand-icon">📊</div>
+    <div class="brand-text">
+      <h1>Options Trading Tracker</h1>
+      <p>وبران — موجة يونيو 2026 | إصدار v1.0</p>
+    </div>
+  </div>
+  
+  <div class="market-snapshot" id="marketSnapshot">
+    <div class="snapshot-item">
+      <div class="snapshot-label">SPX</div>
+      <div class="snapshot-value" id="spxPrice">7,580.06</div>
+      <div class="snapshot-change up" id="spxChange">+0.22%</div>
+    </div>
+    <div class="snapshot-item">
+      <div class="snapshot-label">VIX</div>
+      <div class="snapshot-value" id="vixPrice">15.32</div>
+      <div class="snapshot-change down" id="vixChange">-2.67%</div>
+    </div>
+    <div class="snapshot-item">
+      <div class="snapshot-label">آخر تحديث</div>
+      <div class="snapshot-value" id="lastUpdate" style="font-size: 13px;">29 مايو 4:20 PM</div>
+      <div class="snapshot-change neutral" id="updateStatus">Mock Data</div>
+    </div>
+  </div>
+  
+  <button class="refresh-btn" id="refreshBtn" onclick="refreshAllPrices()">
+    🔄 تحديث الأسعار
+  </button>
+</div>
+
+<!-- ===== TABS ===== -->
+<div class="tabs">
+  <button class="tab active" data-tab="dashboard">📈 المسارات المباشرة</button>
+  <button class="tab" data-tab="calendar">📅 الأجندة الماكرو</button>
+  <button class="tab" data-tab="journal">📓 سجل الصفقات</button>
+  <button class="tab" data-tab="performance">📊 الأداء</button>
+  <button class="tab" data-tab="settings">⚙️ الإعدادات</button>
+</div>
+
+<!-- ===== DASHBOARD TAB ===== -->
+<div class="tab-content active" id="tab-dashboard">
+  <div class="trades-grid" id="tradesGrid">
+    <!-- Trade cards will be rendered by JS -->
+  </div>
+</div>
+
+<!-- ===== CALENDAR TAB ===== -->
+<div class="tab-content" id="tab-calendar">
+  <div class="calendar-card">
+    <h2 style="margin-bottom: 16px;">📅 الأحداث الماكرو — يونيو 2026</h2>
+    <div id="calendarEvents"></div>
+  </div>
+</div>
+
+<!-- ===== JOURNAL TAB ===== -->
+<div class="tab-content" id="tab-journal">
+  <div class="calendar-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h2>📓 سجل الصفقات الفعلية</h2>
+      <button class="btn btn-primary" style="flex: 0 0 auto;" onclick="showAddJournalModal()">+ إضافة سجل</button>
+    </div>
+    <div id="journalEntries"></div>
+  </div>
+</div>
+
+<!-- ===== PERFORMANCE TAB ===== -->
+<div class="tab-content" id="tab-performance">
+  <div class="calendar-card">
+    <h2 style="margin-bottom: 16px;">📊 إحصائيات الأداء</h2>
+    <div id="performanceStats" class="trades-grid"></div>
+    
+    <div style="margin-top: 24px;">
+      <h3 style="margin-bottom: 12px;">حالة التوصيات الحالية</h3>
+      <div id="recommendationsStatus"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SETTINGS TAB ===== -->
+<div class="tab-content" id="tab-settings">
+  <div class="settings-card">
+    <h2 style="margin-bottom: 20px;">⚙️ الإعدادات</h2>
+    
+    <div class="alert alert-info">
+      <span>ℹ️</span>
+      <div>
+        <strong>الأسعار المباشرة (Live):</strong><br>
+        احصل على API key مجاني من <a href="https://finnhub.io" target="_blank" style="color: inherit; text-decoration: underline;">finnhub.io</a> (تسجيل في 30 ثانية، 60 طلب/دقيقة).
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Finnhub API Key</label>
+      <input type="password" class="form-input" id="apiKeyInput" placeholder="ضع API key هنا">
+      <div class="form-help">يُحفظ محلياً على جهازك فقط. لن يُرسل لأي جهة خارجية.</div>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Auto-Refresh (ثانية)</label>
+      <input type="number" class="form-input" id="refreshInterval" min="30" max="600" value="60">
+      <div class="form-help">Free tier = 60/دقيقة. لا تقل عن 30 ثانية.</div>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+      <button class="btn" onclick="testApi()">🧪 اختبار API</button>
+    </div>
+    
+    <div id="settingsStatus" style="margin-top: 16px;"></div>
+    
+    <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border);">
+      <h3 style="margin-bottom: 12px;">إدارة البيانات</h3>
+      <div class="flex gap-2">
+        <button class="btn" onclick="exportData()">📤 تصدير البيانات</button>
+        <button class="btn" onclick="resetData()" style="color: var(--red); border-color: var(--red);">🗑️ مسح كل البيانات</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: Update Trade Status ===== -->
+<div class="modal-overlay" id="updateModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">تحديث حالة الصفقة</div>
+      <button class="modal-close" onclick="closeModal('updateModal')">×</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<!-- ===== MODAL: Add Journal Entry ===== -->
+<div class="modal-overlay" id="journalModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">إضافة سجل صفقة</div>
+      <button class="modal-close" onclick="closeModal('journalModal')">×</button>
+    </div>
+    <div>
+      <div class="form-group">
+        <label class="form-label">التوصية</label>
+        <select class="form-input" id="journalTrade">
+          <option value="1">Trade #1 - SPX Call</option>
+          <option value="2">Trade #2 - AAPL Call</option>
+          <option value="3">Trade #3 - TSLA Put</option>
+          <option value="4">Trade #4 - SPX Put PreFOMC</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">تاريخ الدخول</label>
+        <input type="datetime-local" class="form-input" id="journalEntryDate">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Premium المدفوع</label>
+        <input type="number" step="0.01" class="form-input" id="journalEntryPrice" placeholder="5.50">
+      </div>
+      <div class="form-group">
+        <label class="form-label">سعر الأصل عند الدخول</label>
+        <input type="number" step="0.01" class="form-input" id="journalUnderlyingEntry" placeholder="310.00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">عدد العقود</label>
+        <input type="number" class="form-input" id="journalContracts" value="1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">ملاحظات (اختياري)</label>
+        <textarea class="form-input" id="journalNotes" rows="3" placeholder="السبب، السياق، الشعور..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="saveJournalEntry()">💾 حفظ</button>
+        <button class="btn" onclick="closeModal('journalModal')">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  ⚠️ هذا التطبيق تعليمي بحت. التوصيات ليست نصيحة استثمارية. كل صفقة تحوي مخاطر فقدان 100% من الـ premium.<br>
+  Built with ❤️ for Wabran | السبت 30 مايو 2026
+</div>
+
+</div>
+
+<script>
+// ============================================================
+// DATA: التوصيات الأربع
+// ============================================================
+const TRADES = [
+  {
+    id: 1,
+    name: "SPX Long Call",
+    subtitle: "Turn of Month + Breakout",
+    type: "CALL",
+    symbol: "SPY", // SPY بدلاً من SPX لـ Finnhub free
+    displaySymbol: "SPX",
+    strike: 758,
+    displayStrike: 7580,
+    dte: 7,
+    expiryDate: "2026-06-05",
+    entryZone: { low: 7570, high: 7590 },
+    displayEntryZone: { low: 7570, high: 7590 },
+    stop: 7540,
+    target1: 7640,
+    target2: 7700,
+    currentPrice: 7580.06, // mock
+    priceChange: 0.22,
+    estPremium: "$15-25 (SPX) / $2.50-4 (SPY)",
+    positionSize: "1.5-2%",
+    timeStop: "نهاية الخميس 4 يونيو",
+    color: "green",
+    confidence: "متوسط-عالٍ"
+  },
+  {
+    id: 2,
+    name: "AAPL Long Call",
+    subtitle: "Post-Earnings Momentum",
+    type: "CALL",
+    symbol: "AAPL",
+    displaySymbol: "AAPL",
+    strike: 310,
+    displayStrike: 310,
+    dte: 14,
+    expiryDate: "2026-06-19",
+    entryZone: { low: 305, high: 310 },
+    displayEntryZone: { low: 305, high: 310 },
+    stop: 300,
+    target1: 320,
+    target2: 330,
+    currentPrice: 310.39, // mock
+    priceChange: 0.85,
+    estPremium: "$5-8",
+    positionSize: "1.5-2%",
+    timeStop: "قبل 16 يونيو (FOMC)",
+    color: "green",
+    confidence: "عالٍ"
+  },
+  {
+    id: 3,
+    name: "TSLA Long Put",
+    subtitle: "Overvaluation + Narrative Breakdown",
+    type: "PUT",
+    symbol: "TSLA",
+    displaySymbol: "TSLA",
+    strike: 430,
+    displayStrike: 430,
+    dte: 14,
+    expiryDate: "2026-06-19",
+    entryZone: { low: 430, high: 440 },
+    displayEntryZone: { low: 430, high: 440 },
+    stop: 450,
+    target1: 415,
+    target2: 400,
+    currentPrice: 434.35, // mock
+    priceChange: -0.33,
+    estPremium: "$12-18",
+    positionSize: "1-1.5%",
+    timeStop: "قبل 16 يونيو",
+    color: "red",
+    confidence: "متوسط"
+  },
+  {
+    id: 4,
+    name: "SPX Long Put",
+    subtitle: "Pre-FOMC Vega Play",
+    type: "HEDGE",
+    symbol: "SPY",
+    displaySymbol: "SPX",
+    strike: 750,
+    displayStrike: 7500,
+    dte: 20,
+    expiryDate: "2026-06-19",
+    entryZone: { low: 7570, high: 7600 },
+    displayEntryZone: { low: 7570, high: 7600 },
+    stop: 7650,
+    target1: 7450,
+    target2: 7350,
+    currentPrice: 7580.06, // mock
+    priceChange: 0.22,
+    estPremium: "$25-40 (SPX) / $3.50-5.50 (SPY)",
+    positionSize: "1%",
+    timeStop: "17 يونيو 3:30 PM (بعد FOMC)",
+    color: "yellow",
+    confidence: "متوسط (متقدمة)"
+  }
+];
+
+// ============================================================
+// CALENDAR EVENTS
+// ============================================================
+const CALENDAR = [
+  { date: "1", month: "يونيو", day: "الإثنين", name: "Turn of Month + Post-Memorial-Day", impact: "🟢 تحيّز صاعد", class: "good", action: "نافذة Long Calls" },
+  { date: "2-4", month: "يونيو", day: "ثلاثاء-خميس", name: "نسبياً هادئ، لا أحداث كبيرة", impact: "🟢 هادئ", class: "good", action: "متابعة المراكز" },
+  { date: "5", month: "يونيو", day: "الجمعة", name: "NFP / Jobs Report 8:30 AM ET", impact: "🟡 تذبذب", class: "warning", action: "اخرج قبل، أو ادخل بعد 9:45" },
+  { date: "10", month: "يونيو", day: "الأربعاء", name: "CPI Release (May data)", impact: "🟡 تذبذب قوي", class: "warning", action: "تجنّب 0DTE قبل 9:45" },
+  { date: "12", month: "يونيو", day: "الجمعة", name: "محتمل SpaceX IPO (SPCX)", impact: "🟡 noise", class: "warning", action: "—" },
+  { date: "16-17", month: "يونيو", day: "ثلاثاء-أربعاء", name: "FOMC + Warsh First Press Conference", impact: "🔴 حدث ضخم", class: "urgent", action: "تجنّب 0DTE قبل 2:30 PM" },
+  { date: "19", month: "يونيو", day: "الجمعة", name: "Juneteenth Holiday (سوق مغلق)", impact: "—", class: "", action: "—" },
+  { date: "20", month: "يونيو", day: "السبت", name: "Triple Witching OPEX", impact: "🔴 pinning", class: "urgent", action: "تجنّب 0DTE Long" }
+];
+
+// ============================================================
+// STATE MANAGEMENT (localStorage)
+// ============================================================
+const STORAGE_KEY = "options_tracker_v1";
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return {
+    apiKey: "",
+    refreshInterval: 60,
+    journal: [],
+    tradeStates: {} // { tradeId: { status, entryPrice, etc. } }
+  };
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+let state = loadState();
+
+// ============================================================
+// PRICE CALCULATION HELPERS
+// ============================================================
+function getStatus(trade) {
+  const tradeState = state.tradeStates[trade.id];
+  if (tradeState && tradeState.status) return tradeState.status;
+  
+  const price = trade.currentPrice;
+  
+  if (trade.type === "CALL") {
+    if (price >= trade.target2) return "target2";
+    if (price >= trade.target1) return "target1";
+    if (price <= trade.stop) return "stopped";
+    if (price >= trade.entryZone.low && price <= trade.entryZone.high) return "active";
+    return "watching";
+  } else {
+    // PUT or HEDGE
+    if (price <= trade.target2) return "target2";
+    if (price <= trade.target1) return "target1";
+    if (price >= trade.stop) return "stopped";
+    if (price >= trade.entryZone.low && price <= trade.entryZone.high) return "active";
+    return "watching";
+  }
+}
+
+function statusLabel(status) {
+  const labels = {
+    watching: "متابعة",
+    active: "في النطاق",
+    target1: "🎯 Target 1",
+    target2: "🎯🎯 Target 2",
+    stopped: "❌ Stop",
+    expired: "انتهت"
+  };
+  return labels[status] || status;
+}
+
+function calculateProgress(trade) {
+  const price = trade.currentPrice;
+  const isCall = trade.type === "CALL";
+  
+  // Range: from stop to target2
+  const min = isCall ? trade.stop : trade.target2;
+  const max = isCall ? trade.target2 : trade.stop;
+  
+  const range = max - min;
+  const pos = ((price - min) / range) * 100;
+  
+  return {
+    position: Math.max(0, Math.min(100, pos)),
+    stopPos: isCall ? 0 : 100,
+    entryLowPos: ((trade.entryZone.low - min) / range) * 100,
+    entryHighPos: ((trade.entryZone.high - min) / range) * 100,
+    target1Pos: isCall ? ((trade.target1 - min) / range) * 100 : ((trade.target1 - min) / range) * 100,
+    target2Pos: isCall ? 100 : 0
+  };
+}
+
+function distanceToLevel(trade, level) {
+  const price = trade.currentPrice;
+  const diff = level - price;
+  const pct = (diff / price) * 100;
+  return { abs: Math.abs(diff).toFixed(2), pct: pct.toFixed(2), positive: diff > 0 };
+}
+
+// ============================================================
+// RENDER: Trade Cards
+// ============================================================
+function renderTradeCard(trade) {
+  const status = getStatus(trade);
+  const progress = calculateProgress(trade);
+  const isCall = trade.type === "CALL";
+  
+  const distStop = distanceToLevel(trade, trade.stop);
+  const distT1 = distanceToLevel(trade, trade.target1);
+  const distT2 = distanceToLevel(trade, trade.target2);
+  
+  const priceChangeClass = trade.priceChange > 0 ? "up" : trade.priceChange < 0 ? "down" : "neutral";
+  const priceChangeSign = trade.priceChange > 0 ? "+" : "";
+  
+  const typeClass = trade.type === "CALL" ? "badge-call" : trade.type === "PUT" ? "badge-put" : "badge-hedge";
+  const typeLabel = trade.type === "CALL" ? "🟢 CALL" : trade.type === "PUT" ? "🔴 PUT" : "🟡 HEDGE";
+  
+  return `
+    <div class="trade-card">
+      <div class="trade-card-header">
+        <div class="trade-title">
+          <span class="trade-number">Trade #${trade.id}</span>
+          <span class="trade-name">${trade.name}</span>
+          <span class="trade-meta">${trade.subtitle}</span>
+        </div>
+        <div style="text-align: left; display: flex; flex-direction: column; gap: 4px;">
+          <span class="badge ${typeClass}">${typeLabel}</span>
+          <span class="status-badge status-${status}">${statusLabel(status)}</span>
+        </div>
+      </div>
+      
+      <div class="price-section">
+        <div class="price-box">
+          <div class="price-label">${trade.displaySymbol} السعر الحالي</div>
+          <div class="price-value">${trade.currentPrice.toFixed(2)}</div>
+          <div class="price-change ${priceChangeClass}">${priceChangeSign}${trade.priceChange.toFixed(2)}%</div>
+        </div>
+        <div class="price-box">
+          <div class="price-label">Strike</div>
+          <div class="price-value">${trade.displayStrike}</div>
+          <div class="price-change neutral">${trade.dte} DTE</div>
+        </div>
+      </div>
+      
+      <div class="progress-section">
+        <div class="progress-title">
+          <span>المسار البصري</span>
+          <span style="color: var(--text-muted);">${isCall ? "↑ Bullish" : "↓ Bearish"}</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar">
+            <!-- Stop -->
+            <div class="progress-level level-stop" 
+                 style="${isCall ? 'right: 0;' : 'left: 0;'}" 
+                 data-label="Stop" 
+                 data-value="${trade.displayStrike === trade.strike ? trade.stop : (trade.stop * 10).toFixed(0)}"></div>
+            
+            <!-- Target 1 -->
+            <div class="progress-level level-target" 
+                 style="${isCall ? 'right: ' + (100 - progress.target1Pos) + '%;' : 'left: ' + (progress.target1Pos) + '%;'}" 
+                 data-label="T1" 
+                 data-value="${trade.displayStrike === trade.strike ? trade.target1 : (trade.target1 * 10).toFixed(0)}"></div>
+            
+            <!-- Target 2 -->
+            <div class="progress-level level-target" 
+                 style="${isCall ? 'left: 0;' : 'right: 0;'}" 
+                 data-label="T2" 
+                 data-value="${trade.displayStrike === trade.strike ? trade.target2 : (trade.target2 * 10).toFixed(0)}"></div>
+            
+            <!-- Current Price Marker -->
+            <div class="progress-marker" style="${isCall ? 'right: ' + (100 - progress.position) + '%;' : 'left: ' + progress.position + '%;'}"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="distance-row">
+        <div class="distance-item">
+          <div class="distance-label">إلى Stop</div>
+          <div class="distance-value ${distStop.positive === isCall ? 'up' : 'down'}">${distStop.pct}%</div>
+        </div>
+        <div class="distance-item">
+          <div class="distance-label">إلى T1</div>
+          <div class="distance-value ${distT1.positive === isCall ? 'up' : 'down'}">${distT1.pct}%</div>
+        </div>
+        <div class="distance-item">
+          <div class="distance-label">إلى T2</div>
+          <div class="distance-value ${distT2.positive === isCall ? 'up' : 'down'}">${distT2.pct}%</div>
+        </div>
+      </div>
+      
+      <div class="trade-details">
+        <div class="detail-item">
+          <span class="detail-label">Premium المقدر</span>
+          <span class="detail-value">${trade.estPremium}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Position Size</span>
+          <span class="detail-value">${trade.positionSize}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Time Stop</span>
+          <span class="detail-value" style="font-size: 10px;">${trade.timeStop}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">الثقة</span>
+          <span class="detail-value">${trade.confidence}</span>
+        </div>
+      </div>
+      
+      <div class="trade-actions">
+        <button class="btn" onclick="showTradeDetails(${trade.id})">📋 التفاصيل</button>
+        <button class="btn btn-primary" onclick="openTradingView('${trade.symbol}')">📈 TradingView</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderAllTrades() {
+  const grid = document.getElementById("tradesGrid");
+  grid.innerHTML = TRADES.map(renderTradeCard).join("");
+}
+
+// ============================================================
+// RENDER: Calendar
+// ============================================================
+function renderCalendar() {
+  const container = document.getElementById("calendarEvents");
+  container.innerHTML = CALENDAR.map(event => `
+    <div class="calendar-event ${event.class}">
+      <div>
+        <div class="event-date">${event.date}</div>
+        <div class="event-day">${event.month}</div>
+      </div>
+      <div>
+        <div class="event-day">${event.day}</div>
+      </div>
+      <div>
+        <div class="event-name">${event.name}</div>
+        <div class="event-impact">${event.impact}</div>
+      </div>
+      <div style="font-size: 12px; color: var(--text-secondary); text-align: left;">${event.action}</div>
+    </div>
+  `).join("");
+}
+
+// ============================================================
+// RENDER: Journal
+// ============================================================
+function renderJournal() {
+  const container = document.getElementById("journalEntries");
+  
+  if (!state.journal || state.journal.length === 0) {
+    container.innerHTML = `
+      <div class="journal-empty">
+        <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+        <p>لا يوجد سجل بعد</p>
+        <p style="font-size: 12px; margin-top: 8px;">اضغط "إضافة سجل" لتسجيل صفقاتك الفعلية</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = state.journal.map((entry, idx) => {
+    const trade = TRADES.find(t => t.id == entry.tradeId);
+    if (!trade) return "";
+    
+    const pl = entry.exitPrice && entry.entryPrice ? 
+      (((entry.exitPrice - entry.entryPrice) / entry.entryPrice) * 100).toFixed(2) : null;
+    
+    return `
+      <div class="journal-entry">
+        <div class="journal-header">
+          <div>
+            <div class="journal-trade-name">${trade.name}</div>
+            <div class="journal-date">دخول: ${entry.entryDate || "—"}</div>
+          </div>
+          <div style="text-align: left;">
+            ${pl !== null ? `<div class="journal-stat-value ${pl >= 0 ? 'up' : 'down'}">${pl >= 0 ? '+' : ''}${pl}%</div>` : '<span class="status-badge status-active">مفتوحة</span>'}
+            <button class="btn" style="font-size: 11px; padding: 4px 8px; margin-top: 4px;" onclick="closeJournalEntry(${idx})">إغلاق الصفقة</button>
+            <button class="btn" style="font-size: 11px; padding: 4px 8px; margin-top: 4px; color: var(--red);" onclick="deleteJournalEntry(${idx})">حذف</button>
+          </div>
+        </div>
+        <div class="journal-stats">
+          <div class="journal-stat">
+            <div class="journal-stat-label">Entry Premium</div>
+            <div class="journal-stat-value">$${entry.entryPrice || "—"}</div>
+          </div>
+          <div class="journal-stat">
+            <div class="journal-stat-label">Underlying</div>
+            <div class="journal-stat-value">$${entry.underlyingEntry || "—"}</div>
+          </div>
+          <div class="journal-stat">
+            <div class="journal-stat-label">Contracts</div>
+            <div class="journal-stat-value">${entry.contracts || 1}</div>
+          </div>
+          <div class="journal-stat">
+            <div class="journal-stat-label">Exit</div>
+            <div class="journal-stat-value">${entry.exitPrice ? '$' + entry.exitPrice : '—'}</div>
+          </div>
+        </div>
+        ${entry.notes ? `<div style="margin-top: 12px; padding: 8px; background: var(--bg-secondary); border-radius: 4px; font-size: 12px; color: var(--text-secondary);">📝 ${entry.notes}</div>` : ''}
+      </div>
+    `;
+  }).join("");
+}
+
+// ============================================================
+// RENDER: Performance
+// ============================================================
+function renderPerformance() {
+  const statsContainer = document.getElementById("performanceStats");
+  const recsContainer = document.getElementById("recommendationsStatus");
+  
+  // Overall stats from journal
+  const closed = state.journal.filter(e => e.exitPrice);
+  const wins = closed.filter(e => e.exitPrice > e.entryPrice).length;
+  const winRate = closed.length > 0 ? ((wins / closed.length) * 100).toFixed(1) : "—";
+  const avgPL = closed.length > 0 ? 
+    (closed.reduce((sum, e) => sum + ((e.exitPrice - e.entryPrice) / e.entryPrice) * 100, 0) / closed.length).toFixed(2) : "—";
+  
+  statsContainer.innerHTML = `
+    <div class="trade-card">
+      <div class="price-label">إجمالي الصفقات</div>
+      <div style="font-size: 28px; font-weight: 700; margin-top: 8px;">${state.journal.length}</div>
+    </div>
+    <div class="trade-card">
+      <div class="price-label">المغلقة</div>
+      <div style="font-size: 28px; font-weight: 700; margin-top: 8px;">${closed.length}</div>
+    </div>
+    <div class="trade-card">
+      <div class="price-label">Win Rate</div>
+      <div style="font-size: 28px; font-weight: 700; margin-top: 8px;" class="${winRate !== '—' && parseFloat(winRate) >= 50 ? 'up' : 'down'}">${winRate}%</div>
+    </div>
+    <div class="trade-card">
+      <div class="price-label">متوسط الربح/الخسارة</div>
+      <div style="font-size: 28px; font-weight: 700; margin-top: 8px;" class="${avgPL !== '—' && parseFloat(avgPL) >= 0 ? 'up' : 'down'}">${avgPL}%</div>
+    </div>
+  `;
+  
+  // Current rec status
+  recsContainer.innerHTML = TRADES.map(trade => {
+    const status = getStatus(trade);
+    const distT1 = distanceToLevel(trade, trade.target1);
+    const distStop = distanceToLevel(trade, trade.stop);
+    
+    return `
+      <div class="calendar-event">
+        <div>
+          <div class="event-date">#${trade.id}</div>
+          <div class="event-day">${trade.type}</div>
+        </div>
+        <div>
+          <div class="event-day">${statusLabel(status)}</div>
+        </div>
+        <div>
+          <div class="event-name">${trade.name}</div>
+          <div class="event-impact">السعر: $${trade.currentPrice.toFixed(2)}</div>
+        </div>
+        <div style="font-size: 11px; color: var(--text-secondary); text-align: left;">
+          إلى T1: ${distT1.pct}%<br>
+          إلى Stop: ${distStop.pct}%
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+// ============================================================
+// MODAL: Trade Details
+// ============================================================
+function showTradeDetails(tradeId) {
+  const trade = TRADES.find(t => t.id === tradeId);
+  if (!trade) return;
+  
+  document.getElementById("modalTitle").textContent = `${trade.name} - تفاصيل كاملة`;
+  document.getElementById("modalBody").innerHTML = `
+    <div class="trade-details" style="grid-template-columns: 1fr;">
+      <div class="detail-item">
+        <span class="detail-label">Underlying</span>
+        <span class="detail-value">${trade.displaySymbol}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Strike</span>
+        <span class="detail-value">${trade.displayStrike}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">DTE / Expiry</span>
+        <span class="detail-value">${trade.dte} / ${trade.expiryDate}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Entry Zone</span>
+        <span class="detail-value">${trade.displayEntryZone.low} - ${trade.displayEntryZone.high}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Stop Loss</span>
+        <span class="detail-value down">${trade.displayStrike === trade.strike ? trade.stop : trade.stop}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Target 1</span>
+        <span class="detail-value up">${trade.displayStrike === trade.strike ? trade.target1 : trade.target1}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Target 2</span>
+        <span class="detail-value up">${trade.displayStrike === trade.strike ? trade.target2 : trade.target2}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Premium المقدر</span>
+        <span class="detail-value">${trade.estPremium}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Position Size الموصى</span>
+        <span class="detail-value">${trade.positionSize}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Time Stop</span>
+        <span class="detail-value">${trade.timeStop}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">مستوى الثقة</span>
+        <span class="detail-value">${trade.confidence}</span>
+      </div>
+    </div>
+    
+    <div class="alert alert-info" style="margin-top: 16px;">
+      <span>💡</span>
+      <div>
+        راجع ملف <strong>Trade_Recommendations_v1_Jun2026.xlsx</strong> للتفاصيل الكاملة (التبرير، المخاطر، outcome tracking).
+      </div>
+    </div>
+  `;
+  
+  document.getElementById("updateModal").classList.add("active");
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove("active");
+}
+
+// ============================================================
+// JOURNAL
+// ============================================================
+function showAddJournalModal() {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  document.getElementById("journalEntryDate").value = local;
+  document.getElementById("journalModal").classList.add("active");
+}
+
+function saveJournalEntry() {
+  const entry = {
+    tradeId: document.getElementById("journalTrade").value,
+    entryDate: document.getElementById("journalEntryDate").value,
+    entryPrice: parseFloat(document.getElementById("journalEntryPrice").value) || null,
+    underlyingEntry: parseFloat(document.getElementById("journalUnderlyingEntry").value) || null,
+    contracts: parseInt(document.getElementById("journalContracts").value) || 1,
+    notes: document.getElementById("journalNotes").value,
+    exitDate: null,
+    exitPrice: null,
+    createdAt: new Date().toISOString()
+  };
+  
+  if (!entry.entryPrice) {
+    alert("يجب إدخال Premium المدفوع");
+    return;
+  }
+  
+  state.journal = state.journal || [];
+  state.journal.push(entry);
+  saveState();
+  closeModal("journalModal");
+  renderJournal();
+  renderPerformance();
+  
+  // Clear form
+  document.getElementById("journalEntryPrice").value = "";
+  document.getElementById("journalUnderlyingEntry").value = "";
+  document.getElementById("journalNotes").value = "";
+}
+
+function closeJournalEntry(idx) {
+  const exitPrice = prompt("سعر الـ Premium عند الخروج:");
+  if (!exitPrice) return;
+  state.journal[idx].exitPrice = parseFloat(exitPrice);
+  state.journal[idx].exitDate = new Date().toISOString();
+  saveState();
+  renderJournal();
+  renderPerformance();
+}
+
+function deleteJournalEntry(idx) {
+  if (!confirm("هل أنت متأكد من حذف هذا السجل؟")) return;
+  state.journal.splice(idx, 1);
+  saveState();
+  renderJournal();
+  renderPerformance();
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function saveSettings() {
+  state.apiKey = document.getElementById("apiKeyInput").value;
+  state.refreshInterval = parseInt(document.getElementById("refreshInterval").value) || 60;
+  saveState();
+  
+  document.getElementById("settingsStatus").innerHTML = `
+    <div class="alert alert-success">
+      <span>✅</span>
+      <div>تم حفظ الإعدادات بنجاح.</div>
+    </div>
+  `;
+  
+  setTimeout(() => { document.getElementById("settingsStatus").innerHTML = ""; }, 3000);
+}
+
+async function testApi() {
+  const key = document.getElementById("apiKeyInput").value || state.apiKey;
+  if (!key) {
+    document.getElementById("settingsStatus").innerHTML = `
+      <div class="alert alert-warning">
+        <span>⚠️</span>
+        <div>ضع API key أولاً</div>
+      </div>
+    `;
+    return;
+  }
+  
+  try {
+    const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=AAPL&token=${key}`);
+    const data = await response.json();
+    
+    if (data.c) {
+      document.getElementById("settingsStatus").innerHTML = `
+        <div class="alert alert-success">
+          <span>✅</span>
+          <div>API يعمل بنجاح! AAPL = $${data.c}</div>
+        </div>
+      `;
+    } else {
+      throw new Error("Invalid response");
+    }
+  } catch (e) {
+    document.getElementById("settingsStatus").innerHTML = `
+      <div class="alert alert-warning">
+        <span>❌</span>
+        <div>فشل الاتصال: ${e.message}. تأكد من API key.</div>
+      </div>
+    `;
+  }
+}
+
+function exportData() {
+  const dataStr = JSON.stringify(state, null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `options_tracker_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+function resetData() {
+  if (!confirm("هل أنت متأكد؟ سيتم مسح كل البيانات (السجل + الإعدادات).")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = loadState();
+  document.getElementById("apiKeyInput").value = "";
+  renderJournal();
+  renderPerformance();
+  alert("تم مسح كل البيانات.");
+}
+
+// ============================================================
+// LIVE API: Finnhub
+// ============================================================
+async function fetchPrice(symbol) {
+  if (!state.apiKey) return null;
+  
+  try {
+    const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${state.apiKey}`);
+    const data = await response.json();
+    
+    if (data.c) {
+      return {
+        current: data.c,
+        change: data.d,
+        changePercent: data.dp,
+        high: data.h,
+        low: data.l,
+        open: data.o,
+        previousClose: data.pc
+      };
+    }
+  } catch (e) {
+    console.error(`Error fetching ${symbol}:`, e);
+  }
+  return null;
+}
+
+async function refreshAllPrices() {
+  const btn = document.getElementById("refreshBtn");
+  btn.disabled = true;
+  btn.innerHTML = "⏳ جاري التحديث...";
+  
+  if (!state.apiKey) {
+    btn.innerHTML = "⚠️ ضع API key في الإعدادات";
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.innerHTML = "🔄 تحديث الأسعار";
+    }, 2000);
+    return;
+  }
+  
+  // Unique symbols (SPY for SPX, AAPL, TSLA)
+  const symbols = [...new Set(TRADES.map(t => t.symbol))];
+  
+  for (const symbol of symbols) {
+    const data = await fetchPrice(symbol);
+    if (data) {
+      // Update all trades using this symbol
+      TRADES.forEach(trade => {
+        if (trade.symbol === symbol) {
+          // If SPY, multiply by 10 for SPX display approx
+          if (symbol === "SPY" && trade.displaySymbol === "SPX") {
+            trade.currentPrice = data.current * 10;
+          } else {
+            trade.currentPrice = data.current;
+          }
+          trade.priceChange = data.changePercent;
+        }
+      });
+    }
+  }
+  
+  // Update header snapshot (SPX from SPY)
+  const spy = await fetchPrice("SPY");
+  if (spy) {
+    document.getElementById("spxPrice").textContent = (spy.current * 10).toFixed(2);
+    const change = spy.changePercent;
+    document.getElementById("spxChange").textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+    document.getElementById("spxChange").className = `snapshot-change ${change >= 0 ? 'up' : 'down'}`;
+  }
+  
+  // Update VIX (note: VIX needs ^VIX which may need premium on Finnhub)
+  // Using fallback
+  
+  document.getElementById("lastUpdate").textContent = new Date().toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
+  document.getElementById("updateStatus").textContent = "Live";
+  document.getElementById("updateStatus").className = "snapshot-change up";
+  
+  renderAllTrades();
+  renderPerformance();
+  
+  btn.disabled = false;
+  btn.innerHTML = "🔄 تحديث الأسعار";
+}
+
+// ============================================================
+// TRADING VIEW EMBED (Quick Open)
+// ============================================================
+function openTradingView(symbol) {
+  const tvSymbol = symbol === "SPY" ? "AMEX:SPY" : `NASDAQ:${symbol}`;
+  window.open(`https://www.tradingview.com/chart/?symbol=${tvSymbol}`, "_blank");
+}
+
+// ============================================================
+// TABS
+// ============================================================
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+    
+    if (tab.dataset.tab === "calendar") renderCalendar();
+    if (tab.dataset.tab === "journal") renderJournal();
+    if (tab.dataset.tab === "performance") renderPerformance();
+  });
+});
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  // Load settings to UI
+  document.getElementById("apiKeyInput").value = state.apiKey || "";
+  document.getElementById("refreshInterval").value = state.refreshInterval || 60;
+  
+  // Initial render
+  renderAllTrades();
+  renderCalendar();
+  renderJournal();
+  renderPerformance();
+  
+  // Auto-refresh if API key set
+  if (state.apiKey) {
+    refreshAllPrices();
+    setInterval(refreshAllPrices, (state.refreshInterval || 60) * 1000);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
