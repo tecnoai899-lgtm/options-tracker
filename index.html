@@ -1297,6 +1297,7 @@ button[data-term] {
 <div class="tabs">
   <button class="tab active" data-tab="dashboard">📈 المسارات المباشرة</button>
   <button class="tab" data-tab="builder">🔮 صنع توصية</button>
+  <button class="tab" data-tab="positions">📌 صفقاتي</button>
   <button class="tab" data-tab="paper">🎯 محفظة الاختبار</button>
   <button class="tab" data-tab="calendar">📅 الأجندة الماكرو</button>
   <button class="tab" data-tab="journal">📓 سجل الصفقات</button>
@@ -1369,6 +1370,18 @@ button[data-term] {
   <div class="calendar-card">
     <h2 style="font-size: 18px; margin-bottom: 16px;">📅 أجندة الماكرو — يونيو 2026</h2>
     <div id="calendarList"></div>
+  </div>
+</div>
+
+<!-- ===== TAB: MY POSITIONS (📌 صفقاتي) ===== -->
+<div class="tab-content" id="tab-positions">
+  <div id="openPositionsContainer">
+    <div class="paper-empty" style="padding:40px;text-align:center;">
+      <div style="font-size:36px;margin-bottom:12px;">📌</div>
+      <div style="font-weight:700;margin-bottom:8px;">صفقاتك المفتوحة ستظهر هنا</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">انشئ توصية من Builder وأضفها للسجل</div>
+      <button class="btn btn-primary" onclick="document.querySelector('[data-tab=builder]').click()">🔮 صنع توصية</button>
+    </div>
   </div>
 </div>
 
@@ -3131,6 +3144,77 @@ const UIRenderer = (() => {
   }
 
   // ===== Paper Portfolio render (v1.4) =====
+  // ===== 📌 صفقاتي — Open Positions from Journal =====
+  function renderOpenPositions() {
+    const container = document.getElementById('openPositionsContainer');
+    if (!container) return;
+    const journal = State.get().journal || [];
+    const open = journal.filter(e => !e.closed);
+
+    if (open.length === 0) {
+      container.innerHTML = `
+        <div class="paper-empty" style="padding:40px;text-align:center;">
+          <div style="font-size:36px;margin-bottom:12px;">📌</div>
+          <div style="font-weight:700;margin-bottom:8px;">لا توجد صفقات مفتوحة</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">انشئ توصية من Builder واحفظها</div>
+          <button class="btn btn-primary" onclick="document.querySelector('[data-tab=builder]').click()">🔮 صنع توصية</button>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = open.map(e => {
+      const idx = journal.indexOf(e);
+      const prem = e.entryPremium || 0;
+      const t1Pct = (e.t1 && prem) ? '+' + ((e.t1 / prem - 1) * 100).toFixed(0) + '%' : '—';
+      const t2Pct = (e.t2 && prem) ? '+' + ((e.t2 / prem - 1) * 100).toFixed(0) + '%' : '—';
+      const stopPct = (e.stop && prem) ? ((e.stop / prem - 1) * 100).toFixed(0) + '%' : '—';
+      const srcBadge = e.source === 'alpaca_paper' ? '🦙 Paper' : e.source === 'builder' ? '🔮 Builder' : '';
+
+      return `
+        <div class="journal-entry">
+          <div class="journal-header">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="journal-symbol">${e.symbol || 'N/A'}</div>
+              ${e.optionType ? `<span style="font-size:11px;font-weight:700;color:${e.optionType==='CALL'?'var(--green)':'var(--red)'};">${e.optionType}</span>` : ''}
+              ${srcBadge ? `<span style="font-size:10px;background:var(--purple-bg);color:var(--purple);padding:2px 7px;border-radius:6px;">${srcBadge}</span>` : ''}
+            </div>
+            <div style="font-size:11px;color:var(--text-secondary);">${e.date || ''}</div>
+          </div>
+
+          ${e.strike ? `<div style="font-family:'Consolas',monospace;font-size:12px;color:var(--purple);margin:4px 0 10px;">
+            Strike $${e.strike.toFixed(2)} ${e.expiryDate ? '→ ' + e.expiryDate + (e.dte ? ' (' + e.dte + 'd)' : '') : ''}
+          </div>` : ''}
+
+          <div class="journal-stats" style="grid-template-columns:repeat(4,1fr);">
+            <div class="journal-stat">
+              <div class="journal-stat-label">Entry</div>
+              <div class="journal-stat-value">$${prem ? prem.toFixed(2) : '—'}</div>
+            </div>
+            <div class="journal-stat">
+              <div class="journal-stat-label">🎯 T1 (${t1Pct})</div>
+              <div class="journal-stat-value up">$${e.t1?.toFixed(2) || '—'}</div>
+            </div>
+            <div class="journal-stat">
+              <div class="journal-stat-label">🎯🎯 T2 (${t2Pct})</div>
+              <div class="journal-stat-value up">$${e.t2?.toFixed(2) || '—'}</div>
+            </div>
+            <div class="journal-stat">
+              <div class="journal-stat-label">❌ Stop (${stopPct})</div>
+              <div class="journal-stat-value down">$${e.stop?.toFixed(2) || '—'}</div>
+            </div>
+          </div>
+
+          ${e.strategies ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:8px;">🧠 ${e.strategies}</div>` : ''}
+
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn" onclick="UIRenderer.editJournalEntry(${idx})" style="flex:1;min-width:120px;color:var(--blue);border-color:var(--blue);">✏️ تعديل السعر</button>
+            <button class="btn" onclick="UIRenderer.closeJournalEntry(${idx})" style="flex:1;min-width:120px;">✅ أغلق الصفقة</button>
+            <button class="btn" onclick="UIRenderer.deleteJournalEntry(${idx})" style="color:var(--red);padding:8px 12px;">🗑</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
   function renderPaperPortfolio() {
     renderPaperHero();
     renderPaperOpen();
@@ -3365,6 +3449,7 @@ const UIRenderer = (() => {
     State.update({ journal });
     renderJournal();
     renderPerformance();
+    renderOpenPositions();
   }
 
   function deleteJournalEntry(idx) {
@@ -3374,6 +3459,7 @@ const UIRenderer = (() => {
     State.update({ journal });
     renderJournal();
     renderPerformance();
+    renderOpenPositions();
   }
 
   function editJournalEntry(idx) {
@@ -3439,9 +3525,11 @@ const UIRenderer = (() => {
     document.getElementById('editJournalOverlay').remove();
     renderJournal();
     renderPerformance();
+    renderOpenPositions();
   }
 
   return {
+    renderOpenPositions,
     renderMarketStatus,
     renderHeader,
     renderAllTrades,
@@ -3886,6 +3974,7 @@ const App = (() => {
         document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
 
         if (tab.dataset.tab === 'builder') Builder.init();
+        if (tab.dataset.tab === 'positions') UIRenderer.renderOpenPositions();
         if (tab.dataset.tab === 'journal') UIRenderer.renderJournal();
         if (tab.dataset.tab === 'performance') UIRenderer.renderPerformance();
         if (tab.dataset.tab === 'paper') {
@@ -5388,6 +5477,7 @@ const Builder = (() => {
     });
     State.update({ journal });
     UIRenderer.renderJournal();
+    UIRenderer.renderOpenPositions();
     alert(`✅ تم حفظ التوصية (${lastRec.sym}) في السجل\n\nالـ Strike: $${lastRec.strike?.toFixed(2)} | Premium: $${lastRec.estPremium}\nT1: $${lastRec.t1} | T2: $${lastRec.t2} | Stop: $${lastRec.stop}`);
   }
 
