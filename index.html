@@ -953,6 +953,28 @@ body {
 .mock-badge { font-size: 8px; background: var(--yellow-bg); color: var(--yellow); padding: 1px 4px; border-radius: 4px; margin-inline-start: 4px; }
 .rec-disclaimer { font-size: 11px; color: var(--yellow); background: var(--yellow-bg); border-radius: var(--radius-sm); padding: 10px; text-align: center; margin-top: 8px; }
 
+/* ===== SCANNER (MVP 7) ===== */
+.scan-progress { padding: 30px 20px; text-align: center; }
+.scan-progress-bar { height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; margin: 16px 0 10px; }
+.scan-progress-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--blue)); transition: width 0.3s; }
+.scan-progress-text { font-size: 13px; color: var(--text-secondary); }
+.scan-results-header { font-size: 15px; font-weight: 700; margin: 18px 0 12px; color: var(--green); }
+.scan-results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.scan-result-card { background: var(--bg-secondary); border: 2px solid var(--green); border-radius: var(--radius-sm); padding: 14px; cursor: pointer; transition: all 0.2s; }
+.scan-result-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+.src-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.src-symbol { font-size: 18px; font-weight: 800; font-family: 'Consolas', monospace; }
+.src-price { font-size: 14px; font-family: 'Consolas', monospace; color: var(--text-secondary); }
+.src-matches { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.src-badge { font-size: 10px; background: var(--green-bg); color: var(--green); padding: 3px 7px; border-radius: 6px; }
+.src-count { font-size: 11px; font-weight: 700; color: var(--purple); text-align: end; }
+.scan-empty { padding: 40px; text-align: center; color: var(--text-secondary); }
+.scan-fail-note { font-size: 11px; color: var(--text-secondary); margin-top: 12px; text-align: center; }
+
+@media (max-width: 768px) {
+  .scan-results-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 768px) {
   .strategy-grid { grid-template-columns: 1fr; }
   .rec-grid-2, .rec-grid-3 { grid-template-columns: 1fr; }
@@ -1327,36 +1349,34 @@ button[data-term] {
   </div>
 </div>
 
-<!-- ===== TAB: RECOMMENDATION BUILDER (MVP 1) ===== -->
+<!-- ===== TAB: RECOMMENDATION BUILDER (MVP 7 - Scanner) ===== -->
 <div class="tab-content" id="tab-builder">
   <div class="builder-card">
 
-    <!-- Step 1: Symbol -->
+    <!-- Step 1: Strategies -->
     <div class="builder-section">
-      <div class="builder-step-label">① اختر السهم</div>
-      <div class="builder-symbol-row">
-        <input type="text" id="builderSymbol" placeholder="مثال: SPY, AAPL, NVDA"
-          class="form-input" autocomplete="off" autocapitalize="off" spellcheck="false"
-          style="font-family:'Consolas',monospace; font-size:15px; max-width:200px; text-transform:uppercase;">
-        <button class="btn btn-primary" onclick="Builder.fetchSymbol()">📊 جلب البيانات</button>
-      </div>
-      <div id="builderSymbolInfo"></div>
-    </div>
-
-    <!-- Step 2: Strategies -->
-    <div class="builder-section">
-      <div class="builder-step-label">② اختر الاستراتيجيات</div>
-      <div class="builder-helper">اختر وحدة أو أكثر — كل تطابق يزيد الثقة في التوصية</div>
+      <div class="builder-step-label">① اختر الاستراتيجيات</div>
+      <div class="builder-helper">اختر وحدة أو أكثر — الموقع يكتشف الأسهم المطابقة</div>
       <div class="strategy-grid" id="strategyGrid"></div>
     </div>
 
-    <!-- Step 3: Generate -->
+    <!-- Step 2: Scan or Single -->
     <div class="builder-section" style="margin-bottom: 0;">
-      <div class="builder-step-label">③ أنشئ التوصية</div>
-      <button class="btn btn-primary" onclick="Builder.generate()"
-        style="width:100%; padding:14px; font-size:16px; font-weight:700; background: linear-gradient(135deg, var(--purple), var(--blue)); border:none;">
-        🔮 أنشئ التوصية
+      <div class="builder-step-label">② اكتشف الفرص</div>
+
+      <button class="btn btn-primary" onclick="Builder.scanMarket()"
+        style="width:100%; padding:16px; font-size:16px; font-weight:700; background: linear-gradient(135deg, var(--purple), var(--blue)); border:none; margin-bottom:14px;">
+        🔍 امسح السوق (26 سهم)
       </button>
+
+      <div style="text-align:center;color:var(--text-secondary);font-size:12px;margin-bottom:14px;">──── أو سهم محدد ────</div>
+
+      <div class="builder-symbol-row">
+        <input type="text" id="builderSymbol" placeholder="مثال: SPY, AAPL"
+          class="form-input" autocomplete="off" autocapitalize="off" spellcheck="false"
+          style="font-family:'Consolas',monospace; font-size:15px; flex:1; text-transform:uppercase;">
+        <button class="btn" onclick="Builder.generate()" style="border-color:var(--purple);color:var(--purple);">🔮 توصية</button>
+      </div>
     </div>
 
     <!-- Output -->
@@ -2180,6 +2200,16 @@ const CALENDAR = [
 // ============================================================
 // STRATEGIES LIBRARY — 6 استراتيجيات لـ Recommendation Builder
 // ============================================================
+// ============================================================
+// WATCHLIST — universe الأسهم للـ Scanner
+// ============================================================
+const WATCHLIST = [
+  'SPY', 'QQQ', 'IWM', 'DIA',
+  'AAPL', 'MSFT', 'NVDA', 'GOOGL', 'META', 'AMZN', 'TSLA', 'AMD',
+  'NFLX', 'AVGO', 'JPM', 'BAC', 'COIN', 'PLTR', 'MSTR', 'SMCI',
+  'INTC', 'MU', 'DIS', 'UBER', 'SHOP', 'CRM'
+];
+
 const STRATEGIES = [
   {
     id: 'momentum-breakout',
@@ -4998,9 +5028,117 @@ const Builder = (() => {
   }
 
   // ===== Generate Recommendation (MVP 2 - Real Data) =====
+  // ===== MVP 7: Market Scanner =====
+  async function scanMarket() {
+    if (selected.size === 0) { alert('اختر استراتيجية وحدة على الأقل'); return; }
+
+    const strategies = STRATEGIES.filter(s => selected.has(s.id));
+    const out = document.getElementById('builderOutput');
+    const total = WATCHLIST.length;
+    let done = 0;
+    let failed = 0;
+    const results = [];
+
+    const renderProgress = () => {
+      const pct = Math.round((done / total) * 100);
+      out.innerHTML = `
+        <div class="scan-progress">
+          <div style="font-size:15px;font-weight:700;margin-bottom:6px;">🔍 جاري مسح السوق...</div>
+          <div class="scan-progress-bar"><div class="scan-progress-fill" style="width:${pct}%;"></div></div>
+          <div class="scan-progress-text">${done} / ${total} سهم • ${results.length} مطابق حتى الآن</div>
+        </div>`;
+    };
+    renderProgress();
+
+    // Batched parallel scan (5 at a time)
+    const BATCH = 5;
+    for (let i = 0; i < WATCHLIST.length; i += BATCH) {
+      const batch = WATCHLIST.slice(i, i + BATCH);
+      const batchResults = await Promise.all(batch.map(async (sym) => {
+        try {
+          const history = await DataCache.getHistory(sym);
+          const indicators = Indicators.compute(history);
+          if (!indicators) return null;
+
+          const matched = [];
+          for (const s of strategies) {
+            const required = evalFilters(s.requiredFilters, indicators);
+            const reqComputable = required.filter(f => !f.todo);
+            const reqPassed = reqComputable.filter(f => f.pass).length;
+            const reqTotal = reqComputable.length;
+            if (reqTotal > 0 && reqPassed === reqTotal) matched.push(s);
+          }
+
+          if (matched.length > 0) {
+            return { sym, price: indicators.currentPrice, indicators, matched };
+          }
+          return null;
+        } catch (e) {
+          console.warn(`[Scan] ${sym} failed:`, e.message);
+          failed++;
+          return null;
+        } finally {
+          done++;
+        }
+      }));
+      results.push(...batchResults.filter(Boolean));
+      renderProgress();
+    }
+
+    // Sort: most strategies matched first, then by symbol
+    results.sort((a, b) => b.matched.length - a.matched.length || a.sym.localeCompare(b.sym));
+    renderScanResults(results, strategies, failed);
+  }
+
+  function renderScanResults(results, strategies, failed) {
+    const out = document.getElementById('builderOutput');
+    const stratNames = strategies.map(s => s.icon + ' ' + s.name).join('، ');
+
+    if (results.length === 0) {
+      out.innerHTML = `
+        <div class="scan-empty">
+          <div style="font-size:36px;margin-bottom:12px;">🔍</div>
+          <div style="font-weight:700;margin-bottom:8px;">لا توجد أسهم مطابقة حالياً</div>
+          <div style="font-size:12px;">لا يوجد سهم في الـ watchlist يحقق شروط: ${stratNames}</div>
+          <div style="font-size:12px;margin-top:8px;">جرّب استراتيجيات أخرى أو امسح في وقت آخر من السوق.</div>
+          ${failed > 0 ? `<div class="scan-fail-note">⚠️ ${failed} سهم تعذّر جلب بياناته</div>` : ''}
+        </div>`;
+      return;
+    }
+
+    out.innerHTML = `
+      <div class="scan-results-header">🎯 ${results.length} سهم مطابق من ${WATCHLIST.length}</div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">الاستراتيجيات: ${stratNames} — اضغط أي سهم لعرض التوصية الكاملة</div>
+      <div class="scan-results-grid">
+        ${results.map(r => `
+          <div class="scan-result-card" onclick="Builder.openRecommendation('${r.sym}')">
+            <div class="src-top">
+              <div class="src-symbol">${r.sym}</div>
+              <div class="src-price">$${r.price.toFixed(2)}</div>
+            </div>
+            <div class="src-matches">
+              ${r.matched.map(s => `<span class="src-badge">${s.icon} ${s.name}</span>`).join('')}
+            </div>
+            <div class="src-count">${r.matched.length} ${r.matched.length === 1 ? 'استراتيجية' : 'استراتيجيات'} ✓</div>
+          </div>`).join('')}
+      </div>
+      ${failed > 0 ? `<div class="scan-fail-note">⚠️ ${failed} سهم تعذّر جلب بياناته (تجاهلناه)</div>` : ''}`;
+  }
+
   async function generate() {
     const sym = (document.getElementById('builderSymbol').value || '').trim().toUpperCase();
     if (!sym) { alert('أدخل رمز السهم أولاً (مثل SPY)'); return; }
+    await generateFor(sym);
+  }
+
+  // فتح توصية كاملة من نتيجة المسح
+  async function openRecommendation(sym) {
+    await generateFor(sym);
+    const out = document.getElementById('builderOutput');
+    if (out) out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function generateFor(sym) {
     if (selected.size === 0) { alert('اختر استراتيجية وحدة على الأقل'); return; }
 
     const out = document.getElementById('builderOutput');
@@ -5481,7 +5619,7 @@ const Builder = (() => {
     alert(`✅ تم حفظ التوصية (${lastRec.sym}) في السجل\n\nالـ Strike: $${lastRec.strike?.toFixed(2)} | Premium: $${lastRec.estPremium}\nT1: $${lastRec.t1} | T2: $${lastRec.t2} | Stop: $${lastRec.stop}`);
   }
 
-  return { init, toggle, fetchSymbol, generate, saveToJournal, executeOnAlpaca, toggleLimitPrice, submitExecute };
+  return { init, toggle, fetchSymbol, generate, scanMarket, openRecommendation, saveToJournal, executeOnAlpaca, toggleLimitPrice, submitExecute };
 })();
 
 // ============================================================
