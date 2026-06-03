@@ -2911,7 +2911,16 @@ const UIRenderer = (() => {
       { pattern: /\bVIX\b/g, term: 'VIX' },
       { pattern: /\b0DTE\b/g, term: '0DTE' },
       { pattern: /\bIPO\b/g, term: 'IPO' },
-      { pattern: /\bSPCX\b/g, term: 'SPCX' }
+      { pattern: /\bSPCX\b/g, term: 'SPCX' },
+      // ===== Technical Indicators (M9) — ترتيب مهم: الأطول أولاً =====
+      { pattern: /\bMA200\b/g, term: 'MA200' },
+      { pattern: /\bMA50\b/g,  term: 'MA50'  },
+      { pattern: /\bMA20\b/g,  term: 'MA20'  },
+      { pattern: /\bEMA21\b/g, term: 'EMA21' },
+      { pattern: /\bEMA9\b/g,  term: 'EMA9'  },
+      { pattern: /\bRSI\b/g,   term: 'RSI'   },
+      { pattern: /\bSMA\b/g,   term: 'SMA'   },
+      { pattern: /\bEMA\b/g,   term: 'EMA'   }
     ];
     let result = text;
     patterns.forEach(({ pattern, term }) => {
@@ -4476,6 +4485,78 @@ const Glossary = {
     en: 'Mock Data',
     ar: 'بيانات تجريبية',
     desc: 'لم تُحدّث من الـ API بعد. اضغط "تحديث الأسعار" لجلب الأرقام الحقيقية من Yahoo Worker.'
+  },
+
+  // ===== Technical Indicators (M9) =====
+  'MA': {
+    en: 'Moving Average',
+    ar: 'المتوسط المتحرك',
+    desc: 'متوسط سعر الإغلاق على فترة معينة. يُنعّم التذبذب ويوضح الاتجاه. أنواعه: SMA (بسيط) و EMA (أُسي).'
+  },
+  'SMA': {
+    en: 'Simple Moving Average',
+    ar: 'المتوسط المتحرك البسيط',
+    desc: 'متوسط حسابي للأسعار على N يوم. يعطي وزن متساوٍ لكل يوم. أبطأ تفاعلاً، مناسب للفترات الطويلة (50، 200).'
+  },
+  'EMA': {
+    en: 'Exponential Moving Average',
+    ar: 'المتوسط المتحرك الأُسي',
+    desc: 'متوسط مرجّح يعطي وزن أكبر للأيام القريبة. أسرع تفاعلاً من SMA، مناسب للفترات القصيرة (9، 21). يستخدمه المضاربون لرصد momentum.'
+  },
+  'MA20': {
+    en: '20-Day Moving Average',
+    ar: 'متوسط 20 يوم',
+    desc: 'الاتجاه قصير المدى (~شهر تداول). يُستخدم لرصد pullbacks في الـ trend الصاعد.'
+  },
+  'MA50': {
+    en: '50-Day Moving Average',
+    ar: 'متوسط 50 يوم',
+    desc: 'الاتجاه متوسط المدى (~ربع سنة). دعم/مقاومة مهم. السعر فوقه = sentiment صاعد.'
+  },
+  'MA200': {
+    en: '200-Day Moving Average',
+    ar: 'متوسط 200 يوم',
+    desc: 'الاتجاه طويل المدى (~سنة). الفاصل الكلاسيكي بين bull و bear. مؤسسات المال تراقبه بشدّة.'
+  },
+  'EMA9': {
+    en: '9-Day Exponential MA',
+    ar: 'EMA لـ 9 أيام',
+    desc: 'سريع جداً، يلتصق بالسعر. يستخدمه scalpers و day traders لرصد تغيّر momentum فوري.'
+  },
+  'EMA21': {
+    en: '21-Day Exponential MA',
+    ar: 'EMA لـ 21 يوم',
+    desc: 'توازن بين السرعة والاستقرار. شائع كـ trend filter قصير-متوسط المدى.'
+  },
+  'RSI': {
+    en: 'Relative Strength Index',
+    ar: 'مؤشر القوة النسبية',
+    desc: 'مذبذب من 0-100 يقيس سرعة وحجم التغيّر. >70 = overbought (شراء مفرط)، <30 = oversold (بيع مفرط). الفترة الافتراضية 14 يوم.'
+  },
+  'RS Rating': {
+    en: 'Relative Strength Rating',
+    ar: 'تقييم القوة النسبية',
+    desc: 'من 1-99، يقيس أداء السهم مقابل السوق (SPY) على 3، 6، 12 شهر. RS > 80 = leader قوي. RS < 40 = laggard. مفهوم مركزي في منهج IBD/MarketSmith.'
+  },
+  'Benchmark': {
+    en: 'Benchmark',
+    ar: 'المعيار المرجعي',
+    desc: 'مؤشر يُقاس عليه أداء سهم/محفظة. SPY هو الـ benchmark الأكثر شيوعاً للأسهم الأمريكية.'
+  },
+  'Breadth': {
+    en: 'Market Breadth',
+    ar: 'اتساع السوق',
+    desc: 'عدد الأسهم الصاعدة مقابل النازلة. سوق صحي = breadth واسع (كثير أسهم صاعدة). breadth ضيّق = ارتفاع مؤشرات بدعم قليل من الأسهم = خطر.'
+  },
+  'Candlestick': {
+    en: 'Candlestick Chart',
+    ar: 'الشموع اليابانية',
+    desc: 'تمثيل بصري لكل يوم/فترة: open، high، low، close. الشمعة الخضراء = إغلاق فوق الافتتاح، الحمراء = العكس. الجسم يُظهر العلاقة بين open/close، الفتيل high/low.'
+  },
+  'Sparkline': {
+    en: 'Sparkline',
+    ar: 'الخط المصغّر',
+    desc: 'شارت صغير بدون محاور يُظهر اتجاه السعر سريعاً. مفيد للبطاقات الموجزة.'
   }
 };
 
@@ -4877,6 +4958,54 @@ const Indicators = {
     return slice.reduce((a, b) => a + b, 0) / period;
   },
 
+  // EMA (Exponential Moving Average) — يعطي وزن أعلى للأيام القريبة
+  // الصيغة: EMA_today = (price × k) + (EMA_yesterday × (1-k))، حيث k = 2/(N+1)
+  // نبدأ بـ SMA كأول قيمة (seed) ثم نستمر بالحساب الأُسي
+  ema(values, period) {
+    if (!values || values.length < period) return null;
+    const clean = values.filter(v => v != null && !isNaN(v));
+    if (clean.length < period) return null;
+    const k = 2 / (period + 1);
+    // Seed: SMA of first `period` values
+    let ema = clean.slice(0, period).reduce((a, b) => a + b, 0) / period;
+    // Iterate from index `period` onward
+    for (let i = period; i < clean.length; i++) {
+      ema = (clean[i] * k) + (ema * (1 - k));
+    }
+    return ema;
+  },
+
+  // EMA Series — يرجّع مصفوفة قيم EMA (للرسم على الشارت في Phase B)
+  emaSeries(values, period) {
+    if (!values || values.length < period) return [];
+    const clean = values.filter(v => v != null && !isNaN(v));
+    if (clean.length < period) return [];
+    const k = 2 / (period + 1);
+    const result = new Array(clean.length).fill(null);
+    // Seed = SMA of first `period` values
+    let ema = clean.slice(0, period).reduce((a, b) => a + b, 0) / period;
+    result[period - 1] = ema;
+    for (let i = period; i < clean.length; i++) {
+      ema = (clean[i] * k) + (ema * (1 - k));
+      result[i] = ema;
+    }
+    return result;
+  },
+
+  // SMA Series — يرجّع مصفوفة قيم SMA (للرسم)
+  smaSeries(values, period) {
+    if (!values || values.length < period) return [];
+    const clean = values.filter(v => v != null && !isNaN(v));
+    const result = new Array(clean.length).fill(null);
+    let sum = 0;
+    for (let i = 0; i < clean.length; i++) {
+      sum += clean[i];
+      if (i >= period) sum -= clean[i - period];
+      if (i >= period - 1) result[i] = sum / period;
+    }
+    return result;
+  },
+
   rsi(values, period = 14) {
     if (!values || values.length < period + 1) return null;
     const slice = values.slice(-(period + 1));
@@ -4893,8 +5022,56 @@ const Indicators = {
     return 100 - (100 / (1 + rs));
   },
 
+  // RS Rating (IBD style 1-99) — performance vs benchmark على نوافذ مرجّحة
+  // المنطق: نحسب return% للسهم و benchmark على 3 نوافذ (63d/126d/252d تقريباً)
+  // ثم نُرجّح: 40% للأقرب، 30%، 20%، 10% (نسخة مبسّطة من IBD's weighted formula)
+  // وأخيراً نُحوّل الـ relative outperformance إلى scale 1-99 عبر sigmoid-like mapping
+  rsRating(stockCloses, benchmarkCloses) {
+    if (!stockCloses || !benchmarkCloses) return null;
+    const sLen = stockCloses.length;
+    const bLen = benchmarkCloses.length;
+    if (sLen < 64 || bLen < 64) return null;
+
+    // نوافذ تقريبية (تداول): 63 ≈ 3m، 126 ≈ 6m، 189 ≈ 9m، 252 ≈ 12m
+    const windows = [
+      { days: 63,  weight: 0.40 },
+      { days: 126, weight: 0.20 },
+      { days: 189, weight: 0.20 },
+      { days: 252, weight: 0.20 }
+    ];
+
+    let weightedRel = 0;
+    let totalWeightUsed = 0;
+    const sNow = stockCloses[sLen - 1];
+    const bNow = benchmarkCloses[bLen - 1];
+
+    for (const w of windows) {
+      if (sLen <= w.days || bLen <= w.days) continue;
+      const sBack = stockCloses[sLen - 1 - w.days];
+      const bBack = benchmarkCloses[bLen - 1 - w.days];
+      if (!sBack || !bBack) continue;
+      const sRet = (sNow / sBack) - 1;
+      const bRet = (bNow / bBack) - 1;
+      // Relative outperformance على هذه النافذة
+      const relPerf = sRet - bRet;
+      weightedRel += relPerf * w.weight;
+      totalWeightUsed += w.weight;
+    }
+
+    if (totalWeightUsed === 0) return null;
+    // Re-normalize لو بعض النوافذ ما توفّرت بياناتها
+    weightedRel = weightedRel / totalWeightUsed;
+
+    // Mapping: outperformance % → 1-99 scale
+    // معايرة (multiplier = 5): +10% rel → ~72، +20% → ~87، +30% → ~94، +50% → ~98
+    // -10% → ~28، -20% → ~13. متوازن مع IBD distribution.
+    const scaled = 50 + (Math.tanh(weightedRel * 5) * 49);
+    return Math.max(1, Math.min(99, Math.round(scaled)));
+  },
+
   // يأخذ history.closes/volumes ويرجع كل الـ indicators المحسوبة
-  compute(history) {
+  // benchmarkHistory اختياري — يُستخدم فقط لحساب RS Rating
+  compute(history, benchmarkHistory = null) {
     const closes = (history.closes || []).filter(v => v != null);
     const volumes = (history.volumes || []).filter(v => v != null);
 
@@ -4903,6 +5080,10 @@ const Indicators = {
     const currentPrice = closes[closes.length - 1];
     const previousClose = closes[closes.length - 2];
 
+    const benchmarkCloses = benchmarkHistory
+      ? (benchmarkHistory.closes || []).filter(v => v != null)
+      : null;
+
     return {
       closes, volumes,
       currentPrice,
@@ -4910,7 +5091,10 @@ const Indicators = {
       ma20: this.sma(closes, 20),
       ma50: this.sma(closes, 50),
       ma200: this.sma(closes, 200),
+      ema9: this.ema(closes, 9),
+      ema21: this.ema(closes, 21),
       rsi14: this.rsi(closes, 14),
+      rsRating: benchmarkCloses ? this.rsRating(closes, benchmarkCloses) : null,
       high20: closes.length >= 21 ? Math.max(...closes.slice(-21, -1)) : null,
       low20: closes.length >= 21 ? Math.min(...closes.slice(-21, -1)) : null,
       avgVolume20: this.sma(volumes, 20),
@@ -5188,7 +5372,7 @@ const Home = (() => {
     const changeColor = (vixQuote?.change ?? 0) >= 0 ? 'var(--red)' : 'var(--green)';
     const sign = (vixQuote?.change ?? 0) >= 0 ? '+' : '';
     card.innerHTML = `
-      <div class="mood-card-title">VIX — مؤشر الخوف</div>
+      <div class="mood-card-title"><span data-term="VIX">VIX</span> — مؤشر الخوف</div>
       <div class="vix-value" style="color: ${zone.color}">${vStr}</div>
       <div class="vix-zone" style="color: ${zone.color}">${zone.emoji} ${zone.label}</div>
       <div class="vix-desc">${zone.desc}</div>
@@ -5249,7 +5433,7 @@ const Home = (() => {
       return;
     }
     card.innerHTML = `
-      <div class="mood-card-title">Mini Breadth</div>
+      <div class="mood-card-title">Mini <span data-term="Breadth">Breadth</span></div>
       <div class="breadth-counts">
         <div class="breadth-count breadth-up">▲ ${b.advancing}</div>
         <div class="breadth-count breadth-down">▼ ${b.declining}</div>
