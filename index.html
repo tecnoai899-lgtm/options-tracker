@@ -4858,6 +4858,43 @@ const Builder = (() => {
     }
   }
 
+  // ===== Options Chain Helpers (MVP 4) =====
+  // اختيار أنسب expiry ضمن dteRange
+  function selectExpiry(expirations, dteRange) {
+    if (!expirations || expirations.length === 0) return null;
+    const nowSec = Date.now() / 1000;
+    const candidates = expirations.map(ts => ({ ts, dte: Math.round((ts - nowSec) / 86400) }));
+    // أولاً: تلك التي ضمن النطاق
+    const inRange = candidates.filter(c => c.dte >= dteRange.min && c.dte <= dteRange.max);
+    const target = (dteRange.min + dteRange.max) / 2;
+    if (inRange.length > 0) {
+      return inRange.reduce((b, c) => Math.abs(c.dte - target) < Math.abs(b.dte - target) ? c : b);
+    }
+    // ثانياً: الأقرب لمنتصف النطاق
+    return candidates.reduce((b, c) => Math.abs(c.dte - target) < Math.abs(b.dte - target) ? c : b);
+  }
+
+  // اختيار أنسب strike حسب moneyness
+  function selectStrike(chain, currentPrice, moneyness, optionType) {
+    const list = optionType === 'CALL' ? chain.calls : chain.puts;
+    if (!list || list.length === 0) return null;
+    if (moneyness === 'ATM') {
+      return list.reduce((b, o) => Math.abs(o.strike - currentPrice) < Math.abs(b.strike - currentPrice) ? o : b);
+    }
+    // OTM/ITM (مستقبلاً)
+    return list.reduce((b, o) => Math.abs(o.strike - currentPrice) < Math.abs(b.strike - currentPrice) ? o : b);
+  }
+
+  // استخراج premium مع fallback chain
+  function extractPremium(opt) {
+    const bid = parseFloat(opt.bid) || 0;
+    const ask = parseFloat(opt.ask) || 0;
+    const last = parseFloat(opt.lastPrice) || 0;
+    if (bid > 0 && ask > bid && ask < bid * 5) return { value: (bid + ask) / 2, source: 'mid' };
+    if (last > 0) return { value: last, source: 'last' };
+    return null;
+  }
+
   // ===== Filter Evaluation =====
   function evalFilters(filterIds, indicators) {
     return filterIds.map(fid => {
@@ -4938,13 +4975,68 @@ const Builder = (() => {
       if (matched.length > 0) {
         const primary = matched.reduce((b, s) => s.structure.positionSizePct > b.structure.positionSizePct ? s : b);
         const st = primary.structure;
-        const estPremium = price * 0.022;
+
+        // ===== جلب Options Chain حقيقي (MVP 4) =====
+        let estPremium = price * 0.022;
+        let premiumSource = 'estimate';
+        let selectedStrike = null;
+        let selectedExpiry = null;
+        let selectedExpiryDate = null;
+        let selectedIV = null;
+        let selectedOI = null;
+
+        try {
+          // 1. جلب expirations المتاحة (default = closest expiry)
+          const chainInitial = await YahooClient.optionsChain(sym);
+          const expirations = chainInitial.expirations || [];
+          if (expirations.length === 0) throw new Error('no expirations');
+
+          // 2. اختيار expiry ضمن النطاق
+          const expirySel = selectExpiry(expirations, st.dteRange);
+          if (!expirySel) throw new Error('no suitable expiry');
+
+          // 3. لو الـ default expiry يطابق الـ selected، نستخدمه. وإلا، نطلب جديد
+          let chain = chainInitial;
+          if (chainInitial.expirationDate !== expirySel.ts) {
+            const expiryDateStr = new Date(expirySel.ts * 1000).toISOString().split('T')[0];
+            chain = await YahooClient.optionsChain(sym, expiryDateStr);
+          }
+
+          // 4. اختيار strike
+          const strikeOpt = selectStrike(chain, price, st.moneyness, st.optionType);
+          if (!strikeOpt) throw new Error('no strike found');
+
+          // 5. استخراج premium
+          const prem = extractPremium(strikeOpt);
+          if (!prem) throw new Error('no premium data');
+
+          estPremium = prem.value;
+          premiumSource = prem.source;
+          selectedStrike = strikeOpt.strike;
+          selectedExpiry = expirySel;
+          selectedExpiryDate = new Date(expirySel.ts * 1000).toISOString().split('T')[0];
+          selectedIV = strikeOpt.impliedVolatility;
+          selectedOI = strikeOpt.openInterest;
+        } catch (err) {
+          console.warn('[Builder] Options chain unavailable, using estimate:', err.message);
+          premiumSource = 'estimate';
+        }
+
         const stop = +(estPremium * (1 + st.stop.value)).toFixed(2);
         const t1Price = +(estPremium * (1 + st.target1.value)).toFixed(2);
         const t2Price = +(estPremium * (1 + st.target2.value)).toFixed(2);
         const risk = +(estPremium - stop).toFixed(2);
         const reward = +(t2Price - estPremium).toFixed(2);
         const rrRatio = risk > 0 ? (reward / risk).toFixed(1) : '—';
+
+        // Badge للـ source
+        const sourceBadge = premiumSource === 'mid'
+          ? `<span style="background:var(--green-bg);color:var(--green);padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;margin-inline-start:6px;">🟢 سعر حقيقي (mid)</span>`
+          : premiumSource === 'last'
+          ? `<span style="background:var(--yellow-bg);color:var(--yellow);padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;margin-inline-start:6px;">🟡 آخر صفقة</span>`
+          : `<span style="background:var(--yellow-bg);color:var(--yellow);padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;margin-inline-start:6px;">🟡 تقديري 2.2%</span>`;
+
+        const dteActual = selectedExpiry ? selectedExpiry.dte : null;
 
         html += `
         <div class="rec-section">
@@ -4960,10 +5052,12 @@ const Builder = (() => {
         <div class="rec-section">
           <div class="rec-section-title">📈 خطة الدخول:</div>
           <div class="rec-grid-2">
-            <div class="rec-item"><div class="ri-label">الـ Strike (ATM)</div><div class="ri-value">$${price.toFixed(2)} ${st.optionType}</div></div>
-            <div class="rec-item"><div class="ri-label">انتهاء</div><div class="ri-value">${st.dteRange.min}–${st.dteRange.max} يوم</div></div>
-            <div class="rec-item"><div class="ri-label">سعر العقد (تقديري)</div><div class="ri-value">~$${estPremium.toFixed(2)} (${st.orderType})</div></div>
+            <div class="rec-item"><div class="ri-label">الـ Strike (${st.moneyness})</div><div class="ri-value">$${(selectedStrike || price).toFixed(2)} ${st.optionType}</div></div>
+            <div class="rec-item"><div class="ri-label">انتهاء</div><div class="ri-value">${selectedExpiryDate ? selectedExpiryDate + ' (' + dteActual + 'd)' : st.dteRange.min + '–' + st.dteRange.max + ' يوم'}</div></div>
+            <div class="rec-item"><div class="ri-label">سعر العقد ${sourceBadge}</div><div class="ri-value">$${estPremium.toFixed(2)} (${st.orderType})</div></div>
             <div class="rec-item"><div class="ri-label">حجم الصفقة</div><div class="ri-value">${st.positionSizePct}% من المحفظة</div></div>
+            ${selectedIV ? `<div class="rec-item"><div class="ri-label">Implied Vol</div><div class="ri-value">${(selectedIV * 100).toFixed(1)}%</div></div>` : ''}
+            ${selectedOI ? `<div class="rec-item"><div class="ri-label">Open Interest</div><div class="ri-value">${selectedOI.toLocaleString()}</div></div>` : ''}
           </div>
         </div>
 
@@ -4996,6 +5090,28 @@ const Builder = (() => {
             <div class="rec-item rr-ratio"><div class="ri-label">النسبة</div><div class="ri-value">1 : ${rrRatio}</div></div>
           </div>
         </div>`;
+
+        // حفظ القيم الفعلية لـ saveToJournal
+        lastRec = {
+          sym,
+          matched,
+          strategies: matched.map(s => s.name).join('، '),
+          confidence: Math.min(95, 50 + matched.length * 15),
+          strike: selectedStrike || price,
+          expiryDate: selectedExpiryDate,
+          dte: dteActual,
+          optionType: st.optionType,
+          orderType: st.orderType,
+          estPremium: +estPremium.toFixed(2),
+          premiumSource,
+          t1: t1Price,
+          t2: t2Price,
+          stop,
+          rrRatio,
+          iv: selectedIV,
+          oi: selectedOI,
+          positionSizePct: st.positionSizePct
+        };
       } else {
         html += `
         <div class="rec-section" style="text-align:center;background:var(--yellow-bg);padding:20px;border-radius:var(--radius-sm);">
@@ -5038,24 +5154,6 @@ const Builder = (() => {
         </div>` : ''}
       </div>`;
 
-      // حفظ آخر توصية للـ saveToJournal
-      if (matched.length > 0) {
-        const primary2 = matched.reduce((b, s) => s.structure.positionSizePct > b.structure.positionSizePct ? s : b);
-        const st2 = primary2.structure;
-        const ep = price * 0.022;
-        lastRec = {
-          sym,
-          matched,
-          strategies: matched.map(s => s.name).join('، '),
-          confidence: Math.min(95, 50 + matched.length * 15),
-          estPremium: +ep.toFixed(2),
-          t1: +(ep * (1 + st2.target1.value)).toFixed(2),
-          t2: +(ep * (1 + st2.target2.value)).toFixed(2),
-          stop: +(ep * (1 + st2.stop.value)).toFixed(2),
-          rrRatio: ((ep * (1 + st2.target2.value) - ep) / (ep - ep * (1 + st2.stop.value))).toFixed(1)
-        };
-      }
-
       out.innerHTML = html;
     } catch (e) {
       out.innerHTML = `<div style="color:var(--red);padding:30px;text-align:center;font-size:14px;">❌ ${e.message}</div>`;
@@ -5066,23 +5164,40 @@ const Builder = (() => {
   function saveToJournal() {
     if (!lastRec || !lastRec.matched.length) { alert('لا توجد توصية نشطة للحفظ'); return; }
     const journal = State.get().journal || [];
+    const notes = [
+      `📊 ${lastRec.sym} ${lastRec.optionType} @ $${lastRec.strike?.toFixed(2)}`,
+      lastRec.expiryDate ? `📅 ${lastRec.expiryDate} (${lastRec.dte}d)` : null,
+      `🎯 T1 $${lastRec.t1} | T2 $${lastRec.t2} | Stop $${lastRec.stop}`,
+      `⚖️ R/R 1:${lastRec.rrRatio}`,
+      `🧠 ${lastRec.strategies}`,
+      `💯 ثقة ${lastRec.confidence}%`,
+      `💰 ${lastRec.premiumSource === 'mid' ? 'سعر حقيقي' : lastRec.premiumSource === 'last' ? 'آخر صفقة' : 'تقديري'}`
+    ].filter(Boolean).join(' | ');
+
     journal.unshift({
       id: `rec-${Date.now()}`,
       type: 'recommendation',
       symbol: lastRec.sym,
+      strike: lastRec.strike,
+      expiryDate: lastRec.expiryDate,
+      optionType: lastRec.optionType,
       entryPremium: lastRec.estPremium,
       t1: lastRec.t1,
       t2: lastRec.t2,
       stop: lastRec.stop,
       rrRatio: lastRec.rrRatio,
+      iv: lastRec.iv,
+      strategies: lastRec.strategies,
+      confidence: lastRec.confidence,
+      premiumSource: lastRec.premiumSource,
       date: new Date().toLocaleString('ar-SA'),
-      notes: `استراتيجيات: ${lastRec.strategies} | ثقة: ${lastRec.confidence}%`,
+      notes,
       closed: false,
       source: 'builder'
     });
     State.update({ journal });
     UIRenderer.renderJournal();
-    alert(`✅ تم حفظ التوصية (${lastRec.sym}) في السجل`);
+    alert(`✅ تم حفظ التوصية (${lastRec.sym}) في السجل\n\nالـ Strike: $${lastRec.strike?.toFixed(2)} | Premium: $${lastRec.estPremium}\nT1: $${lastRec.t1} | T2: $${lastRec.t2} | Stop: $${lastRec.stop}`);
   }
 
   return { init, toggle, fetchSymbol, generate, saveToJournal };
