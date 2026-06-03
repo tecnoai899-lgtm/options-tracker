@@ -1294,18 +1294,16 @@ button[data-term] {
     <!-- Alpaca Section -->
     <div class="settings-section">
       <div class="settings-section-title">🦙 Alpaca Paper Trading</div>
-      <div class="alert alert-info">
-        <span>ℹ️</span>
-        <span>Alpaca يعطي real-time prices + options chain. الـ keys محفوظة في localStorage فقط.</span>
+      <div class="alert alert-success" style="margin-bottom: 12px;">
+        <span>🔒</span>
+        <span><strong>المفاتيح محفوظة بأمان في Cloudflare Worker</strong><br>
+        لا تحتاج إدخالها هنا — تشتغل تلقائياً على كل الأجهزة. أي تجديد للمفاتيح يتم من Cloudflare Dashboard فقط.</span>
       </div>
-      <div class="form-group">
-        <label class="form-label">API Key ID</label>
-        <input type="text" class="form-input" id="alpacaKeyInput" placeholder="PA3GRYKX...">
-      </div>
-      <div class="form-group">
-        <label class="form-label">API Secret</label>
-        <input type="password" class="form-input" id="alpacaSecretInput" placeholder="••••••••••">
-        <div class="form-help">احصل عليها من <a href="https://app.alpaca.markets/paper/dashboard/overview" target="_blank" style="color: var(--blue);">Alpaca Paper Dashboard</a></div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="btn" onclick="App.testAlpaca()">🧪 اختبار الاتصال</button>
+        <a href="https://dash.cloudflare.com" target="_blank" class="btn" style="text-decoration: none; display: inline-flex; align-items: center;">
+          ⚙️ إدارة المفاتيح في Cloudflare
+        </a>
       </div>
     </div>
 
@@ -1757,93 +1755,101 @@ const YahooClient = (() => {
 })();
 
 // ============================================================
-// MODULE 7: ALPACA CLIENT (Direct browser - مُفعّل في v1.4)
+// MODULE 7: ALPACA CLIENT (via Worker Proxy - v1.4 Root Fix)
+// المفاتيح محفوظة في Cloudflare Worker secrets، ما تظهر في المتصفح أبداً
 // ============================================================
 const AlpacaClient = (() => {
-  function authHeaders() {
-    const s = State.get();
-    if (!s.alpacaKey || !s.alpacaSecret) return null;
-    return {
-      'APCA-API-KEY-ID': s.alpacaKey,
-      'APCA-API-SECRET-KEY': s.alpacaSecret
-    };
+  let isConfiguredCache = null; // null = unknown, true/false = checked
+  let lastCheckTs = 0;
+
+  function workerBase() {
+    return (State.get().workerUrl || CONFIG.DEFAULT_WORKER_URL).replace(/\/$/, '');
   }
 
-  function isConfigured() {
-    const s = State.get();
-    return !!(s.alpacaKey && s.alpacaSecret);
-  }
-
-  async function get(base, path) {
-    const headers = authHeaders();
-    if (!headers) throw new Error('Alpaca keys not configured');
-    const res = await fetch(`${base}${path}`, { headers });
-    if (!res.ok) {
-      const txt = await res.text().catch(() => '');
-      throw new Error(`Alpaca ${res.status}: ${txt.slice(0, 200)}`);
-    }
-    return await res.json();
-  }
-
-  async function post(base, path, body) {
-    const headers = authHeaders();
-    if (!headers) throw new Error('Alpaca keys not configured');
-    headers['Content-Type'] = 'application/json';
-    const res = await fetch(`${base}${path}`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body)
-    });
+  async function get(path) {
+    const res = await fetch(`${workerBase()}/alpaca${path}`);
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const msg = data?.message || data?.error || `HTTP ${res.status}`;
+      const msg = data?.error || data?.message || `Worker returned ${res.status}`;
       throw new Error(msg);
     }
     return data;
   }
 
+  async function post(path, body) {
+    const res = await fetch(`${workerBase()}/alpaca${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const msg = data?.error || data?.message || `Worker returned ${res.status}`;
+      throw new Error(msg);
+    }
+    return data;
+  }
+
+  // isConfigured() checks worker availability with 30s cache
+  async function checkConfigured(force = false) {
+    const now = Date.now();
+    if (!force && isConfiguredCache !== null && (now - lastCheckTs) < 30000) {
+      return isConfiguredCache;
+    }
+    try {
+      await get('/account');
+      isConfiguredCache = true;
+    } catch (e) {
+      isConfiguredCache = false;
+    }
+    lastCheckTs = now;
+    return isConfiguredCache;
+  }
+
+  // Synchronous version for UI rendering (returns cached value)
+  function isConfigured() {
+    return isConfiguredCache === true;
+  }
+
   async function account() {
-    return await get(CONFIG.ALPACA.PAPER_BASE, '/v2/account');
+    return await get('/account');
   }
 
   async function clock() {
-    return await get(CONFIG.ALPACA.PAPER_BASE, '/v2/clock');
+    return await get('/clock');
   }
 
   async function latestQuote(symbol) {
-    return await get(CONFIG.ALPACA.DATA_BASE, `/v2/stocks/${symbol}/trades/latest`);
+    return await get(`/stocks/${symbol}/trades/latest`);
   }
 
   async function multiQuotes(symbols) {
     const list = Array.isArray(symbols) ? symbols.join(',') : symbols;
-    return await get(CONFIG.ALPACA.DATA_BASE, `/v2/stocks/trades/latest?symbols=${list}`);
+    return await get(`/stocks/trades/latest?symbols=${encodeURIComponent(list)}`);
   }
 
   async function optionsChain(symbol) {
-    return await get(CONFIG.ALPACA.DATA_BASE, `/v1beta1/options/snapshots/${symbol}`);
+    return await get(`/options/snapshots/${symbol}`);
   }
 
-  // NEW v1.4: get snapshots for specific OCC contract symbols
   async function optionSnapshots(occSymbols) {
     const list = Array.isArray(occSymbols) ? occSymbols.join(',') : occSymbols;
-    return await get(CONFIG.ALPACA.DATA_BASE, `/v1beta1/options/snapshots?symbols=${encodeURIComponent(list)}`);
+    return await get(`/options/snapshots?symbols=${encodeURIComponent(list)}`);
   }
 
-  // NEW v1.4: submit a paper order
   async function submitOrder(orderData) {
-    return await post(CONFIG.ALPACA.PAPER_BASE, '/v2/orders', orderData);
+    return await post('/orders', orderData);
   }
 
-  // NEW v1.4: get order status
   async function getOrder(orderId) {
-    return await get(CONFIG.ALPACA.PAPER_BASE, `/v2/orders/${orderId}`);
+    return await get(`/orders/${orderId}`);
   }
 
   return {
     account, clock, latestQuote, multiQuotes,
     optionsChain, optionSnapshots,
     submitOrder, getOrder,
-    isConfigured
+    isConfigured, checkConfigured
   };
 })();
 
@@ -2603,7 +2609,7 @@ const UIRenderer = (() => {
     if (!trade) return;
 
     if (!AlpacaClient.isConfigured()) {
-      alert('⚠️ يرجى إدخال Alpaca API keys في Settings أولاً');
+      alert('⚠️ Alpaca غير متاح حالياً.\n\nتأكد أن Cloudflare Worker محدّث وفيه ALPACA_KEY + ALPACA_SECRET كـ secrets.\n\nاضغط "اختبار الاتصال" في Settings للتحقق.');
       return;
     }
 
@@ -3016,15 +3022,10 @@ const App = (() => {
   function saveSettings() {
     State.update({
       workerUrl: document.getElementById('workerUrlInput').value.trim() || CONFIG.DEFAULT_WORKER_URL,
-      alpacaKey: document.getElementById('alpacaKeyInput').value.trim(),
-      alpacaSecret: document.getElementById('alpacaSecretInput').value.trim(),
       refreshInterval: parseInt(document.getElementById('refreshIntervalInput').value) || 60,
       autoRefreshEnabled: document.getElementById('autoRefreshEnabledInput').checked
     });
     showStatus('تم حفظ الإعدادات بنجاح', 'success');
-    // Re-render trades to reflect Alpaca availability change
-    UIRenderer.renderAllTrades();
-    // Restart auto-refresh with new settings
     setupAutoRefresh();
   }
 
@@ -3040,17 +3041,25 @@ const App = (() => {
 
   async function testAlpaca() {
     try {
-      showStatus('جاري اختبار Alpaca...');
+      showStatus('جاري اختبار Alpaca عبر Worker...');
       const acc = await AlpacaClient.account();
       showStatus(`✅ Alpaca متصل — Account ${acc.account_number}, Buying Power $${parseFloat(acc.buying_power).toFixed(0)}`, 'success');
+      // Force re-render to unlock Execute buttons
+      await AlpacaClient.checkConfigured(true);
+      UIRenderer.renderAllTrades();
     } catch (e) {
-      showStatus(`❌ فشل اختبار Alpaca: ${e.message}`, 'warning');
+      showStatus(`❌ فشل الاتصال: ${e.message}. تأكد أن Cloudflare Worker محدّث ويحتوي على ALPACA_KEY و ALPACA_SECRET secrets.`, 'warning');
     }
   }
 
-  // ===== Fetch Alpaca option snapshots for all trades =====
+  // ===== Fetch Alpaca option snapshots via Worker =====
   async function fetchAlpacaOptions() {
-    if (!AlpacaClient.isConfigured()) return;
+    // Skip if Worker proxy unavailable
+    if (!AlpacaClient.isConfigured()) {
+      // Try lazy check once if cache says no
+      const ok = await AlpacaClient.checkConfigured();
+      if (!ok) return;
+    }
 
     try {
       const occMap = {};
@@ -3077,7 +3086,6 @@ const App = (() => {
       });
     } catch (e) {
       console.warn('Alpaca options snapshot failed (silent):', e.message);
-      // Silent fail — Black-Scholes remains as fallback
     }
   }
 
@@ -3290,8 +3298,6 @@ const App = (() => {
   function loadSettingsToUI() {
     const s = State.get();
     document.getElementById('workerUrlInput').value = s.workerUrl || CONFIG.DEFAULT_WORKER_URL;
-    document.getElementById('alpacaKeyInput').value = s.alpacaKey || '';
-    document.getElementById('alpacaSecretInput').value = s.alpacaSecret || '';
     document.getElementById('refreshIntervalInput').value = s.refreshInterval || 60;
     document.getElementById('autoRefreshEnabledInput').checked = s.autoRefreshEnabled !== false;
   }
@@ -3318,12 +3324,21 @@ const App = (() => {
     // Auto-refresh market status every 30 seconds + re-evaluate auto-refresh schedule
     setInterval(() => {
       UIRenderer.renderMarketStatus();
-      // Re-check market status: if it transitioned (open→closed or vice versa), restart auto-refresh logic
       setupAutoRefresh();
     }, 30000);
 
     // Initial auto-refresh setup
     setupAutoRefresh();
+
+    // Check Alpaca availability via Worker (async, non-blocking)
+    AlpacaClient.checkConfigured(true).then(ok => {
+      if (ok) {
+        console.log('✅ Alpaca proxy via Worker is operational');
+        UIRenderer.renderAllTrades(); // Re-render to unlock Execute buttons
+      } else {
+        console.warn('⚠️ Alpaca proxy not configured in Worker. Add ALPACA_KEY + ALPACA_SECRET secrets in Cloudflare.');
+      }
+    });
 
     console.log('Wabran Trading', CONFIG.VERSION, 'ready ✅');
   }
