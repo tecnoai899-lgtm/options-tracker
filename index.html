@@ -1412,6 +1412,76 @@ button[data-term] {
   margin-top: 16px;
   font-variant-numeric: tabular-nums;
 }
+
+/* ===== M9-B: Mini Chart Renderer ===== */
+.mini-chart-wrapper {
+  position: relative;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin: 12px 0;
+}
+.mini-chart-svg {
+  width: 100%;
+  height: 280px;
+  display: block;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 8px;
+  padding: 8px 4px 0;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.leg-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-variant-numeric: tabular-nums;
+}
+.leg-dot {
+  width: 10px;
+  height: 3px;
+  border-radius: 1px;
+  display: inline-block;
+}
+.leg-dot.dashed {
+  background-image: repeating-linear-gradient(to right, currentColor 0, currentColor 3px, transparent 3px, transparent 6px);
+}
+.rs-badge {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: var(--bg);
+  border: 1px solid;
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  z-index: 2;
+}
+.chart-info {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 6px;
+  font-style: italic;
+}
+.mini-chart-empty {
+  padding: 30px;
+  text-align: center;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  margin: 12px 0;
+  font-size: 13px;
+}
 </style>
 </head>
 <body>
@@ -5501,6 +5571,197 @@ const Home = (() => {
 })();
 
 // ============================================================
+// CHART MODULE (M9-B — Mini Candlestick + Overlays + RS Badge)
+// ============================================================
+const Chart = (() => {
+  const COLORS = {
+    candleUp:   '#10b981',  // green
+    candleDown: '#ef4444',  // red
+    ema9:       '#fb923c',  // orange (fast)
+    ema21:      '#facc15',  // yellow (medium-fast)
+    sma50:      '#3b82f6',  // blue (trend)
+    sma200:     '#94a3b8',  // gray (long-term, dashed)
+    gridLine:   'rgba(148, 163, 184, 0.1)',
+    text:       '#94a3b8',
+    volumeBar:  'rgba(148, 163, 184, 0.18)'
+  };
+
+  // Build polyline points string, skipping null gaps
+  function buildLinePoints(series, xFn, yFn) {
+    const segments = [];
+    let current = [];
+    for (let i = 0; i < series.length; i++) {
+      const v = series[i];
+      if (v == null || isNaN(v)) {
+        if (current.length >= 2) segments.push(current.join(' '));
+        current = [];
+        continue;
+      }
+      current.push(`${xFn(i).toFixed(1)},${yFn(v).toFixed(1)}`);
+    }
+    if (current.length >= 2) segments.push(current.join(' '));
+    return segments;
+  }
+
+  function escapeAttr(s) { return String(s).replace(/"/g, '&quot;'); }
+
+  // Main render — returns HTML string ready to embed
+  // options: { history, days = 90, rsRating = null }
+  function render(options) {
+    const { history, days = 90, rsRating = null } = options || {};
+
+    if (!history || !history.closes || history.closes.length < 20) {
+      return '<div class="mini-chart-empty">⚠️ بيانات الشارت غير كافية (يحتاج 20 يوم على الأقل)</div>';
+    }
+
+    // Compute full overlay series from ALL history, then slice
+    const ema9Full   = Indicators.emaSeries(history.closes, 9);
+    const ema21Full  = Indicators.emaSeries(history.closes, 21);
+    const sma50Full  = Indicators.smaSeries(history.closes, 50);
+    const sma200Full = Indicators.smaSeries(history.closes, 200);
+
+    // Slice last `days` bars
+    const total = history.closes.length;
+    const start = Math.max(0, total - days);
+    const opens   = (history.opens   || []).slice(start);
+    const closes  = (history.closes  || []).slice(start);
+    const highs   = (history.highs   || []).slice(start);
+    const lows    = (history.lows    || []).slice(start);
+    const volumes = (history.volumes || []).slice(start);
+    const ema9    = ema9Full.slice(start);
+    const ema21   = ema21Full.slice(start);
+    const sma50   = sma50Full.slice(start);
+    const sma200  = sma200Full.slice(start);
+    const n = closes.length;
+
+    if (n < 2) {
+      return '<div class="mini-chart-empty">⚠️ بيانات الشارت غير كافية</div>';
+    }
+
+    // SVG layout
+    const W = 800, H = 280;
+    const pad = { top: 10, right: 56, bottom: 12, left: 8 };
+    const volH = 36;
+    const priceH = H - pad.top - pad.bottom - volH - 6;
+    const chartW = W - pad.left - pad.right;
+    const volTop = pad.top + priceH + 6;
+
+    // Price range: include all candles + overlay values, with small breathing room
+    const priceValues = [];
+    for (let i = 0; i < n; i++) {
+      if (highs[i] != null) priceValues.push(highs[i]);
+      if (lows[i]  != null) priceValues.push(lows[i]);
+      if (ema9[i]   != null) priceValues.push(ema9[i]);
+      if (ema21[i]  != null) priceValues.push(ema21[i]);
+      if (sma50[i]  != null) priceValues.push(sma50[i]);
+      if (sma200[i] != null) priceValues.push(sma200[i]);
+    }
+    if (priceValues.length === 0) {
+      return '<div class="mini-chart-empty">⚠️ بيانات الشارت غير كافية</div>';
+    }
+    const minPrice = Math.min(...priceValues) * 0.997;
+    const maxPrice = Math.max(...priceValues) * 1.003;
+    const priceRange = (maxPrice - minPrice) || 1;
+
+    const candleStep = chartW / n;
+    const candleW = Math.max(1.5, candleStep * 0.7);
+    const xAt = i => pad.left + (i + 0.5) * candleStep;
+    const yAt = p => pad.top + priceH - ((p - minPrice) / priceRange) * priceH;
+
+    const validVols = volumes.filter(v => v != null && !isNaN(v));
+    const maxVol = validVols.length ? Math.max(...validVols) : 1;
+    const volYAt = v => volTop + volH - (v / maxVol) * volH;
+
+    // Build SVG pieces
+    let svg = `<svg viewBox="0 0 ${W} ${H}" class="mini-chart-svg" preserveAspectRatio="none">`;
+
+    // Horizontal gridlines + right-side price labels (5 levels)
+    for (let i = 0; i <= 5; i++) {
+      const y = pad.top + (priceH * i) / 5;
+      const price = maxPrice - (priceRange * i) / 5;
+      svg += `<line x1="${pad.left}" y1="${y}" x2="${pad.left + chartW}" y2="${y}" stroke="${COLORS.gridLine}" stroke-width="0.5"/>`;
+      svg += `<text x="${pad.left + chartW + 4}" y="${y + 3}" font-size="9" fill="${COLORS.text}" font-family="monospace">${price.toFixed(2)}</text>`;
+    }
+
+    // Volume bars (background, behind candles)
+    for (let i = 0; i < n; i++) {
+      const v = volumes[i];
+      if (v == null || isNaN(v)) continue;
+      const x = xAt(i) - candleW / 2;
+      const y = volYAt(v);
+      const barH = (volTop + volH) - y;
+      if (barH < 0.5) continue;
+      svg += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${candleW.toFixed(1)}" height="${barH.toFixed(1)}" fill="${COLORS.volumeBar}"/>`;
+    }
+
+    // Candles (wick + body)
+    for (let i = 0; i < n; i++) {
+      const o = opens[i], c = closes[i], hi = highs[i], lo = lows[i];
+      if ([o, c, hi, lo].some(v => v == null || isNaN(v))) continue;
+      const x = xAt(i);
+      const color = c >= o ? COLORS.candleUp : COLORS.candleDown;
+      // Wick
+      svg += `<line x1="${x.toFixed(1)}" y1="${yAt(hi).toFixed(1)}" x2="${x.toFixed(1)}" y2="${yAt(lo).toFixed(1)}" stroke="${color}" stroke-width="1"/>`;
+      // Body
+      const bodyTop = yAt(Math.max(o, c));
+      const bodyH = Math.max(1, Math.abs(yAt(c) - yAt(o)));
+      svg += `<rect x="${(x - candleW / 2).toFixed(1)}" y="${bodyTop.toFixed(1)}" width="${candleW.toFixed(1)}" height="${bodyH.toFixed(1)}" fill="${color}"/>`;
+    }
+
+    // Overlay polylines
+    const drawSeries = (series, color, dash) => {
+      const segs = buildLinePoints(series, xAt, yAt);
+      let out = '';
+      for (const pts of segs) {
+        out += `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5"`;
+        if (dash) out += ` stroke-dasharray="${dash}"`;
+        out += `/>`;
+      }
+      return out;
+    };
+    svg += drawSeries(ema9,   COLORS.ema9);
+    svg += drawSeries(ema21,  COLORS.ema21);
+    svg += drawSeries(sma50,  COLORS.sma50);
+    svg += drawSeries(sma200, COLORS.sma200, '4,3');
+
+    svg += '</svg>';
+
+    // Legend
+    const legend = `<div class="chart-legend">
+      <span class="leg-item"><span class="leg-dot" style="background:${COLORS.ema9}"></span><span data-term="EMA9">EMA9</span></span>
+      <span class="leg-item"><span class="leg-dot" style="background:${COLORS.ema21}"></span><span data-term="EMA21">EMA21</span></span>
+      <span class="leg-item"><span class="leg-dot" style="background:${COLORS.sma50}"></span><span data-term="MA50">MA50</span></span>
+      <span class="leg-item"><span class="leg-dot dashed" style="color:${COLORS.sma200}; background:transparent"></span><span data-term="MA200">MA200</span></span>
+      <span class="leg-item" style="margin-right:auto"></span>
+      <span class="leg-item" style="color:var(--text-muted)">📊 Volume</span>
+    </div>`;
+
+    // RS Badge
+    let rsBadge = '';
+    if (rsRating != null && !isNaN(rsRating)) {
+      const rsColor = rsRating >= 80 ? COLORS.candleUp
+                    : rsRating >= 50 ? COLORS.ema21
+                    : rsRating >= 30 ? '#f97316'
+                    : COLORS.candleDown;
+      const rsEmoji = rsRating >= 80 ? '🔥'
+                    : rsRating >= 50 ? '🟡'
+                    : rsRating >= 30 ? '🟠'
+                    : '⚠️';
+      rsBadge = `<div class="rs-badge" style="border-color:${rsColor}; color:${rsColor}"><span data-term="RS Rating">RS</span>: ${rsRating} ${rsEmoji}</div>`;
+    }
+
+    return `<div class="mini-chart-wrapper">
+      ${rsBadge}
+      ${svg}
+      ${legend}
+      <div class="chart-info">آخر ${n} يوم تداول • <span data-term="Candlestick">Candlestick</span> مع متوسطات متحركة</div>
+    </div>`;
+  }
+
+  return { render };
+})();
+
+// ============================================================
 // RECOMMENDATION BUILDER MODULE (MVP 2 - Real Filters)
 // ============================================================
 const Builder = (() => {
@@ -5737,9 +5998,13 @@ const Builder = (() => {
       ⏳ جلب البيانات التاريخية لـ ${sym}... وحساب المتوسطات والـ RSI...</div>`;
 
     try {
-      // 1. Fetch history (cached for 5min)
-      const history = await DataCache.getHistory(sym);
-      const indicators = Indicators.compute(history);
+      // 1. Fetch history (cached for 5min) + SPY benchmark in parallel (for RS Rating)
+      const [history, spyHistory] = await Promise.all([
+        DataCache.getHistory(sym),
+        DataCache.getHistory('SPY').catch(() => null)  // RS Rating optional; chart works without it
+      ]);
+      const benchmark = (sym.toUpperCase() === 'SPY') ? null : spyHistory;
+      const indicators = Indicators.compute(history, benchmark);
       if (!indicators) throw new Error('بيانات السهم غير كافية (يحتاج 20 يوم على الأقل)');
 
       const price = indicators.currentPrice;
@@ -5784,10 +6049,15 @@ const Builder = (() => {
             <div class="rec-item"><div class="ri-label">MA20</div><div class="ri-value">$${indicators.ma20?.toFixed(2) || '—'}</div></div>
             <div class="rec-item"><div class="ri-label">MA50</div><div class="ri-value">$${indicators.ma50?.toFixed(2) || '—'}</div></div>
             <div class="rec-item"><div class="ri-label">MA200</div><div class="ri-value">$${indicators.ma200?.toFixed(2) || '—'}</div></div>
+            <div class="rec-item"><div class="ri-label">EMA9</div><div class="ri-value">$${indicators.ema9?.toFixed(2) || '—'}</div></div>
+            <div class="rec-item"><div class="ri-label">EMA21</div><div class="ri-value">$${indicators.ema21?.toFixed(2) || '—'}</div></div>
             <div class="rec-item"><div class="ri-label">RSI(14)</div><div class="ri-value">${indicators.rsi14?.toFixed(1) || '—'}</div></div>
+            <div class="rec-item"><div class="ri-label">RS Rating</div><div class="ri-value">${indicators.rsRating != null ? indicators.rsRating : '—'}${indicators.rsRating != null ? (indicators.rsRating >= 80 ? ' 🔥' : indicators.rsRating >= 50 ? ' 🟡' : ' ⚠️') : ''}</div></div>
             <div class="rec-item"><div class="ri-label">الحجم</div><div class="ri-value">${(indicators.currentVolume / (indicators.avgVolume20 || 1)).toFixed(2)}× المتوسط</div></div>
           </div>
-        </div>`;
+        </div>
+
+        ${Chart.render({ history, days: 90, rsRating: indicators.rsRating })}`;
 
       // Matched strategies + entry/exit plan
       if (matched.length > 0) {
