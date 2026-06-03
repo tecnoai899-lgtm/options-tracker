@@ -1039,6 +1039,50 @@ body {
   color: var(--text-secondary);
 }
 
+/* ===== ACTION BANNER (v1.4.4) ===== */
+.action-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  margin: 14px 0;
+  border: 2px solid var(--border);
+  background: var(--bg-secondary);
+}
+.action-banner .action-icon { font-size: 28px; line-height: 1; }
+.action-banner .action-content { flex: 1; }
+.action-banner .action-title { font-size: 15px; font-weight: 800; margin-bottom: 3px; }
+.action-banner .action-detail { font-size: 11px; opacity: 0.85; font-family: 'Consolas', monospace; }
+
+.action-banner.enter {
+  background: var(--green-bg);
+  border-color: var(--green);
+  color: var(--green);
+  animation: action-pulse 2s infinite;
+}
+.action-banner.exit-partial, .action-banner.exit-full {
+  background: var(--blue-bg);
+  border-color: var(--blue);
+  color: var(--blue);
+  animation: action-pulse 2s infinite;
+}
+.action-banner.stop {
+  background: var(--red-bg);
+  border-color: var(--red);
+  color: var(--red);
+  animation: action-pulse 1s infinite;
+}
+.action-banner.watch {
+  background: var(--bg-tertiary);
+  border-color: var(--border);
+  color: var(--text-secondary);
+}
+@keyframes action-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.01); }
+}
+
 
 @media (max-width: 768px) {
   .trades-grid { grid-template-columns: 1fr; }
@@ -2114,6 +2158,84 @@ const UIRenderer = (() => {
     }
   }
 
+  // ===== Action Banner: واضح متى أدخل/أخرج (v1.4.4) =====
+  function renderActionBanner(trade, status, isCall) {
+    const cur = trade.currentPrice;
+    const ez = trade.entryZone;
+
+    switch(status) {
+      case 'active':
+        return `
+          <div class="action-banner enter">
+            <div class="action-icon">🟢</div>
+            <div class="action-content">
+              <div class="action-title">ادخل الآن — السعر في Entry Zone</div>
+              <div class="action-detail">
+                الحالي: ${Utils.fmt(cur)} • النطاق: ${ez.low}–${ez.high} • Stop: ${trade.stop} • T1: ${trade.target1}
+              </div>
+            </div>
+          </div>
+        `;
+
+      case 'target1':
+        return `
+          <div class="action-banner exit-partial">
+            <div class="action-icon">🎯</div>
+            <div class="action-content">
+              <div class="action-title">اخرج 50% — وصل T1</div>
+              <div class="action-detail">
+                السعر بلغ ${trade.target1} • احتفظ بـ 50% للـ T2 (${trade.target2}) • انقل Stop لـ Break-Even
+              </div>
+            </div>
+          </div>
+        `;
+
+      case 'target2':
+        return `
+          <div class="action-banner exit-full">
+            <div class="action-icon">🎯🎯</div>
+            <div class="action-content">
+              <div class="action-title">اخرج كاملاً — وصل T2</div>
+              <div class="action-detail">
+                السعر بلغ ${trade.target2} • أغلق الصفقة كاملة وحقّق الربح
+              </div>
+            </div>
+          </div>
+        `;
+
+      case 'stopped':
+        return `
+          <div class="action-banner stop">
+            <div class="action-icon">❌</div>
+            <div class="action-content">
+              <div class="action-title">اخرج فوراً — Stop Loss</div>
+              <div class="action-detail">
+                السعر اخترق ${trade.stop} • أغلق الآن لتحديد الخسارة وحماية رأس المال
+              </div>
+            </div>
+          </div>
+        `;
+
+      default: // watching
+        const distance = isCall
+          ? (ez.high - cur).toFixed(2)
+          : (cur - ez.low).toFixed(2);
+        const distancePct = Math.abs((distance / cur) * 100).toFixed(2);
+        const direction = isCall ? 'يحتاج هبوط' : 'يحتاج صعود';
+        return `
+          <div class="action-banner watch">
+            <div class="action-icon">⏳</div>
+            <div class="action-content">
+              <div class="action-title">انتظار — السعر خارج Entry Zone</div>
+              <div class="action-detail">
+                الحالي: ${Utils.fmt(cur)} • النطاق: ${ez.low}–${ez.high} • ${direction} ${Math.abs(distance)} (${distancePct}%)
+              </div>
+            </div>
+          </div>
+        `;
+    }
+  }
+
   function renderTradeCard(trade) {
     const status = PriceLogic.getStatus(trade);
     const progress = PriceLogic.calculateProgress(trade);
@@ -2190,10 +2312,19 @@ const UIRenderer = (() => {
       `;
     }
 
-    // Execute button — only enabled if Alpaca configured
-    const executeBtn = alpacaReady
-      ? `<button class="btn" onclick="UIRenderer.showExecuteModal(${trade.id})" style="border-color: var(--green); color: var(--green);">🦙 Execute Paper</button>`
-      : `<button class="btn" disabled title="فعّل Alpaca في Settings أولاً" style="opacity: 0.5; cursor: not-allowed;">🔒 Execute Paper</button>`;
+    // Execute button — adapt to status for clarity
+    let executeBtn;
+    if (!alpacaReady) {
+      executeBtn = `<button class="btn" disabled title="فعّل Alpaca في Settings أولاً" style="opacity: 0.5; cursor: not-allowed;">🔒 Execute Paper</button>`;
+    } else if (status === 'active') {
+      // ENTER NOW — highlight green pulsing
+      executeBtn = `<button class="btn btn-primary" onclick="UIRenderer.showExecuteModal(${trade.id})" style="background: var(--green); border-color: var(--green); font-weight: 700;">🟢 ادخل الآن (Paper)</button>`;
+    } else if (status === 'target1' || status === 'target2' || status === 'stopped') {
+      // EXIT signal active - direct to Live Positions
+      executeBtn = `<button class="btn" onclick="document.querySelector('[data-tab=paper]').click(); setTimeout(() => App.refreshLivePositions(), 100);" style="background: var(--red-bg); border-color: var(--red); color: var(--red); font-weight: 700;">❌ أغلق من Live Positions</button>`;
+    } else {
+      executeBtn = `<button class="btn" onclick="UIRenderer.showExecuteModal(${trade.id})" style="border-color: var(--green); color: var(--green);">🦙 Execute Paper</button>`;
+    }
 
     return `
       <div class="trade-card">
@@ -2225,6 +2356,8 @@ const UIRenderer = (() => {
         </div>
 
         ${premiumBoxHTML}
+
+        ${renderActionBanner(trade, status, isCall)}
 
         <div class="progress-section">
           <div class="progress-title">
