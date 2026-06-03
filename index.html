@@ -1137,7 +1137,7 @@ button[data-term] {
     <div class="brand-icon">📊</div>
     <div class="brand-text">
       <h1>Wabran Trading</h1>
-      <p>Options Tracker v1.3 — موجة يونيو 2026</p>
+      <p>Options Tracker v1.4 — موجة يونيو 2026</p>
     </div>
   </div>
 
@@ -1751,7 +1751,15 @@ const YahooClient = (() => {
     return await get(`/history?symbol=${encodeURIComponent(symbol)}&period=${period}&interval=${interval}`);
   }
 
-  return { health, quote, multipleQuotes, fundamentals, history };
+  // NEW v1.4.1: Options chain from Yahoo (replaces Alpaca options - free tier limitation workaround)
+  async function optionsChain(symbol, expiryDate) {
+    // expiryDate as ISO string → unix timestamp
+    const expiryTs = expiryDate ? Math.floor(new Date(expiryDate).getTime() / 1000) : null;
+    const q = expiryTs ? `?symbol=${encodeURIComponent(symbol)}&expiry=${expiryTs}` : `?symbol=${encodeURIComponent(symbol)}`;
+    return await get(`/options-chain${q}`);
+  }
+
+  return { health, quote, multipleQuotes, fundamentals, history, optionsChain };
 })();
 
 // ============================================================
@@ -2076,7 +2084,7 @@ const UIRenderer = (() => {
     const progress = PriceLogic.calculateProgress(trade);
     const isCall = trade.type === 'CALL';
     const isLive = !!State.get().livePrices[trade.symbol];
-    const hasLiveOption = !!(trade.liveBid && trade.liveAsk && trade.liveSource === 'alpaca');
+    const hasLiveOption = !!(trade.liveBid && trade.liveAsk && trade.liveSource);
     const alpacaReady = AlpacaClient.isConfigured();
 
     const distStop = PriceLogic.distanceToLevel(trade, trade.stop);
@@ -2099,27 +2107,29 @@ const UIRenderer = (() => {
     const T = Math.max(0.001, trade.dte / 365);
     const delta = BlackScholes.delta(spot, trade.strike, T, CONFIG.RISK_FREE_RATE, sigma, isCall ? 'call' : 'put');
 
-    // Premium Box content - switches between Live (Alpaca) and Estimate (BS)
+    // Premium Box content - switches between Live (Yahoo) and Estimate (BS)
     let premiumBoxHTML;
     if (hasLiveOption) {
       const mid = (trade.liveBid + trade.liveAsk) / 2;
       const midPerContract = (mid * 100).toFixed(0);
+      const sourceTag = trade.liveSource === 'yahoo' ? 'Yahoo' : trade.liveSource;
+      const volInfo = trade.liveVolume ? `Vol ${trade.liveVolume}` : (trade.liveOpenInterest ? `OI ${trade.liveOpenInterest}` : sourceTag);
       premiumBoxHTML = `
         <div class="premium-box live">
           <div class="premium-item">
             <div class="premium-label">Bid</div>
             <div class="premium-value">$${Utils.fmt(trade.liveBid)}</div>
-            <div class="premium-tag alpaca">Alpaca</div>
+            <div class="premium-tag alpaca">${sourceTag}</div>
           </div>
           <div class="premium-item">
             <div class="premium-label">Ask</div>
             <div class="premium-value">$${Utils.fmt(trade.liveAsk)}</div>
-            <div class="premium-tag alpaca">Alpaca</div>
+            <div class="premium-tag alpaca">${sourceTag}</div>
           </div>
           <div class="premium-item">
             <div class="premium-label">Mid (×100)</div>
             <div class="premium-value">$${midPerContract}</div>
-            <div class="premium-tag" data-term="Delta">Δ ${delta.toFixed(2)}</div>
+            <div class="premium-tag">${volInfo}</div>
           </div>
         </div>
       `;
@@ -2614,10 +2624,11 @@ const UIRenderer = (() => {
     }
 
     // Determine price: live mid (preferred) or BS estimate
-    const hasLive = !!(trade.liveBid && trade.liveAsk && trade.liveSource === 'alpaca');
+    const hasLive = !!(trade.liveBid && trade.liveAsk && trade.liveSource);
     const mid = hasLive ? ((trade.liveBid + trade.liveAsk) / 2) : PriceLogic.estimateTradePremium(trade);
     const bid = hasLive ? trade.liveBid : null;
     const ask = hasLive ? trade.liveAsk : null;
+    const sourceName = hasLive ? (trade.liveSource === 'yahoo' ? 'Yahoo' : trade.liveSource) : null;
 
     const occ = Utils.buildOCCSymbol(trade.symbol, trade.expiryDate, trade.type, trade.strike);
 
@@ -2625,7 +2636,7 @@ const UIRenderer = (() => {
     document.getElementById('executeModalTitle').textContent = `🦙 تنفيذ Paper Order — ${trade.name}`;
 
     const sourceLabel = hasLive
-      ? '<span style="color: var(--green);">✅ Live من Alpaca</span>'
+      ? `<span style="color: var(--green);">✅ Live من ${sourceName}</span>`
       : '<span style="color: var(--yellow);">⚠️ Black-Scholes Estimate</span>';
 
     document.getElementById('executeModalBody').innerHTML = `
@@ -3052,40 +3063,65 @@ const App = (() => {
     }
   }
 
-  // ===== Fetch Alpaca option snapshots via Worker =====
-  async function fetchAlpacaOptions() {
-    // Skip if Worker proxy unavailable
-    if (!AlpacaClient.isConfigured()) {
-      // Try lazy check once if cache says no
-      const ok = await AlpacaClient.checkConfigured();
-      if (!ok) return;
-    }
-
+  // ===== Fetch options live data via Yahoo (v1.4.1 - free tier solution) =====
+  // Alpaca free tier doesn't include OPRA options feed, so we use Yahoo instead
+  async function fetchOptionsLiveData() {
     try {
-      const occMap = {};
+      // Group trades by symbol + expiry to minimize API calls
+      const grouped = {};
       TRADES.forEach(t => {
-        const occ = Utils.buildOCCSymbol(t.symbol, t.expiryDate, t.type, t.strike);
-        occMap[occ] = t;
+        const key = `${t.symbol}_${t.expiryDate}`;
+        if (!grouped[key]) {
+          grouped[key] = { symbol: t.symbol, expiry: t.expiryDate, trades: [] };
+        }
+        grouped[key].trades.push(t);
       });
 
-      const occList = Object.keys(occMap);
-      const response = await AlpacaClient.optionSnapshots(occList);
-      const snapshots = response?.snapshots || {};
+      // Fetch each unique (symbol, expiry) combination
+      const results = await Promise.allSettled(
+        Object.values(grouped).map(async (group) => {
+          const data = await YahooClient.optionsChain(group.symbol, group.expiry);
+          return { group, data };
+        })
+      );
 
-      Object.entries(snapshots).forEach(([occ, snap]) => {
-        const trade = occMap[occ];
-        if (!trade) return;
-        const q = snap?.latestQuote;
-        if (q && q.bp > 0 && q.ap > 0) {
-          trade.liveBid = q.bp;
-          trade.liveAsk = q.ap;
-          trade.liveMid = (q.bp + q.ap) / 2;
-          trade.liveSource = 'alpaca';
-          trade.liveOptionTs = q.t || new Date().toISOString();
+      results.forEach((result) => {
+        if (result.status !== 'fulfilled') {
+          console.warn('Options chain fetch failed:', result.reason?.message);
+          return;
         }
+
+        const { group, data } = result.value;
+        if (!data || (!data.calls && !data.puts)) return;
+
+        group.trades.forEach(trade => {
+          const isCall = trade.type === 'CALL';
+          const contracts = isCall ? data.calls : data.puts;
+          if (!contracts || contracts.length === 0) return;
+
+          // Find matching strike (allow small tolerance for float comparison)
+          const match = contracts.find(c => Math.abs(c.strike - trade.strike) < 0.01);
+          if (!match) return;
+
+          if (match.bid > 0 && match.ask > 0) {
+            trade.liveBid = match.bid;
+            trade.liveAsk = match.ask;
+            trade.liveMid = (match.bid + match.ask) / 2;
+            trade.liveSource = 'yahoo';
+            trade.liveVolume = match.volume;
+            trade.liveOpenInterest = match.openInterest;
+            trade.liveIV = match.impliedVolatility;
+            trade.liveOptionTs = new Date().toISOString();
+          } else if (match.lastPrice > 0) {
+            // Fallback: if no bid/ask but lastPrice available
+            trade.liveLast = match.lastPrice;
+            // Don't set liveBid/Ask so Premium Box stays as Estimate but with notation
+          }
+        });
       });
     } catch (e) {
-      console.warn('Alpaca options snapshot failed (silent):', e.message);
+      console.warn('Options live data fetch failed (silent):', e.message);
+      // Black-Scholes remains as fallback in renderTradeCard
     }
   }
 
@@ -3120,8 +3156,8 @@ const App = (() => {
         }
       });
 
-      // 2. Alpaca options snapshots (bid/ask)
-      await fetchAlpacaOptions();
+      // 2. Yahoo options chain (bid/ask for each strike)
+      await fetchOptionsLiveData();
 
       // 3. Paper Portfolio evaluation (auto exit on T1/T2/Stop)
       PaperPortfolio.evaluatePositions();
@@ -3725,8 +3761,8 @@ const PaperPortfolio = (() => {
   }
 
   function getCurrentPremium(trade) {
-    // Prefer live mid from Alpaca, fallback to Black-Scholes
-    if (trade.liveMid && trade.liveSource === 'alpaca') return trade.liveMid;
+    // Prefer live mid (Yahoo or Alpaca), fallback to Black-Scholes
+    if (trade.liveMid && trade.liveSource) return trade.liveMid;
     return PriceLogic.estimateTradePremium(trade);
   }
 
