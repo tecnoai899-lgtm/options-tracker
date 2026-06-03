@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wabran Trading — Options Tracker v1.3</title>
+<title>Wabran Trading — Options Tracker v1.4</title>
 <style>
 :root {
   /* Base palette - من v1.0 */
@@ -491,8 +491,8 @@ body {
   padding: 12px;
 }
 
-.zerodte-card.call { border-right: 3px solid var(--green); }
-.zerodte-card.put { border-right: 3px solid var(--red); }
+.zerodte-card.call { border-inline-end: 3px solid var(--green); }
+.zerodte-card.put { border-inline-end: 3px solid var(--red); }
 
 .zerodte-type {
   font-size: 11px;
@@ -542,12 +542,12 @@ body {
   border-radius: var(--radius-sm);
   margin-bottom: 8px;
   align-items: center;
-  border-right: 4px solid var(--blue);
+  border-inline-end: 4px solid var(--blue);
 }
 
-.calendar-event.urgent { border-right-color: var(--red); }
-.calendar-event.warning { border-right-color: var(--yellow); }
-.calendar-event.good { border-right-color: var(--green); }
+.calendar-event.urgent { border-inline-end-color: var(--red); }
+.calendar-event.warning { border-inline-end-color: var(--yellow); }
+.calendar-event.good { border-inline-end-color: var(--green); }
 
 .event-date { font-size: 14px; font-weight: 700; color: var(--text); }
 .event-day { font-size: 11px; color: var(--text-secondary); }
@@ -719,7 +719,327 @@ body {
 .gap-2 { gap: 8px; }
 .text-center { text-align: center; }
 
-/* ===== RESPONSIVE ===== */
+/* ===== PREMIUM LIVE MODE (v1.4 - Alpaca) ===== */
+.premium-box.live {
+  border-color: var(--green);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(139, 92, 246, 0.08));
+}
+
+.premium-box.live::after {
+  content: '🦙 LIVE';
+  position: absolute;
+  top: -8px;
+  inset-inline-end: 12px;
+  background: var(--green);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.premium-tag.estimate {
+  background: var(--yellow-bg);
+  color: var(--yellow);
+}
+
+.premium-tag.alpaca {
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+/* ===== EXECUTE MODAL (v1.4) ===== */
+.execute-summary {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.execute-summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.execute-summary-row .label { color: var(--text-secondary); }
+.execute-summary-row .value { font-weight: 600; font-family: 'Consolas', monospace; }
+
+.execute-warning {
+  background: var(--yellow-bg);
+  border: 1px solid var(--yellow);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  font-size: 11px;
+  color: var(--yellow);
+  margin-bottom: 12px;
+}
+
+/* ===== FUNDAMENTALS SECTION (v1.4) ===== */
+.fundamentals-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 2px dashed var(--border);
+}
+
+.fundamentals-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--purple);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fundamentals-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.fund-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+}
+
+.fund-card-title {
+  font-size: 10px;
+  color: var(--purple);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.fund-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  padding: 3px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.fund-row:last-child { border-bottom: none; }
+.fund-row .lbl { color: var(--text-secondary); }
+.fund-row .val { font-weight: 600; font-family: 'Consolas', monospace; }
+
+.fundamentals-loading {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.fundamentals-error {
+  background: var(--yellow-bg);
+  color: var(--yellow);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* ===== AUTO-REFRESH INDICATOR (v1.4) ===== */
+.auto-refresh-badge {
+  font-size: 10px;
+  color: var(--text-secondary);
+  padding: 2px 8px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.auto-refresh-badge.active {
+  color: var(--green);
+  border-color: var(--green);
+}
+
+.auto-refresh-badge.paused {
+  color: var(--text-muted);
+}
+
+.auto-refresh-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.auto-refresh-badge.active .dot {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ===== PAPER PORTFOLIO (v1.4) ===== */
+.paper-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.paper-hero {
+  background: linear-gradient(135deg, var(--purple-bg), var(--blue-bg));
+  border: 1px solid var(--purple);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.paper-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.paper-hero-item {
+  text-align: center;
+}
+
+.paper-hero-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.paper-hero-value {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: 'Consolas', monospace;
+}
+
+.paper-hero-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.paper-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 20px 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.paper-position {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-inline-start: 4px solid var(--blue);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.paper-position.profit { border-inline-start-color: var(--green); }
+.paper-position.loss { border-inline-start-color: var(--red); }
+.paper-position.closed-t1 { border-inline-start-color: var(--green); }
+.paper-position.closed-t2 { border-inline-start-color: var(--green); }
+.paper-position.closed-stop { border-inline-start-color: var(--red); }
+.paper-position.closed-expired { border-inline-start-color: var(--yellow); }
+.paper-position.closed-manual { border-inline-start-color: var(--text-muted); }
+
+.paper-pos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.paper-pos-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.paper-pos-meta {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.paper-pos-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.paper-pos-stat {
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  text-align: center;
+}
+
+.paper-pos-stat-label {
+  font-size: 9px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 3px;
+}
+
+.paper-pos-stat-value {
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Consolas', monospace;
+}
+
+.paper-empty {
+  text-align: center;
+  padding: 30px 15px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border);
+}
+
+.exit-reason-badge {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.exit-reason-target1, .exit-reason-target2 {
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+.exit-reason-stop {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.exit-reason-expired {
+  background: var(--yellow-bg);
+  color: var(--yellow);
+}
+
+.exit-reason-manual {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+
 @media (max-width: 768px) {
   .trades-grid { grid-template-columns: 1fr; }
   .header { flex-direction: column; align-items: stretch; }
@@ -727,10 +1047,13 @@ body {
   .calendar-event { grid-template-columns: 60px 60px 1fr; }
   .zerodte-grid { grid-template-columns: 1fr; }
   .premium-box { grid-template-columns: 1fr; }
+  .paper-hero-grid { grid-template-columns: repeat(2, 1fr); }
+  .paper-pos-grid { grid-template-columns: repeat(2, 1fr); }
+  .fundamentals-grid { grid-template-columns: 1fr; }
 }
 
-.loading { animation: pulse 1.5s ease-in-out infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.loading { animation: pulse-loading 1.5s ease-in-out infinite; }
+@keyframes pulse-loading { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
 /* ===== TOOLTIP SYSTEM (Glossary) ===== */
 [data-term] {
@@ -839,6 +1162,10 @@ button[data-term] {
       <div class="snapshot-label">آخر تحديث</div>
       <div class="snapshot-value" id="lastUpdate" style="font-size: 13px;">—</div>
       <div class="snapshot-change neutral" id="updateStatus">Mock Data</div>
+      <div id="autoRefreshBadge" class="auto-refresh-badge paused" style="margin-top: 6px;">
+        <span class="dot"></span>
+        <span id="autoRefreshText">Auto: off</span>
+      </div>
     </div>
     <button class="refresh-btn" id="refreshBtn" onclick="App.refreshAll()">
       🔄 تحديث الأسعار
@@ -849,6 +1176,7 @@ button[data-term] {
 <!-- ===== TABS ===== -->
 <div class="tabs">
   <button class="tab active" data-tab="dashboard">📈 المسارات المباشرة</button>
+  <button class="tab" data-tab="paper">🎯 محفظة الاختبار</button>
   <button class="tab" data-tab="calendar">📅 الأجندة الماكرو</button>
   <button class="tab" data-tab="journal">📓 سجل الصفقات</button>
   <button class="tab" data-tab="performance">📊 الأداء</button>
@@ -882,6 +1210,46 @@ button[data-term] {
   <div class="calendar-card">
     <h2 style="font-size: 18px; margin-bottom: 16px;">📅 أجندة الماكرو — يونيو 2026</h2>
     <div id="calendarList"></div>
+  </div>
+</div>
+
+<!-- ===== TAB: PAPER PORTFOLIO (v1.4) ===== -->
+<div class="tab-content" id="tab-paper">
+  <div class="paper-card">
+    <h2 style="font-size: 18px; margin-bottom: 6px;">🎯 محفظة الاختبار التخيلية</h2>
+    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px;">
+      تتبّع تلقائي لتوصيات الموقع — يدخل عند Entry Zone، ويخرج تلقائياً عند T1/T2/Stop. كل البيانات محفوظة محلياً.
+    </div>
+
+    <!-- Hero stats -->
+    <div id="paperHero"></div>
+
+    <!-- Actions -->
+    <div class="modal-actions" style="margin: 20px 0;">
+      <button class="btn btn-primary" onclick="App.paperAutoTake()">📥 تطبيق التوصيات النشطة</button>
+      <button class="btn" onclick="App.openPaperSettings()">⚙️ إعدادات المحفظة</button>
+      <button class="btn" onclick="App.paperReset()" style="color: var(--red); border-color: var(--red);">🔄 إعادة تعيين</button>
+    </div>
+
+    <!-- Open positions -->
+    <div class="paper-section-title">
+      <span>🟢 صفقات مفتوحة</span>
+      <span id="paperOpenCount" style="font-size: 12px; color: var(--text-secondary);">—</span>
+    </div>
+    <div id="paperOpenList"></div>
+
+    <!-- Closed positions -->
+    <div class="paper-section-title">
+      <span>✅ صفقات مغلقة</span>
+      <span id="paperClosedCount" style="font-size: 12px; color: var(--text-secondary);">—</span>
+    </div>
+    <div id="paperClosedList"></div>
+
+    <!-- Stats -->
+    <div class="paper-section-title">
+      <span>📊 ملخص الأداء</span>
+    </div>
+    <div id="paperStats"></div>
   </div>
 </div>
 
@@ -949,6 +1317,13 @@ button[data-term] {
         <input type="number" class="form-input" id="refreshIntervalInput" min="30" value="60">
         <div class="form-help">الحد الأدنى 30 ثانية لتجنب rate limits</div>
       </div>
+      <div class="form-group">
+        <label class="form-label" style="display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="autoRefreshEnabledInput" style="width: 18px; height: 18px; cursor: pointer;">
+          <span>تفعيل التحديث التلقائي أثناء فتح السوق</span>
+        </label>
+        <div class="form-help">يشتغل فقط بين 13:30-20:00 UTC (9:30 AM - 4:00 PM ET)، ويتوقف خارج هذه الأوقات لتوفير API calls</div>
+      </div>
     </div>
 
     <!-- Actions -->
@@ -966,6 +1341,43 @@ button[data-term] {
       <div class="modal-actions">
         <button class="btn" onclick="App.exportData()">📤 تصدير البيانات</button>
         <button class="btn" onclick="App.resetData()" style="color: var(--red); border-color: var(--red);">🗑️ مسح كل البيانات</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXECUTE IN PAPER MODAL (v1.4) ===== -->
+<div class="modal-overlay" id="executeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="executeModalTitle">تنفيذ على Alpaca Paper</div>
+      <button class="modal-close" onclick="UIRenderer.closeModal('executeModal')">×</button>
+    </div>
+    <div id="executeModalBody"></div>
+    <input type="hidden" id="executeTradeId">
+  </div>
+</div>
+
+<!-- ===== PAPER SETTINGS MODAL (v1.4) ===== -->
+<div class="modal-overlay" id="paperSettingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">⚙️ إعدادات محفظة الاختبار</div>
+      <button class="modal-close" onclick="UIRenderer.closeModal('paperSettingsModal')">×</button>
+    </div>
+    <div>
+      <div class="form-group">
+        <label class="form-label">الرصيد الابتدائي ($)</label>
+        <input type="number" step="100" min="500" class="form-input" id="paperInitialBalance" value="2000">
+        <div class="form-help">تغيير الرصيد يعيد المحفظة بالكامل (يمسح كل الصفقات)</div>
+      </div>
+      <div class="alert alert-info">
+        <span>ℹ️</span>
+        <span>المحفظة التخيلية مستقلة تماماً عن Alpaca Paper. لا أوامر حقيقية، فقط تتبّع داخلي لتقييم نسبة نجاح التوصيات.</span>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="App.paperApplySettings()">💾 حفظ وإعادة تعيين</button>
+        <button class="btn" onclick="UIRenderer.closeModal('paperSettingsModal')">إلغاء</button>
       </div>
     </div>
   </div>
@@ -1035,8 +1447,9 @@ button[data-term] {
 // MODULE 1: CONFIG
 // ============================================================
 const CONFIG = {
-  VERSION: 'v1.3',
+  VERSION: 'v1.4',
   STORAGE_KEY: 'wabran_trading_v3',
+  PAPER_PORTFOLIO_KEY: 'wabran_paper_portfolio_v1',
 
   // Cloudflare Worker URL (Yahoo Backend)
   DEFAULT_WORKER_URL: 'https://wabran-api.tecnoai899.workers.dev',
@@ -1046,6 +1459,9 @@ const CONFIG = {
     PAPER_BASE: 'https://paper-api.alpaca.markets',
     DATA_BASE: 'https://data.alpaca.markets'
   },
+
+  // Paper Portfolio defaults
+  PAPER_DEFAULT_BALANCE: 2000,
 
   // IV mapping per stock (v1.2 spec)
   IV_MAP: {
@@ -1083,6 +1499,7 @@ const State = (() => {
     alpacaKey: '',
     alpacaSecret: '',
     refreshInterval: 60,
+    autoRefreshEnabled: true,
     tradeStates: {},  // { tradeId: { status, notes } }
     journal: [],      // [{ tradeId, entryPremium, entryPrice, contracts, notes, ... }]
     lastUpdate: null,
@@ -1159,6 +1576,33 @@ const Utils = {
     const t = 1.0 / (1.0 + p * x);
     const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
     return 0.5 * (1.0 + sign * y);
+  },
+
+  // Build OCC option symbol (e.g., SPY260605C00758000)
+  // symbol + YYMMDD + C/P + 8-digit strike (× 1000)
+  buildOCCSymbol: (symbol, expiryDate, type, strike) => {
+    const d = new Date(expiryDate);
+    const yy = String(d.getUTCFullYear()).slice(-2);
+    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(d.getUTCDate()).padStart(2, '0');
+    const cp = (type === 'CALL') ? 'C' : 'P';  // CALL → C, PUT/HEDGE → P
+    const strikeInt = Math.round(Number(strike) * 1000);
+    const strikeStr = String(strikeInt).padStart(8, '0');
+    return `${symbol}${yy}${mm}${dd}${cp}${strikeStr}`;
+  },
+
+  // Format number with thousands separator
+  fmtMoney: (n, decimals = 2) => {
+    if (n === null || n === undefined || isNaN(n)) return '—';
+    const sign = n < 0 ? '-' : '';
+    return sign + '$' + Math.abs(Number(n)).toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  },
+
+  // Format date short
+  fmtDateShort: (date) => {
+    if (!date) return '—';
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toLocaleDateString('ar-SA', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
   }
 };
 
@@ -1313,7 +1757,7 @@ const YahooClient = (() => {
 })();
 
 // ============================================================
-// MODULE 7: ALPACA CLIENT (Direct browser - مُعرّف، يُفعّل في M2)
+// MODULE 7: ALPACA CLIENT (Direct browser - مُفعّل في v1.4)
 // ============================================================
 const AlpacaClient = (() => {
   function authHeaders() {
@@ -1325,12 +1769,37 @@ const AlpacaClient = (() => {
     };
   }
 
+  function isConfigured() {
+    const s = State.get();
+    return !!(s.alpacaKey && s.alpacaSecret);
+  }
+
   async function get(base, path) {
     const headers = authHeaders();
     if (!headers) throw new Error('Alpaca keys not configured');
     const res = await fetch(`${base}${path}`, { headers });
-    if (!res.ok) throw new Error(`Alpaca error ${res.status}`);
+    if (!res.ok) {
+      const txt = await res.text().catch(() => '');
+      throw new Error(`Alpaca ${res.status}: ${txt.slice(0, 200)}`);
+    }
     return await res.json();
+  }
+
+  async function post(base, path, body) {
+    const headers = authHeaders();
+    if (!headers) throw new Error('Alpaca keys not configured');
+    headers['Content-Type'] = 'application/json';
+    const res = await fetch(`${base}${path}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body)
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const msg = data?.message || data?.error || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+    return data;
   }
 
   async function account() {
@@ -1354,7 +1823,28 @@ const AlpacaClient = (() => {
     return await get(CONFIG.ALPACA.DATA_BASE, `/v1beta1/options/snapshots/${symbol}`);
   }
 
-  return { account, clock, latestQuote, multiQuotes, optionsChain };
+  // NEW v1.4: get snapshots for specific OCC contract symbols
+  async function optionSnapshots(occSymbols) {
+    const list = Array.isArray(occSymbols) ? occSymbols.join(',') : occSymbols;
+    return await get(CONFIG.ALPACA.DATA_BASE, `/v1beta1/options/snapshots?symbols=${encodeURIComponent(list)}`);
+  }
+
+  // NEW v1.4: submit a paper order
+  async function submitOrder(orderData) {
+    return await post(CONFIG.ALPACA.PAPER_BASE, '/v2/orders', orderData);
+  }
+
+  // NEW v1.4: get order status
+  async function getOrder(orderId) {
+    return await get(CONFIG.ALPACA.PAPER_BASE, `/v2/orders/${orderId}`);
+  }
+
+  return {
+    account, clock, latestQuote, multiQuotes,
+    optionsChain, optionSnapshots,
+    submitOrder, getOrder,
+    isConfigured
+  };
 })();
 
 // ============================================================
@@ -1580,6 +2070,8 @@ const UIRenderer = (() => {
     const progress = PriceLogic.calculateProgress(trade);
     const isCall = trade.type === 'CALL';
     const isLive = !!State.get().livePrices[trade.symbol];
+    const hasLiveOption = !!(trade.liveBid && trade.liveAsk && trade.liveSource === 'alpaca');
+    const alpacaReady = AlpacaClient.isConfigured();
 
     const distStop = PriceLogic.distanceToLevel(trade, trade.stop);
     const distT1 = PriceLogic.distanceToLevel(trade, trade.target1);
@@ -1590,16 +2082,67 @@ const UIRenderer = (() => {
     const typeClass = trade.type === 'CALL' ? 'badge-call' : trade.type === 'PUT' ? 'badge-put' : 'badge-hedge';
     const typeLabel = trade.type === 'CALL' ? '🟢 CALL' : trade.type === 'PUT' ? '🔴 PUT' : '🟡 HEDGE';
 
-    // Estimate current premium (Black-Scholes)
+    // Estimate current premium (Black-Scholes) — always calculated as fallback
     const estPremium = PriceLogic.estimateTradePremium(trade);
     const premiumPerContract = (estPremium * 100).toFixed(0);
 
-    // Delta estimate
+    // Delta estimate (always from Black-Scholes — Alpaca free tier has no Greeks)
     const spot = trade.currentPrice / trade.spxMultiplier;
     const ivMult = CONFIG.IV_MAP[trade.symbol] || 1.0;
     const sigma = CONFIG.BASE_IV_PCT * ivMult;
     const T = Math.max(0.001, trade.dte / 365);
     const delta = BlackScholes.delta(spot, trade.strike, T, CONFIG.RISK_FREE_RATE, sigma, isCall ? 'call' : 'put');
+
+    // Premium Box content - switches between Live (Alpaca) and Estimate (BS)
+    let premiumBoxHTML;
+    if (hasLiveOption) {
+      const mid = (trade.liveBid + trade.liveAsk) / 2;
+      const midPerContract = (mid * 100).toFixed(0);
+      premiumBoxHTML = `
+        <div class="premium-box live">
+          <div class="premium-item">
+            <div class="premium-label">Bid</div>
+            <div class="premium-value">$${Utils.fmt(trade.liveBid)}</div>
+            <div class="premium-tag alpaca">Alpaca</div>
+          </div>
+          <div class="premium-item">
+            <div class="premium-label">Ask</div>
+            <div class="premium-value">$${Utils.fmt(trade.liveAsk)}</div>
+            <div class="premium-tag alpaca">Alpaca</div>
+          </div>
+          <div class="premium-item">
+            <div class="premium-label">Mid (×100)</div>
+            <div class="premium-value">$${midPerContract}</div>
+            <div class="premium-tag" data-term="Delta">Δ ${delta.toFixed(2)}</div>
+          </div>
+        </div>
+      `;
+    } else {
+      premiumBoxHTML = `
+        <div class="premium-box">
+          <div class="premium-item">
+            <div class="premium-label" data-term="Premium">Premium مقدّر</div>
+            <div class="premium-value">$${Utils.fmt(estPremium)}</div>
+            <div class="premium-tag estimate" data-term="Black-Scholes">Estimate</div>
+          </div>
+          <div class="premium-item">
+            <div class="premium-label">لكل عقد</div>
+            <div class="premium-value">$${premiumPerContract}</div>
+            <div class="premium-tag">100 sh</div>
+          </div>
+          <div class="premium-item">
+            <div class="premium-label" data-term="Delta">Delta</div>
+            <div class="premium-value">${delta.toFixed(2)}</div>
+            <div class="premium-tag" data-term="Greeks">Greek</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Execute button — only enabled if Alpaca configured
+    const executeBtn = alpacaReady
+      ? `<button class="btn" onclick="UIRenderer.showExecuteModal(${trade.id})" style="border-color: var(--green); color: var(--green);">🦙 Execute Paper</button>`
+      : `<button class="btn" disabled title="فعّل Alpaca في Settings أولاً" style="opacity: 0.5; cursor: not-allowed;">🔒 Execute Paper</button>`;
 
     return `
       <div class="trade-card">
@@ -1630,24 +2173,7 @@ const UIRenderer = (() => {
           </div>
         </div>
 
-        <!-- Premium Box (v1.3 جديد - بنفسجي) -->
-        <div class="premium-box">
-          <div class="premium-item">
-            <div class="premium-label" data-term="Premium">Premium مقدّر</div>
-            <div class="premium-value">$${Utils.fmt(estPremium)}</div>
-            <div class="premium-tag" data-term="Black-Scholes">Black-Scholes</div>
-          </div>
-          <div class="premium-item">
-            <div class="premium-label">لكل عقد</div>
-            <div class="premium-value">$${premiumPerContract}</div>
-            <div class="premium-tag">100 sh</div>
-          </div>
-          <div class="premium-item">
-            <div class="premium-label" data-term="Delta">Delta</div>
-            <div class="premium-value">${delta.toFixed(2)}</div>
-            <div class="premium-tag" data-term="Greeks">Greek</div>
-          </div>
-        </div>
+        ${premiumBoxHTML}
 
         <div class="progress-section">
           <div class="progress-title">
@@ -1710,6 +2236,7 @@ const UIRenderer = (() => {
         <div class="trade-actions">
           <button class="btn" onclick="UIRenderer.showTradeDetails(${trade.id})">📋 التفاصيل</button>
           <button class="btn btn-primary" onclick="UIRenderer.openTradingView('${trade.symbol}')">📈 TradingView</button>
+          ${executeBtn}
         </div>
       </div>
     `;
@@ -1926,8 +2453,129 @@ const UIRenderer = (() => {
       <div style="margin-bottom: 12px;"><strong>Position Size:</strong> ${trade.positionSize}</div>
       <div style="margin-bottom: 12px;"><strong>Time Stop:</strong> ${trade.timeStop}</div>
       <div style="margin-bottom: 12px;"><strong>الثقة:</strong> ${trade.confidence}</div>
+
+      <div class="fundamentals-section">
+        <div class="fundamentals-title">
+          📊 Fundamentals — ${trade.symbol}
+        </div>
+        <div id="fundamentalsContent">
+          <div class="fundamentals-loading">⏳ جاري جلب البيانات من Yahoo Worker...</div>
+        </div>
+      </div>
     `;
     document.getElementById('tradeDetailsModal').classList.add('active');
+
+    // Lazy-load fundamentals
+    loadFundamentals(trade.symbol);
+  }
+
+  async function loadFundamentals(symbol) {
+    const container = document.getElementById('fundamentalsContent');
+    if (!container) return;
+
+    // Index/ETF symbols typically have limited fundamentals
+    if (symbol === 'SPY' || symbol === 'SPX' || symbol === 'QQQ') {
+      container.innerHTML = `
+        <div class="fundamentals-error">
+          ℹ️ Fundamentals غير متاحة بشكل كامل لـ ETFs/Indices (${symbol}). جرّب رموز الأسهم الفردية (AAPL, TSLA...).
+        </div>
+      `;
+      return;
+    }
+
+    try {
+      const data = await YahooClient.fundamentals(symbol);
+      container.innerHTML = renderFundamentals(data);
+    } catch (e) {
+      container.innerHTML = `
+        <div class="fundamentals-error">
+          ⚠️ تعذّر جلب Fundamentals: ${e.message}
+        </div>
+      `;
+    }
+  }
+
+  function renderFundamentals(data) {
+    // Defensive parsing — كل حقل قد لا يكون موجود
+    const profile = data?.profile || {};
+    const summary = data?.summary || {};
+    const price = data?.price || {};
+    const financials = data?.financials || {};
+    const keyStats = data?.keyStats || {};
+    const earnings = data?.earnings || {};
+    const calendar = data?.calendar || {};
+    const recommendations = data?.recommendations || {};
+
+    const f = (v, suffix = '') => {
+      if (v === null || v === undefined || isNaN(v)) return '—';
+      return Number(v).toFixed(2) + suffix;
+    };
+    const fPct = (v) => {
+      if (v === null || v === undefined || isNaN(v)) return '—';
+      return (Number(v) * 100).toFixed(2) + '%';
+    };
+    const fBig = (v) => {
+      if (v === null || v === undefined || isNaN(v)) return '—';
+      const n = Number(v);
+      if (Math.abs(n) >= 1e12) return (n / 1e12).toFixed(2) + 'T';
+      if (Math.abs(n) >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+      if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+      return n.toLocaleString();
+    };
+
+    return `
+      <div class="fundamentals-grid">
+        <div class="fund-card">
+          <div class="fund-card-title">💰 التقييم</div>
+          <div class="fund-row"><span class="lbl" data-term="P/E">P/E (TTM)</span><span class="val">${f(summary.trailingPE ?? keyStats.trailingPE)}</span></div>
+          <div class="fund-row"><span class="lbl">P/E (Forward)</span><span class="val">${f(summary.forwardPE ?? keyStats.forwardPE)}</span></div>
+          <div class="fund-row"><span class="lbl">P/S</span><span class="val">${f(keyStats.priceToSalesTrailing12Months ?? summary.priceToSalesTrailing12Months)}</span></div>
+          <div class="fund-row"><span class="lbl">P/B</span><span class="val">${f(keyStats.priceToBook)}</span></div>
+          <div class="fund-row"><span class="lbl">PEG</span><span class="val">${f(keyStats.pegRatio)}</span></div>
+        </div>
+
+        <div class="fund-card">
+          <div class="fund-card-title">📊 الأرباح والإيرادات</div>
+          <div class="fund-row"><span class="lbl">EPS (TTM)</span><span class="val">${f(summary.trailingEps ?? keyStats.trailingEps, '$')}</span></div>
+          <div class="fund-row"><span class="lbl">EPS (Fwd)</span><span class="val">${f(summary.forwardEps ?? keyStats.forwardEps, '$')}</span></div>
+          <div class="fund-row"><span class="lbl">Revenue (TTM)</span><span class="val">${fBig(financials.totalRevenue ?? keyStats.totalRevenue)}</span></div>
+          <div class="fund-row"><span class="lbl">Earnings Growth</span><span class="val">${fPct(financials.earningsQuarterlyGrowth ?? financials.earningsGrowth)}</span></div>
+          <div class="fund-row"><span class="lbl">Revenue Growth</span><span class="val">${fPct(financials.revenueGrowth)}</span></div>
+        </div>
+
+        <div class="fund-card">
+          <div class="fund-card-title">💹 الهوامش</div>
+          <div class="fund-row"><span class="lbl">Gross Margin</span><span class="val">${fPct(financials.grossMargins)}</span></div>
+          <div class="fund-row"><span class="lbl">Operating</span><span class="val">${fPct(financials.operatingMargins)}</span></div>
+          <div class="fund-row"><span class="lbl">Profit</span><span class="val">${fPct(financials.profitMargins)}</span></div>
+          <div class="fund-row"><span class="lbl">ROE</span><span class="val">${fPct(financials.returnOnEquity)}</span></div>
+        </div>
+
+        <div class="fund-card">
+          <div class="fund-card-title">🎯 التوصيات</div>
+          <div class="fund-row"><span class="lbl">Target Mean</span><span class="val">${f(financials.targetMeanPrice ?? recommendations.targetMeanPrice, '$')}</span></div>
+          <div class="fund-row"><span class="lbl">Target High</span><span class="val">${f(financials.targetHighPrice, '$')}</span></div>
+          <div class="fund-row"><span class="lbl">Target Low</span><span class="val">${f(financials.targetLowPrice, '$')}</span></div>
+          <div class="fund-row"><span class="lbl">Recommendation</span><span class="val">${financials.recommendationKey || recommendations.recommendationKey || '—'}</span></div>
+          <div class="fund-row"><span class="lbl"># Analysts</span><span class="val">${financials.numberOfAnalystOpinions || '—'}</span></div>
+        </div>
+
+        <div class="fund-card">
+          <div class="fund-card-title">📅 الأرباح القادمة</div>
+          <div class="fund-row"><span class="lbl">Next Earnings</span><span class="val" style="font-size: 10px;">${calendar.earningsDate || earnings.earningsDate || '—'}</span></div>
+          <div class="fund-row"><span class="lbl">EPS Estimate</span><span class="val">${f(earnings.epsEstimate, '$')}</span></div>
+          <div class="fund-row"><span class="lbl">Rev Estimate</span><span class="val">${fBig(earnings.revenueEstimate)}</span></div>
+        </div>
+
+        <div class="fund-card">
+          <div class="fund-card-title">🏭 الشركة</div>
+          <div class="fund-row"><span class="lbl">Sector</span><span class="val" style="font-size: 10px;">${profile.sector || '—'}</span></div>
+          <div class="fund-row"><span class="lbl">Industry</span><span class="val" style="font-size: 10px;">${profile.industry || '—'}</span></div>
+          <div class="fund-row"><span class="lbl">Employees</span><span class="val">${fBig(profile.fullTimeEmployees)}</span></div>
+          <div class="fund-row"><span class="lbl">Market Cap</span><span class="val">${fBig(price.marketCap ?? keyStats.marketCap)}</span></div>
+        </div>
+      </div>
+    `;
   }
 
   function openTradingView(symbol) {
@@ -1947,6 +2595,335 @@ const UIRenderer = (() => {
     document.getElementById('journalContracts').value = '1';
     document.getElementById('journalNotes').value = '';
     document.getElementById('journalModal').classList.add('active');
+  }
+
+  // ===== Execute in Paper modal (v1.4) =====
+  function showExecuteModal(tradeId) {
+    const trade = TRADES.find(t => t.id === tradeId);
+    if (!trade) return;
+
+    if (!AlpacaClient.isConfigured()) {
+      alert('⚠️ يرجى إدخال Alpaca API keys في Settings أولاً');
+      return;
+    }
+
+    // Determine price: live mid (preferred) or BS estimate
+    const hasLive = !!(trade.liveBid && trade.liveAsk && trade.liveSource === 'alpaca');
+    const mid = hasLive ? ((trade.liveBid + trade.liveAsk) / 2) : PriceLogic.estimateTradePremium(trade);
+    const bid = hasLive ? trade.liveBid : null;
+    const ask = hasLive ? trade.liveAsk : null;
+
+    const occ = Utils.buildOCCSymbol(trade.symbol, trade.expiryDate, trade.type, trade.strike);
+
+    document.getElementById('executeTradeId').value = tradeId;
+    document.getElementById('executeModalTitle').textContent = `🦙 تنفيذ Paper Order — ${trade.name}`;
+
+    const sourceLabel = hasLive
+      ? '<span style="color: var(--green);">✅ Live من Alpaca</span>'
+      : '<span style="color: var(--yellow);">⚠️ Black-Scholes Estimate</span>';
+
+    document.getElementById('executeModalBody').innerHTML = `
+      <div class="execute-summary">
+        <div class="execute-summary-row"><span class="label">الرمز (OCC):</span><span class="value" style="font-size: 11px;">${occ}</span></div>
+        <div class="execute-summary-row"><span class="label">النوع:</span><span class="value">Buy to Open ${trade.type}</span></div>
+        <div class="execute-summary-row"><span class="label">Strike:</span><span class="value">$${trade.strike}</span></div>
+        <div class="execute-summary-row"><span class="label">Expiry:</span><span class="value">${trade.expiryDate}</span></div>
+        <div class="execute-summary-row"><span class="label">مصدر السعر:</span><span class="value">${sourceLabel}</span></div>
+        ${hasLive ? `<div class="execute-summary-row"><span class="label">Bid / Ask:</span><span class="value">$${Utils.fmt(bid)} / $${Utils.fmt(ask)}</span></div>` : ''}
+        <div class="execute-summary-row"><span class="label">Mid:</span><span class="value">$${Utils.fmt(mid)}</span></div>
+      </div>
+
+      <div class="execute-warning">
+        ⚠️ هذا أمر على Alpaca <strong>Paper</strong> (تجريبي) — لا أموال حقيقية، لكنه يُنفّذ فعلياً في حساب paper. تأكّد من الكمية والسعر قبل التأكيد.
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">عدد العقود</label>
+        <input type="number" min="1" step="1" class="form-input" id="executeContracts" value="1">
+        <div class="form-help">كل عقد = 100 سهم</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Limit Price ($)</label>
+        <input type="number" min="0.01" step="0.01" class="form-input" id="executeLimitPrice" value="${mid.toFixed(2)}">
+        <div class="form-help">السعر الأقصى الذي تقبله — افتراضياً الـ mid</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">إجمالي التكلفة المتوقعة</label>
+        <div id="executeTotalCost" style="font-size: 16px; font-weight: 700; padding: 10px; background: var(--purple-bg); border-radius: 6px; color: var(--purple);">$${(mid * 100).toFixed(2)}</div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="UIRenderer.confirmExecute()" style="background: var(--green); border-color: var(--green);">✅ تأكيد التنفيذ</button>
+        <button class="btn" onclick="UIRenderer.closeModal('executeModal')">إلغاء</button>
+      </div>
+    `;
+
+    // Live total cost calculation
+    const updateTotal = () => {
+      const contracts = parseInt(document.getElementById('executeContracts').value) || 1;
+      const limit = parseFloat(document.getElementById('executeLimitPrice').value) || 0;
+      document.getElementById('executeTotalCost').textContent = '$' + (contracts * limit * 100).toFixed(2);
+    };
+    document.getElementById('executeContracts').addEventListener('input', updateTotal);
+    document.getElementById('executeLimitPrice').addEventListener('input', updateTotal);
+
+    document.getElementById('executeModal').classList.add('active');
+  }
+
+  async function confirmExecute() {
+    const tradeId = parseInt(document.getElementById('executeTradeId').value);
+    const trade = TRADES.find(t => t.id === tradeId);
+    if (!trade) return;
+
+    const contracts = parseInt(document.getElementById('executeContracts').value);
+    const limitPrice = parseFloat(document.getElementById('executeLimitPrice').value);
+
+    if (!contracts || contracts < 1) { alert('عدد العقود غير صحيح'); return; }
+    if (!limitPrice || limitPrice <= 0) { alert('Limit price غير صحيح'); return; }
+
+    // Final confirmation
+    const totalCost = (contracts * limitPrice * 100).toFixed(2);
+    if (!confirm(`تأكيد نهائي:\nشراء ${contracts} عقد ${trade.type} على ${trade.symbol}\nLimit: $${limitPrice}\nالتكلفة القصوى: $${totalCost}\n\nمتابعة؟`)) {
+      return;
+    }
+
+    const occ = Utils.buildOCCSymbol(trade.symbol, trade.expiryDate, trade.type, trade.strike);
+
+    const orderData = {
+      symbol: occ,
+      qty: contracts,
+      side: 'buy',
+      type: 'limit',
+      limit_price: limitPrice.toFixed(2),
+      time_in_force: 'day',
+      order_class: 'simple'
+    };
+
+    try {
+      const order = await AlpacaClient.submitOrder(orderData);
+
+      // Auto journal entry
+      const journal = State.get().journal || [];
+      journal.push({
+        tradeId,
+        entryPremium: limitPrice,
+        entryPrice: trade.currentPrice,
+        contracts,
+        notes: `Alpaca Paper Order — ID: ${order.id || 'submitted'} | Status: ${order.status || 'submitted'}`,
+        date: new Date().toLocaleString('ar-SA'),
+        closed: false,
+        source: 'alpaca_paper',
+        orderId: order.id,
+        occSymbol: occ
+      });
+      State.update({ journal });
+
+      closeModal('executeModal');
+      alert(`✅ تم إرسال الأمر بنجاح!\n\nOrder ID: ${order.id}\nStatus: ${order.status}\n\nسُجِّل في Journal تلقائياً.`);
+      renderJournal();
+    } catch (e) {
+      alert(`❌ فشل إرسال الأمر:\n\n${e.message}\n\nراجع Settings وتأكد من keys صحيحة وأن السوق مفتوح للـ options trading.`);
+    }
+  }
+
+  // ===== Paper Portfolio render (v1.4) =====
+  function renderPaperPortfolio() {
+    renderPaperHero();
+    renderPaperOpen();
+    renderPaperClosed();
+    renderPaperStats();
+  }
+
+  function renderPaperHero() {
+    const stats = PaperPortfolio.getStats();
+    const el = document.getElementById('paperHero');
+    if (!el) return;
+
+    const pnlClass = stats.totalPnL > 0 ? 'up' : stats.totalPnL < 0 ? 'down' : 'neutral';
+    const pnlSign = stats.totalPnL > 0 ? '+' : '';
+
+    el.innerHTML = `
+      <div class="paper-hero">
+        <div class="paper-hero-grid">
+          <div class="paper-hero-item">
+            <div class="paper-hero-label">الرصيد الابتدائي</div>
+            <div class="paper-hero-value">${Utils.fmtMoney(stats.initialBalance, 0)}</div>
+          </div>
+          <div class="paper-hero-item">
+            <div class="paper-hero-label">القيمة الإجمالية</div>
+            <div class="paper-hero-value ${pnlClass}">${Utils.fmtMoney(stats.currentEquity, 2)}</div>
+            <div class="paper-hero-meta">${Utils.fmtMoney(stats.cash, 0)} نقد + ${Utils.fmtMoney(stats.currentEquity - stats.cash, 0)} مستثمر</div>
+          </div>
+          <div class="paper-hero-item">
+            <div class="paper-hero-label">P&amp;L الإجمالي</div>
+            <div class="paper-hero-value ${pnlClass}">${pnlSign}${Utils.fmtMoney(stats.totalPnL, 2)}</div>
+            <div class="paper-hero-meta">${pnlSign}${stats.totalPnLPct.toFixed(2)}%</div>
+          </div>
+          <div class="paper-hero-item">
+            <div class="paper-hero-label">Win Rate</div>
+            <div class="paper-hero-value ${stats.winRate >= 50 ? 'up' : stats.closedCount === 0 ? 'neutral' : 'down'}">${stats.closedCount > 0 ? stats.winRate.toFixed(0) + '%' : '—'}</div>
+            <div class="paper-hero-meta">${stats.winners}W / ${stats.losers}L من ${stats.closedCount}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderPaperOpen() {
+    const state = PaperPortfolio.get();
+    const open = state.positions || [];
+    document.getElementById('paperOpenCount').textContent = `${open.length} صفقة`;
+
+    const list = document.getElementById('paperOpenList');
+    if (open.length === 0) {
+      list.innerHTML = `<div class="paper-empty">لا توجد صفقات مفتوحة. اضغط "تطبيق التوصيات النشطة" للدخول تلقائياً.</div>`;
+      return;
+    }
+
+    list.innerHTML = open.map(pos => {
+      const trade = TRADES.find(t => t.id === pos.tradeId);
+      const currentValue = pos.currentValue || pos.entryCost;
+      const pnl = currentValue - pos.entryCost;
+      const pnlPct = (pnl / pos.entryCost) * 100;
+      const pnlClass = pnl > 0 ? 'up' : pnl < 0 ? 'down' : 'neutral';
+      const posClass = pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : '';
+      const status = trade ? PriceLogic.getStatus(trade) : 'watching';
+      const distT1 = trade ? PriceLogic.distanceToLevel(trade, trade.target1) : { pct: '—' };
+
+      return `
+        <div class="paper-position ${posClass}">
+          <div class="paper-pos-header">
+            <div>
+              <div class="paper-pos-title">${pos.tradeName}</div>
+              <div class="paper-pos-meta">دخلت ${Utils.fmtDateShort(pos.entryDate)} • ${pos.remainingContracts} عقد ${pos.partialExited ? '(50% خرج عند T1)' : ''}</div>
+            </div>
+            <span class="status-badge status-${status}">${trade ? PriceLogic.statusLabel(status) : '—'}</span>
+          </div>
+          <div class="paper-pos-grid">
+            <div class="paper-pos-stat">
+              <div class="paper-pos-stat-label">Entry Premium</div>
+              <div class="paper-pos-stat-value">$${Utils.fmt(pos.entryPremium)}</div>
+            </div>
+            <div class="paper-pos-stat">
+              <div class="paper-pos-stat-label">Current</div>
+              <div class="paper-pos-stat-value">$${Utils.fmt(pos.currentPremium || pos.entryPremium)}</div>
+            </div>
+            <div class="paper-pos-stat">
+              <div class="paper-pos-stat-label">P&amp;L</div>
+              <div class="paper-pos-stat-value ${pnlClass}">${pnl >= 0 ? '+' : ''}${Utils.fmtMoney(pnl, 2)}</div>
+            </div>
+            <div class="paper-pos-stat">
+              <div class="paper-pos-stat-label">% Return</div>
+              <div class="paper-pos-stat-value ${pnlClass}">${pnl >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%</div>
+            </div>
+          </div>
+          <div style="margin-top: 10px; display: flex; gap: 8px; align-items: center; font-size: 11px; color: var(--text-secondary);">
+            <span>إلى T1: ${distT1.pct}%</span>
+            <button class="btn" style="margin-inline-start: auto; font-size: 11px; padding: 4px 10px;" onclick="App.paperManualClose('${pos.id}')">إغلاق يدوي</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderPaperClosed() {
+    const state = PaperPortfolio.get();
+    const closed = (state.closed || []).slice().reverse(); // newest first
+    document.getElementById('paperClosedCount').textContent = `${closed.length} صفقة`;
+
+    const list = document.getElementById('paperClosedList');
+    if (closed.length === 0) {
+      list.innerHTML = `<div class="paper-empty">لا توجد صفقات مغلقة بعد.</div>`;
+      return;
+    }
+
+    list.innerHTML = closed.map(pos => {
+      const pnl = pos.pnl;
+      const pnlPct = pos.pnlPct;
+      const pnlClass = pnl > 0 ? 'up' : pnl < 0 ? 'down' : 'neutral';
+      const posClass = `closed-${pos.exitReason}`;
+
+      const reasonLabels = {
+        target1: '🎯 T1 Hit',
+        target2: '🎯🎯 T2 Hit',
+        stop: '❌ Stop',
+        expired: '⏰ Expired',
+        manual: '✋ يدوي'
+      };
+
+      return `
+        <div class="paper-position ${posClass}">
+          <div class="paper-pos-header">
+            <div>
+              <div class="paper-pos-title">${pos.tradeName}</div>
+              <div class="paper-pos-meta">${Utils.fmtDateShort(pos.entryDate)} → ${Utils.fmtDateShort(pos.exitDate)}</div>
+            </div>
+            <span class="exit-reason-badge exit-reason-${pos.exitReason}">${reasonLabels[pos.exitReason] || pos.exitReason}</span>
+          </div>
+          <div class="paper-pos-grid">
+            <div class="paper-pos-stat">
+              <div class="paper-pos-stat-label">Entry</div>
+              <div class="paper-pos-stat-value">$${Utils.fmt(pos.entryPremium)}</div>
+            </div>
+            <div class="paper-pos-stat">
+              <div class="paper-pos-stat-label">Exit</div>
+              <div class="paper-pos-stat-value">$${Utils.fmt(pos.exitPremium)}</div>
+            </div>
+            <div class="paper-pos-stat">
+              <div class="paper-pos-stat-label">P&amp;L</div>
+              <div class="paper-pos-stat-value ${pnlClass}">${pnl >= 0 ? '+' : ''}${Utils.fmtMoney(pnl, 2)}</div>
+            </div>
+            <div class="paper-pos-stat">
+              <div class="paper-pos-stat-label">% Return</div>
+              <div class="paper-pos-stat-value ${pnlClass}">${pnl >= 0 ? '+' : ''}${pnlPct.toFixed(1)}%</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderPaperStats() {
+    const stats = PaperPortfolio.getStats();
+    const el = document.getElementById('paperStats');
+    if (!el) return;
+
+    if (stats.closedCount === 0) {
+      el.innerHTML = `<div class="paper-empty">سيظهر التحليل بعد أول صفقة مغلقة.</div>`;
+      return;
+    }
+
+    el.innerHTML = `
+      <div class="paper-pos-grid" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));">
+        <div class="perf-card">
+          <div class="perf-label">Win Rate</div>
+          <div class="perf-value ${stats.winRate >= 50 ? 'up' : 'down'}">${stats.winRate.toFixed(0)}%</div>
+          <div class="perf-meta">${stats.winners}W / ${stats.losers}L</div>
+        </div>
+        <div class="perf-card">
+          <div class="perf-label">متوسط الربح</div>
+          <div class="perf-value up">+${stats.avgWin.toFixed(1)}%</div>
+          <div class="perf-meta">من الصفقات الرابحة</div>
+        </div>
+        <div class="perf-card">
+          <div class="perf-label">متوسط الخسارة</div>
+          <div class="perf-value down">${stats.avgLoss.toFixed(1)}%</div>
+          <div class="perf-meta">من الصفقات الخاسرة</div>
+        </div>
+        <div class="perf-card">
+          <div class="perf-label">Realized P&amp;L</div>
+          <div class="perf-value ${stats.realizedPnL > 0 ? 'up' : stats.realizedPnL < 0 ? 'down' : 'neutral'}">${stats.realizedPnL >= 0 ? '+' : ''}${Utils.fmtMoney(stats.realizedPnL, 0)}</div>
+          <div class="perf-meta">من الصفقات المغلقة</div>
+        </div>
+        <div class="perf-card">
+          <div class="perf-label">Unrealized P&amp;L</div>
+          <div class="perf-value ${stats.unrealizedPnL > 0 ? 'up' : stats.unrealizedPnL < 0 ? 'down' : 'neutral'}">${stats.unrealizedPnL >= 0 ? '+' : ''}${Utils.fmtMoney(stats.unrealizedPnL, 0)}</div>
+          <div class="perf-meta">من الصفقات المفتوحة</div>
+        </div>
+      </div>
+    `;
   }
 
   function saveJournalEntry() {
@@ -2005,13 +2982,17 @@ const UIRenderer = (() => {
     renderCalendar,
     renderJournal,
     renderPerformance,
+    renderPaperPortfolio,
     showTradeDetails,
     openTradingView,
     closeModal,
     showAddJournalModal,
     saveJournalEntry,
     closeJournalEntry,
-    deleteJournalEntry
+    deleteJournalEntry,
+    showExecuteModal,
+    confirmExecute,
+    loadFundamentals
   };
 })();
 
@@ -2019,6 +3000,10 @@ const UIRenderer = (() => {
 // MODULE 11: APP (init + event handlers + orchestration)
 // ============================================================
 const App = (() => {
+
+  let autoRefreshTimer = null;
+  let countdownTimer = null;
+  let countdownSeconds = 0;
 
   function showStatus(msg, type = 'info') {
     const el = document.getElementById('settingsStatus');
@@ -2033,9 +3018,14 @@ const App = (() => {
       workerUrl: document.getElementById('workerUrlInput').value.trim() || CONFIG.DEFAULT_WORKER_URL,
       alpacaKey: document.getElementById('alpacaKeyInput').value.trim(),
       alpacaSecret: document.getElementById('alpacaSecretInput').value.trim(),
-      refreshInterval: parseInt(document.getElementById('refreshIntervalInput').value) || 60
+      refreshInterval: parseInt(document.getElementById('refreshIntervalInput').value) || 60,
+      autoRefreshEnabled: document.getElementById('autoRefreshEnabledInput').checked
     });
     showStatus('تم حفظ الإعدادات بنجاح', 'success');
+    // Re-render trades to reflect Alpaca availability change
+    UIRenderer.renderAllTrades();
+    // Restart auto-refresh with new settings
+    setupAutoRefresh();
   }
 
   async function testWorker() {
@@ -2058,21 +3048,50 @@ const App = (() => {
     }
   }
 
-  // M1: refreshAll يستخدم Worker فقط للأسعار الأساسية
-  // (Alpaca options chain integration يأتي في M2)
+  // ===== Fetch Alpaca option snapshots for all trades =====
+  async function fetchAlpacaOptions() {
+    if (!AlpacaClient.isConfigured()) return;
+
+    try {
+      const occMap = {};
+      TRADES.forEach(t => {
+        const occ = Utils.buildOCCSymbol(t.symbol, t.expiryDate, t.type, t.strike);
+        occMap[occ] = t;
+      });
+
+      const occList = Object.keys(occMap);
+      const response = await AlpacaClient.optionSnapshots(occList);
+      const snapshots = response?.snapshots || {};
+
+      Object.entries(snapshots).forEach(([occ, snap]) => {
+        const trade = occMap[occ];
+        if (!trade) return;
+        const q = snap?.latestQuote;
+        if (q && q.bp > 0 && q.ap > 0) {
+          trade.liveBid = q.bp;
+          trade.liveAsk = q.ap;
+          trade.liveMid = (q.bp + q.ap) / 2;
+          trade.liveSource = 'alpaca';
+          trade.liveOptionTs = q.t || new Date().toISOString();
+        }
+      });
+    } catch (e) {
+      console.warn('Alpaca options snapshot failed (silent):', e.message);
+      // Silent fail — Black-Scholes remains as fallback
+    }
+  }
+
+  // ===== refreshAll v1.4: Yahoo + Alpaca options + Paper Portfolio =====
   async function refreshAll() {
     const btn = document.getElementById('refreshBtn');
     btn.disabled = true;
     btn.innerHTML = '⏳ جاري التحديث...';
 
     try {
-      // اجمع الرموز الفريدة من TRADES
+      // 1. Yahoo quotes (underlying prices)
       const uniqueSymbols = [...new Set(TRADES.map(t => t.symbol))];
-
-      // استدعاء واحد batch من Worker
       const quotes = await YahooClient.multipleQuotes(uniqueSymbols);
 
-      // حدّث الـ live prices في الـ state
       const livePrices = {};
       quotes.forEach(q => {
         if (!q.error && q.price) {
@@ -2085,7 +3104,6 @@ const App = (() => {
         }
       });
 
-      // طبّق على TRADES
       TRADES.forEach(t => {
         const live = livePrices[t.symbol];
         if (live) {
@@ -2094,16 +3112,26 @@ const App = (() => {
         }
       });
 
+      // 2. Alpaca options snapshots (bid/ask)
+      await fetchAlpacaOptions();
+
+      // 3. Paper Portfolio evaluation (auto exit on T1/T2/Stop)
+      PaperPortfolio.evaluatePositions();
+
       State.update({ livePrices, lastUpdate: new Date().toISOString() });
 
-      // re-render
+      // 4. Re-render everything
       UIRenderer.renderHeader();
       UIRenderer.renderAllTrades();
       UIRenderer.renderZeroDTE();
       UIRenderer.renderPerformance();
+      UIRenderer.renderPaperPortfolio();
 
       btn.innerHTML = '✅ تم التحديث';
       setTimeout(() => { btn.innerHTML = '🔄 تحديث الأسعار'; }, 1500);
+
+      // Reset countdown
+      resetCountdown();
     } catch (e) {
       console.error('Refresh error:', e);
       btn.innerHTML = '❌ فشل التحديث';
@@ -2114,8 +3142,117 @@ const App = (() => {
     }
   }
 
+  // ===== Auto-refresh logic (v1.4) =====
+  function setupAutoRefresh() {
+    // Clear any existing timers
+    if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+    if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+
+    const s = State.get();
+    const enabled = s.autoRefreshEnabled !== false;
+    const interval = Math.max(30, parseInt(s.refreshInterval) || 60);
+
+    updateAutoRefreshBadge();
+
+    if (!enabled) return;
+
+    const marketState = MarketStatus.getStatus().state;
+    if (marketState !== 'open') return;  // Only run during market hours
+
+    // Schedule next refresh
+    countdownSeconds = interval;
+    countdownTimer = setInterval(() => {
+      countdownSeconds--;
+      if (countdownSeconds <= 0) countdownSeconds = interval;
+      updateAutoRefreshBadge();
+    }, 1000);
+
+    autoRefreshTimer = setInterval(() => {
+      refreshAll();
+    }, interval * 1000);
+  }
+
+  function resetCountdown() {
+    const s = State.get();
+    countdownSeconds = Math.max(30, parseInt(s.refreshInterval) || 60);
+    updateAutoRefreshBadge();
+  }
+
+  function updateAutoRefreshBadge() {
+    const badge = document.getElementById('autoRefreshBadge');
+    const text = document.getElementById('autoRefreshText');
+    if (!badge || !text) return;
+
+    const s = State.get();
+    const enabled = s.autoRefreshEnabled !== false;
+    const marketOpen = MarketStatus.getStatus().state === 'open';
+
+    if (!enabled) {
+      badge.className = 'auto-refresh-badge paused';
+      text.textContent = 'Auto: off';
+    } else if (!marketOpen) {
+      badge.className = 'auto-refresh-badge paused';
+      text.textContent = 'Auto: السوق مغلق';
+    } else {
+      badge.className = 'auto-refresh-badge active';
+      text.textContent = `Auto: ${countdownSeconds}s`;
+    }
+  }
+
+  // ===== Paper Portfolio bridge functions =====
+  function paperAutoTake() {
+    const result = PaperPortfolio.autoTakeRecommendations();
+    UIRenderer.renderPaperPortfolio();
+    if (result.taken.length === 0 && result.skipped.length === 0) {
+      alert('ℹ️ لا توجد توصيات في "active status" حالياً. التوصية يجب أن يكون سعرها داخل Entry Zone.');
+    } else {
+      const msgs = [];
+      if (result.taken.length > 0) msgs.push(`✅ تم أخذ ${result.taken.length} توصية`);
+      if (result.skipped.length > 0) {
+        const reasons = result.skipped.map(s => `• ${s.tradeName}: ${s.reasonLabel}`).join('\n');
+        msgs.push(`⚠️ تم تخطي ${result.skipped.length}:\n${reasons}`);
+      }
+      alert(msgs.join('\n\n'));
+    }
+  }
+
+  function paperManualClose(posId) {
+    if (!confirm('متأكد من إغلاق هذه الصفقة يدوياً؟')) return;
+    const closed = PaperPortfolio.manualClose(posId);
+    if (closed) {
+      UIRenderer.renderPaperPortfolio();
+    }
+  }
+
+  function openPaperSettings() {
+    const stats = PaperPortfolio.getStats();
+    document.getElementById('paperInitialBalance').value = stats.initialBalance;
+    document.getElementById('paperSettingsModal').classList.add('active');
+  }
+
+  function paperApplySettings() {
+    const newBalance = parseFloat(document.getElementById('paperInitialBalance').value);
+    if (!newBalance || newBalance < 500) {
+      alert('الرصيد الابتدائي يجب أن يكون 500$ على الأقل');
+      return;
+    }
+    if (!confirm(`سيُعاد تعيين المحفظة بالكامل برصيد جديد = $${newBalance}\n\nستُمسح كل الصفقات (المفتوحة والمغلقة).\n\nمتابعة؟`)) return;
+    PaperPortfolio.reset(newBalance);
+    UIRenderer.closeModal('paperSettingsModal');
+    UIRenderer.renderPaperPortfolio();
+  }
+
+  function paperReset() {
+    if (!confirm('مسح كل صفقات المحفظة التخيلية وإعادة الرصيد إلى الابتدائي؟')) return;
+    PaperPortfolio.reset();
+    UIRenderer.renderPaperPortfolio();
+  }
+
   function exportData() {
-    const data = State.get();
+    const data = {
+      tradingState: State.get(),
+      paperPortfolio: PaperPortfolio.get()
+    };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -2123,12 +3260,13 @@ const App = (() => {
     a.download = `wabran-trading-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    showStatus('تم تصدير البيانات', 'success');
+    showStatus('تم تصدير البيانات (state + paper portfolio)', 'success');
   }
 
   function resetData() {
-    if (!confirm('متأكد من مسح كل البيانات؟ لا يمكن التراجع.')) return;
+    if (!confirm('متأكد من مسح كل البيانات؟ لا يمكن التراجع.\n\nسيُمسح: settings + journal + paper portfolio.')) return;
     State.reset();
+    PaperPortfolio.reset();
     showStatus('تم مسح كل البيانات', 'warning');
     setTimeout(() => location.reload(), 1500);
   }
@@ -2144,6 +3282,7 @@ const App = (() => {
         if (tab.dataset.tab === 'calendar') UIRenderer.renderCalendar();
         if (tab.dataset.tab === 'journal') UIRenderer.renderJournal();
         if (tab.dataset.tab === 'performance') UIRenderer.renderPerformance();
+        if (tab.dataset.tab === 'paper') UIRenderer.renderPaperPortfolio();
       });
     });
   }
@@ -2154,6 +3293,7 @@ const App = (() => {
     document.getElementById('alpacaKeyInput').value = s.alpacaKey || '';
     document.getElementById('alpacaSecretInput').value = s.alpacaSecret || '';
     document.getElementById('refreshIntervalInput').value = s.refreshInterval || 60;
+    document.getElementById('autoRefreshEnabledInput').checked = s.autoRefreshEnabled !== false;
   }
 
   function init() {
@@ -2170,14 +3310,22 @@ const App = (() => {
     UIRenderer.renderCalendar();
     UIRenderer.renderJournal();
     UIRenderer.renderPerformance();
+    UIRenderer.renderPaperPortfolio();
 
     // Initialize tooltip system (glossary)
     TooltipManager.init();
 
-    // Auto-refresh market status every 30 seconds
-    setInterval(UIRenderer.renderMarketStatus, 30000);
+    // Auto-refresh market status every 30 seconds + re-evaluate auto-refresh schedule
+    setInterval(() => {
+      UIRenderer.renderMarketStatus();
+      // Re-check market status: if it transitioned (open→closed or vice versa), restart auto-refresh logic
+      setupAutoRefresh();
+    }, 30000);
 
-    console.log('Wabran Trading ready ✅');
+    // Initial auto-refresh setup
+    setupAutoRefresh();
+
+    console.log('Wabran Trading', CONFIG.VERSION, 'ready ✅');
   }
 
   return {
@@ -2187,7 +3335,12 @@ const App = (() => {
     testWorker,
     testAlpaca,
     exportData,
-    resetData
+    resetData,
+    paperAutoTake,
+    paperManualClose,
+    openPaperSettings,
+    paperApplySettings,
+    paperReset
   };
 })();
 
@@ -2506,7 +3659,301 @@ const TooltipManager = (() => {
 })();
 
 // ============================================================
-// MODULE 14: BOOTSTRAP
+// MODULE 15: PAPER PORTFOLIO (محفظة الاختبار التخيلية - v1.4)
+// ============================================================
+const PaperPortfolio = (() => {
+  const defaultState = {
+    initialBalance: CONFIG.PAPER_DEFAULT_BALANCE,
+    cash: CONFIG.PAPER_DEFAULT_BALANCE,
+    positions: [],   // open positions
+    closed: [],      // closed positions
+    createdAt: new Date().toISOString()
+  };
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(CONFIG.PAPER_PORTFOLIO_KEY);
+      if (!raw) return { ...defaultState };
+      const parsed = JSON.parse(raw);
+      return { ...defaultState, ...parsed };
+    } catch (e) {
+      console.warn('PaperPortfolio load failed:', e);
+      return { ...defaultState };
+    }
+  }
+
+  function save(s) {
+    try {
+      localStorage.setItem(CONFIG.PAPER_PORTFOLIO_KEY, JSON.stringify(s));
+    } catch (e) {
+      console.warn('PaperPortfolio save failed:', e);
+    }
+  }
+
+  let state = load();
+
+  function get() { return state; }
+
+  function reset(newBalance) {
+    const balance = newBalance || state.initialBalance || CONFIG.PAPER_DEFAULT_BALANCE;
+    state = {
+      ...defaultState,
+      initialBalance: balance,
+      cash: balance,
+      createdAt: new Date().toISOString()
+    };
+    save(state);
+  }
+
+  function isAlreadyOpen(tradeId) {
+    return state.positions.some(p => p.tradeId === tradeId);
+  }
+
+  function getCurrentPremium(trade) {
+    // Prefer live mid from Alpaca, fallback to Black-Scholes
+    if (trade.liveMid && trade.liveSource === 'alpaca') return trade.liveMid;
+    return PriceLogic.estimateTradePremium(trade);
+  }
+
+  function takePosition(trade, currentPremium, contracts = 1) {
+    if (isAlreadyOpen(trade.id)) {
+      return { ok: false, reason: 'already_open', reasonLabel: 'صفقة مفتوحة بالفعل' };
+    }
+
+    const entryCost = currentPremium * 100 * contracts;
+    if (entryCost > state.cash) {
+      return {
+        ok: false,
+        reason: 'insufficient_cash',
+        reasonLabel: `رأس مال غير كافٍ (يحتاج $${entryCost.toFixed(0)}، المتاح $${state.cash.toFixed(0)})`,
+        needed: entryCost,
+        available: state.cash
+      };
+    }
+
+    const position = {
+      id: 'pos_' + Date.now() + '_' + trade.id,
+      tradeId: trade.id,
+      tradeName: trade.name,
+      symbol: trade.symbol,
+      displaySymbol: trade.displaySymbol,
+      type: trade.type,
+      strike: trade.strike,
+      displayStrike: trade.displayStrike,
+      expiryDate: trade.expiryDate,
+      contracts,
+      remainingContracts: contracts,
+      entryDate: new Date().toISOString(),
+      entryPremium: currentPremium,
+      entryCost,
+      assetEntryPrice: trade.currentPrice,
+      currentPremium,
+      currentValue: entryCost,
+      partialExited: false,
+      partialContracts: 0,
+      partialExitPremium: 0,
+      partialPnL: 0
+    };
+
+    state.positions.push(position);
+    state.cash -= entryCost;
+    save(state);
+    return { ok: true, position };
+  }
+
+  function partialExit(positionId, exitPremium) {
+    const pos = state.positions.find(p => p.id === positionId);
+    if (!pos || pos.partialExited) return;
+    const halfContracts = Math.floor(pos.contracts / 2);
+    if (halfContracts === 0) return;
+
+    const exitValue = exitPremium * 100 * halfContracts;
+    state.cash += exitValue;
+    pos.remainingContracts -= halfContracts;
+    pos.partialExited = true;
+    pos.partialContracts = halfContracts;
+    pos.partialExitPremium = exitPremium;
+    pos.partialExitDate = new Date().toISOString();
+    pos.partialPnL = (exitPremium - pos.entryPremium) * 100 * halfContracts;
+    save(state);
+  }
+
+  function closePosition(positionId, reason, exitPremium) {
+    const idx = state.positions.findIndex(p => p.id === positionId);
+    if (idx === -1) return null;
+    const pos = state.positions[idx];
+
+    const exitValue = exitPremium * 100 * pos.remainingContracts;
+    state.cash += exitValue;
+
+    // Total P&L = partial exit P&L (if any) + final exit P&L
+    const finalPnL = (exitPremium - pos.entryPremium) * 100 * pos.remainingContracts;
+    const totalPnL = (pos.partialPnL || 0) + finalPnL;
+    const pnlPct = (totalPnL / pos.entryCost) * 100;
+
+    const closedPosition = {
+      ...pos,
+      exitDate: new Date().toISOString(),
+      exitPremium,
+      exitReason: reason,
+      finalPnL,
+      pnl: totalPnL,
+      pnlPct
+    };
+
+    state.positions.splice(idx, 1);
+    state.closed.push(closedPosition);
+    save(state);
+    return closedPosition;
+  }
+
+  function manualClose(positionId) {
+    const pos = state.positions.find(p => p.id === positionId);
+    if (!pos) return null;
+    const exitPremium = pos.currentPremium || pos.entryPremium;
+    return closePosition(positionId, 'manual', exitPremium);
+  }
+
+  // ===== Auto-evaluate open positions on each refresh =====
+  function evaluatePositions() {
+    const tradesById = Object.fromEntries(TRADES.map(t => [t.id, t]));
+
+    // Iterate copy because we may close positions during iteration
+    const positionsSnapshot = [...state.positions];
+
+    positionsSnapshot.forEach(pos => {
+      const trade = tradesById[pos.tradeId];
+      if (!trade) return;
+
+      // Update current premium with latest data
+      const newPremium = getCurrentPremium(trade);
+      pos.currentPremium = newPremium;
+      pos.currentValue = newPremium * 100 * pos.remainingContracts;
+
+      // Determine status based on underlying price
+      const status = PriceLogic.getStatus(trade);
+
+      // Check for auto-exit conditions
+      if (status === 'stopped') {
+        closePosition(pos.id, 'stop', newPremium);
+      } else if (status === 'target2') {
+        closePosition(pos.id, 'target2', newPremium);
+      } else if (status === 'target1') {
+        // T1: if multiple contracts, partial exit (50%); if single, full exit
+        if (pos.contracts >= 2 && !pos.partialExited) {
+          partialExit(pos.id, newPremium);
+        } else if (pos.contracts === 1 && !pos.partialExited) {
+          // Single contract — close fully on T1
+          closePosition(pos.id, 'target1', newPremium);
+        }
+      } else if (trade.dte <= 0) {
+        // Expired
+        closePosition(pos.id, 'expired', newPremium);
+      }
+    });
+
+    save(state);
+  }
+
+  // ===== Auto-take recommendations in "active" status =====
+  function autoTakeRecommendations() {
+    const taken = [];
+    const skipped = [];
+
+    TRADES.forEach(trade => {
+      const status = PriceLogic.getStatus(trade);
+      if (status !== 'active') {
+        // Skip non-active trades silently
+        return;
+      }
+
+      if (isAlreadyOpen(trade.id)) {
+        skipped.push({ tradeName: trade.name, reasonLabel: 'مفتوحة بالفعل' });
+        return;
+      }
+
+      const premium = getCurrentPremium(trade);
+      const result = takePosition(trade, premium, 1);
+      if (result.ok) {
+        taken.push({ tradeName: trade.name, premium });
+      } else {
+        skipped.push({ tradeName: trade.name, reasonLabel: result.reasonLabel });
+      }
+    });
+
+    return { taken, skipped };
+  }
+
+  function getTotalInvested() {
+    return state.positions.reduce((sum, p) => sum + (p.currentValue || p.entryCost), 0);
+  }
+
+  function getTotalEquity() {
+    return state.cash + getTotalInvested();
+  }
+
+  function getRealizedPnL() {
+    return state.closed.reduce((sum, p) => sum + (p.pnl || 0), 0);
+  }
+
+  function getUnrealizedPnL() {
+    return state.positions.reduce((sum, p) => {
+      const currentValue = p.currentValue || p.entryCost;
+      const unrealized = currentValue - p.entryCost;
+      return sum + unrealized + (p.partialPnL || 0);
+    }, 0);
+  }
+
+  function getStats() {
+    const closedCount = state.closed.length;
+    const winners = state.closed.filter(p => p.pnl > 0);
+    const losers = state.closed.filter(p => p.pnl < 0);
+
+    const winRate = closedCount > 0 ? (winners.length / closedCount) * 100 : 0;
+    const avgWin = winners.length > 0 ? winners.reduce((s, p) => s + p.pnlPct, 0) / winners.length : 0;
+    const avgLoss = losers.length > 0 ? losers.reduce((s, p) => s + p.pnlPct, 0) / losers.length : 0;
+
+    const currentEquity = getTotalEquity();
+    const realizedPnL = getRealizedPnL();
+    const unrealizedPnL = getUnrealizedPnL();
+    const totalPnL = realizedPnL + unrealizedPnL;
+    const totalPnLPct = state.initialBalance > 0 ? ((currentEquity - state.initialBalance) / state.initialBalance) * 100 : 0;
+
+    return {
+      initialBalance: state.initialBalance,
+      currentEquity,
+      cash: state.cash,
+      invested: getTotalInvested(),
+      realizedPnL,
+      unrealizedPnL,
+      totalPnL,
+      totalPnLPct,
+      openCount: state.positions.length,
+      closedCount,
+      winners: winners.length,
+      losers: losers.length,
+      winRate,
+      avgWin,
+      avgLoss
+    };
+  }
+
+  return {
+    get,
+    reset,
+    takePosition,
+    closePosition,
+    manualClose,
+    partialExit,
+    evaluatePositions,
+    autoTakeRecommendations,
+    getStats,
+    isAlreadyOpen
+  };
+})();
+
+// ============================================================
+// MODULE 16: BOOTSTRAP
 // ============================================================
 document.addEventListener('DOMContentLoaded', App.init);
 </script>
