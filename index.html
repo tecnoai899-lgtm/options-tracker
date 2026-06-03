@@ -1739,8 +1739,9 @@ const YahooClient = (() => {
 
   async function multipleQuotes(symbols) {
     const list = Array.isArray(symbols) ? symbols.join(',') : symbols;
-    const data = await get(`/multiple?symbols=${encodeURIComponent(list)}`);
-    return data.quotes || [];
+    const data = await get(`/quotes?symbols=${encodeURIComponent(list)}`);
+    // Worker v2.2 returns an array directly, not wrapped in {quotes: [...]}
+    return Array.isArray(data) ? data : (data.quotes || []);
   }
 
   async function fundamentals(symbol) {
@@ -3063,78 +3064,94 @@ const App = (() => {
     }
   }
 
-  // ===== Fetch options live data via Yahoo (v1.4.1 - free tier solution) =====
-  // Alpaca free tier doesn't include OPRA options feed, so we use Yahoo instead
+  // ===== Fetch options live data via Yahoo (v1.4.2) =====
   async function fetchOptionsLiveData() {
-    try {
-      // Group trades by symbol + expiry to minimize API calls
-      const grouped = {};
-      TRADES.forEach(t => {
-        const key = `${t.symbol}_${t.expiryDate}`;
-        if (!grouped[key]) {
-          grouped[key] = { symbol: t.symbol, expiry: t.expiryDate, trades: [] };
-        }
-        grouped[key].trades.push(t);
-      });
+    // Group trades by symbol + expiry to minimize API calls
+    const grouped = {};
+    TRADES.forEach(t => {
+      const key = `${t.symbol}_${t.expiryDate}`;
+      if (!grouped[key]) {
+        grouped[key] = { symbol: t.symbol, expiry: t.expiryDate, trades: [] };
+      }
+      grouped[key].trades.push(t);
+    });
 
-      // Fetch each unique (symbol, expiry) combination
-      const results = await Promise.allSettled(
-        Object.values(grouped).map(async (group) => {
-          const data = await YahooClient.optionsChain(group.symbol, group.expiry);
-          return { group, data };
-        })
-      );
+    console.log('[Options] Fetching', Object.keys(grouped).length, 'unique (symbol, expiry) combos');
 
-      results.forEach((result) => {
-        if (result.status !== 'fulfilled') {
-          console.warn('Options chain fetch failed:', result.reason?.message);
+    const results = await Promise.allSettled(
+      Object.values(grouped).map(async (group) => {
+        console.log('[Options] →', group.symbol, '@', group.expiry, 'for', group.trades.map(t => t.name).join(', '));
+        const data = await YahooClient.optionsChain(group.symbol, group.expiry);
+        return { group, data };
+      })
+    );
+
+    let matchedCount = 0;
+    results.forEach((result, idx) => {
+      if (result.status !== 'fulfilled') {
+        console.warn('[Options] ❌ Chain fetch failed:', result.reason?.message);
+        return;
+      }
+
+      const { group, data } = result.value;
+      if (!data) {
+        console.warn('[Options] ⚠️ No data for', group.symbol);
+        return;
+      }
+
+      console.log('[Options] ✓', group.symbol, '→', (data.calls || []).length, 'calls,', (data.puts || []).length, 'puts');
+
+      group.trades.forEach(trade => {
+        const isCall = trade.type === 'CALL';
+        const contracts = isCall ? data.calls : data.puts;
+        if (!contracts || contracts.length === 0) {
+          console.warn('[Options] No', isCall ? 'calls' : 'puts', 'for', trade.name);
           return;
         }
 
-        const { group, data } = result.value;
-        if (!data || (!data.calls && !data.puts)) return;
+        const match = contracts.find(c => Math.abs(c.strike - trade.strike) < 0.01);
+        if (!match) {
+          console.warn('[Options] Strike', trade.strike, 'not found for', trade.name, '— available strikes nearby:',
+            contracts.filter(c => Math.abs(c.strike - trade.strike) < 5).map(c => c.strike));
+          return;
+        }
 
-        group.trades.forEach(trade => {
-          const isCall = trade.type === 'CALL';
-          const contracts = isCall ? data.calls : data.puts;
-          if (!contracts || contracts.length === 0) return;
-
-          // Find matching strike (allow small tolerance for float comparison)
-          const match = contracts.find(c => Math.abs(c.strike - trade.strike) < 0.01);
-          if (!match) return;
-
-          if (match.bid > 0 && match.ask > 0) {
-            trade.liveBid = match.bid;
-            trade.liveAsk = match.ask;
-            trade.liveMid = (match.bid + match.ask) / 2;
-            trade.liveSource = 'yahoo';
-            trade.liveVolume = match.volume;
-            trade.liveOpenInterest = match.openInterest;
-            trade.liveIV = match.impliedVolatility;
-            trade.liveOptionTs = new Date().toISOString();
-          } else if (match.lastPrice > 0) {
-            // Fallback: if no bid/ask but lastPrice available
-            trade.liveLast = match.lastPrice;
-            // Don't set liveBid/Ask so Premium Box stays as Estimate but with notation
-          }
-        });
+        if (match.bid > 0 && match.ask > 0) {
+          trade.liveBid = match.bid;
+          trade.liveAsk = match.ask;
+          trade.liveMid = (match.bid + match.ask) / 2;
+          trade.liveSource = 'yahoo';
+          trade.liveVolume = match.volume;
+          trade.liveOpenInterest = match.openInterest;
+          trade.liveIV = match.impliedVolatility;
+          trade.liveOptionTs = new Date().toISOString();
+          matchedCount++;
+          console.log('[Options] ✅ LIVE', trade.name, '@', trade.strike, ':', match.bid, '/', match.ask, '(vol:', match.volume, ', OI:', match.openInterest, ')');
+        } else {
+          console.warn('[Options] Zero bid/ask for', trade.name, '@', trade.strike, '— bid:', match.bid, 'ask:', match.ask);
+        }
       });
-    } catch (e) {
-      console.warn('Options live data fetch failed (silent):', e.message);
-      // Black-Scholes remains as fallback in renderTradeCard
-    }
+    });
+
+    console.log('[Options] Result:', matchedCount, '/', TRADES.length, 'trades got live data');
   }
 
-  // ===== refreshAll v1.4: Yahoo + Alpaca options + Paper Portfolio =====
+  // ===== refreshAll v1.4.2: Best-effort, never fails completely =====
   async function refreshAll() {
     const btn = document.getElementById('refreshBtn');
     btn.disabled = true;
     btn.innerHTML = '⏳ جاري التحديث...';
 
+    const errors = [];
+    let quotesOK = false;
+    let optionsOK = false;
+
+    // 1. Yahoo underlying quotes
     try {
-      // 1. Yahoo quotes (underlying prices)
+      console.log('[Refresh] Step 1: Fetching underlying quotes from Yahoo...');
       const uniqueSymbols = [...new Set(TRADES.map(t => t.symbol))];
       const quotes = await YahooClient.multipleQuotes(uniqueSymbols);
+      console.log('[Refresh] Quotes received:', quotes);
 
       const livePrices = {};
       quotes.forEach(q => {
@@ -3145,6 +3162,8 @@ const App = (() => {
             changePercent: q.changePercent,
             ts: Date.now()
           };
+        } else if (q.error) {
+          console.warn('[Refresh] Quote error for', q.symbol, ':', q.error);
         }
       });
 
@@ -3156,34 +3175,53 @@ const App = (() => {
         }
       });
 
-      // 2. Yahoo options chain (bid/ask for each strike)
-      await fetchOptionsLiveData();
-
-      // 3. Paper Portfolio evaluation (auto exit on T1/T2/Stop)
-      PaperPortfolio.evaluatePositions();
-
       State.update({ livePrices, lastUpdate: new Date().toISOString() });
-
-      // 4. Re-render everything
-      UIRenderer.renderHeader();
-      UIRenderer.renderAllTrades();
-      UIRenderer.renderZeroDTE();
-      UIRenderer.renderPerformance();
-      UIRenderer.renderPaperPortfolio();
-
-      btn.innerHTML = '✅ تم التحديث';
-      setTimeout(() => { btn.innerHTML = '🔄 تحديث الأسعار'; }, 1500);
-
-      // Reset countdown
-      resetCountdown();
+      quotesOK = true;
+      console.log('[Refresh] ✅ Step 1 done, prices updated for', Object.keys(livePrices).length, 'symbols');
     } catch (e) {
-      console.error('Refresh error:', e);
-      btn.innerHTML = '❌ فشل التحديث';
-      showStatus(`فشل التحديث: ${e.message}`, 'warning');
-      setTimeout(() => { btn.innerHTML = '🔄 تحديث الأسعار'; }, 2000);
-    } finally {
-      btn.disabled = false;
+      console.error('[Refresh] ❌ Step 1 failed (quotes):', e);
+      errors.push(`Quotes: ${e.message}`);
     }
+
+    // 2. Yahoo options chain (free, replaces Alpaca options)
+    try {
+      console.log('[Refresh] Step 2: Fetching options chains from Yahoo...');
+      await fetchOptionsLiveData();
+      optionsOK = true;
+      console.log('[Refresh] ✅ Step 2 done');
+    } catch (e) {
+      console.error('[Refresh] ❌ Step 2 failed (options):', e);
+      errors.push(`Options: ${e.message}`);
+    }
+
+    // 3. Paper Portfolio evaluation
+    try {
+      PaperPortfolio.evaluatePositions();
+    } catch (e) {
+      console.error('[Refresh] Portfolio eval error (non-fatal):', e);
+    }
+
+    // 4. Always re-render (uses whatever data we have + BS fallback)
+    UIRenderer.renderHeader();
+    UIRenderer.renderAllTrades();
+    UIRenderer.renderZeroDTE();
+    UIRenderer.renderPerformance();
+    UIRenderer.renderPaperPortfolio();
+
+    // 5. Status feedback
+    if (errors.length === 0) {
+      btn.innerHTML = '✅ تم التحديث';
+    } else if (quotesOK || optionsOK) {
+      btn.innerHTML = '⚠️ تحديث جزئي';
+      showStatus(errors.join(' | '), 'warning');
+    } else {
+      btn.innerHTML = '❌ فشل التحديث';
+      showStatus(errors.join(' | '), 'warning');
+    }
+    setTimeout(() => { btn.innerHTML = '🔄 تحديث الأسعار'; }, 2500);
+    btn.disabled = false;
+
+    resetCountdown();
   }
 
   // ===== Auto-refresh logic (v1.4) =====
