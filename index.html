@@ -1563,6 +1563,122 @@ button[data-term] {
   font-weight: 600;
   letter-spacing: 0.3px;
 }
+
+/* ===== M10-B: Stock Recommendation Card ===== */
+.recommendation-card.stock-rec {
+  border-color: var(--green);
+}
+.stock-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 8px;
+}
+@media (max-width: 720px) {
+  .stock-plan-grid { grid-template-columns: 1fr 1fr; }
+}
+.stock-plan-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.stock-plan-item-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+.stock-plan-item-value {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.stock-risk-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+@media (max-width: 720px) {
+  .stock-risk-grid { grid-template-columns: 1fr; }
+}
+.stock-risk-item {
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border-left: 4px solid;
+}
+.stock-risk-item.stop {
+  background: var(--red-bg);
+  border-color: var(--red);
+}
+.stock-risk-item.t1 {
+  background: rgba(251, 146, 60, 0.1);
+  border-color: #fb923c;
+}
+.stock-risk-item.t2 {
+  background: var(--green-bg);
+  border-color: var(--green);
+}
+.stock-risk-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+.stock-risk-price {
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 2px;
+}
+.stock-risk-detail {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.stock-rr-summary {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.stock-rr-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.stock-rr-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.stock-rr-value {
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.stock-rr-value.good { color: var(--green); }
+.stock-rr-value.ok { color: var(--yellow); }
+.stock-rr-value.bad { color: var(--red); }
+.stock-trade-type-badge {
+  display: inline-block;
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid var(--green);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
 </style>
 </head>
 <body>
@@ -2559,7 +2675,9 @@ const STRATEGIES = [
     requiredFilters: ['price_above_20d_high', 'volume_surge_1.5x', 'price_above_ma20'],
     optionalFilters: ['price_above_ma50', 'rsi_50_70', 'no_earnings_5d'],
     structure: { optionType:'CALL', moneyness:'ATM', dteRange:{min:7,max:30}, positionSizePct:1.5, orderType:'limit',
-      stop:{type:'premium_pct',value:-0.60}, target1:{type:'premium_pct',value:0.75,exitPct:50}, target2:{type:'premium_pct',value:1.50,exitPct:100}, timeStop:{type:'dte',value:3} }
+      stop:{type:'premium_pct',value:-0.60}, target1:{type:'premium_pct',value:0.75,exitPct:50}, target2:{type:'premium_pct',value:1.50,exitPct:100}, timeStop:{type:'dte',value:3} },
+    stockStructure: { positionSizePct:5, orderType:'limit',
+      stop:{type:'stock_pct',value:-0.05}, target1:{type:'stock_pct',value:0.08,exitPct:50}, target2:{type:'stock_pct',value:0.16,exitPct:100}, timeStop:{type:'days',value:14} }
   },
   {
     id: 'ma20-pullback',
@@ -2574,7 +2692,9 @@ const STRATEGIES = [
     requiredFilters: ['price_above_ma50', 'price_near_ma20', 'trend_up'],
     optionalFilters: ['rsi_above_40', 'volume_normal'],
     structure: { optionType:'CALL', moneyness:'ATM', dteRange:{min:10,max:30}, positionSizePct:1.5, orderType:'limit',
-      stop:{type:'premium_pct',value:-0.65}, target1:{type:'premium_pct',value:0.80,exitPct:50}, target2:{type:'premium_pct',value:1.60,exitPct:100}, timeStop:{type:'dte',value:3} }
+      stop:{type:'premium_pct',value:-0.65}, target1:{type:'premium_pct',value:0.80,exitPct:50}, target2:{type:'premium_pct',value:1.60,exitPct:100}, timeStop:{type:'dte',value:3} },
+    stockStructure: { positionSizePct:5, orderType:'limit',
+      stop:{type:'stock_pct',value:-0.04}, target1:{type:'stock_pct',value:0.06,exitPct:50}, target2:{type:'stock_pct',value:0.14,exitPct:100}, timeStop:{type:'days',value:21} }
   },
   {
     id: 'triple-ma-alignment',
@@ -2589,7 +2709,9 @@ const STRATEGIES = [
     requiredFilters: ['price_above_ma20', 'ma20_above_ma50', 'ma50_above_ma200'],
     optionalFilters: ['rsi_50_70', 'volume_above_avg'],
     structure: { optionType:'CALL', moneyness:'ATM', dteRange:{min:14,max:45}, positionSizePct:2.0, orderType:'limit',
-      stop:{type:'premium_pct',value:-0.55}, target1:{type:'premium_pct',value:1.00,exitPct:50}, target2:{type:'premium_pct',value:2.00,exitPct:100}, timeStop:{type:'dte',value:3} }
+      stop:{type:'premium_pct',value:-0.55}, target1:{type:'premium_pct',value:1.00,exitPct:50}, target2:{type:'premium_pct',value:2.00,exitPct:100}, timeStop:{type:'dte',value:3} },
+    stockStructure: { positionSizePct:6, orderType:'limit',
+      stop:{type:'stock_pct',value:-0.06}, target1:{type:'stock_pct',value:0.10,exitPct:50}, target2:{type:'stock_pct',value:0.20,exitPct:100}, timeStop:{type:'days',value:45} }
   },
   {
     id: 'post-earnings-drift',
@@ -2604,7 +2726,9 @@ const STRATEGIES = [
     requiredFilters: ['earnings_just_released', 'price_gap_up_2pct', 'volume_surge_2x'],
     optionalFilters: ['beat_estimates', 'positive_guidance'],
     structure: { optionType:'CALL', moneyness:'ATM', dteRange:{min:5,max:14}, positionSizePct:1.0, orderType:'market',
-      stop:{type:'premium_pct',value:-0.50}, target1:{type:'premium_pct',value:1.00,exitPct:75}, target2:{type:'premium_pct',value:2.00,exitPct:100}, timeStop:{type:'days',value:3} }
+      stop:{type:'premium_pct',value:-0.50}, target1:{type:'premium_pct',value:1.00,exitPct:75}, target2:{type:'premium_pct',value:2.00,exitPct:100}, timeStop:{type:'days',value:3} },
+    stockStructure: { positionSizePct:4, orderType:'market',
+      stop:{type:'stock_pct',value:-0.04}, target1:{type:'stock_pct',value:0.05,exitPct:60}, target2:{type:'stock_pct',value:0.10,exitPct:100}, timeStop:{type:'days',value:7} }
   },
   {
     id: 'mean-reversion',
@@ -2619,7 +2743,9 @@ const STRATEGIES = [
     requiredFilters: ['rsi_below_30', 'price_near_support'],
     optionalFilters: ['bullish_divergence', 'oversold_duration_3d'],
     structure: { optionType:'CALL', moneyness:'ATM', dteRange:{min:7,max:21}, positionSizePct:1.0, orderType:'limit',
-      stop:{type:'premium_pct',value:-0.55}, target1:{type:'premium_pct',value:0.60,exitPct:60}, target2:{type:'premium_pct',value:1.20,exitPct:100}, timeStop:{type:'dte',value:4} }
+      stop:{type:'premium_pct',value:-0.55}, target1:{type:'premium_pct',value:0.60,exitPct:60}, target2:{type:'premium_pct',value:1.20,exitPct:100}, timeStop:{type:'dte',value:4} },
+    stockStructure: { positionSizePct:4, orderType:'limit',
+      stop:{type:'stock_pct',value:-0.04}, target1:{type:'stock_pct',value:0.05,exitPct:60}, target2:{type:'stock_pct',value:0.10,exitPct:100}, timeStop:{type:'days',value:10} }
   },
   {
     id: 'pre-event-vega',
@@ -4744,6 +4870,26 @@ const Glossary = {
     en: 'Long Position',
     ar: 'صفقة شراء',
     desc: 'تملك الأصل وتتوقع ارتفاعه. عكس Short (البيع المكشوف). Long Call/Stock = توقع صعود، Long Put = توقع نزول.'
+  },
+  'R:R Ratio': {
+    en: 'Risk-to-Reward Ratio',
+    ar: 'نسبة المخاطرة إلى المكافأة',
+    desc: 'مقارنة بين الخسارة المحتملة والربح المحتمل. 1:2 = تخاطر $1 للحصول على $2. >2 جيد، >3 ممتاز، <1 سيء (تخاطر أكثر مما تكسب).'
+  },
+  'Limit Order': {
+    en: 'Limit Order',
+    ar: 'أمر بسعر محدد',
+    desc: 'أمر شراء/بيع بسعر معين أو أفضل. يضمن السعر لكن لا يضمن التنفيذ. الأنسب لـ entries محسوبة.'
+  },
+  'Market Order': {
+    en: 'Market Order',
+    ar: 'أمر بسعر السوق',
+    desc: 'أمر تنفيذ فوري بأفضل سعر متاح. يضمن التنفيذ لكن لا يضمن السعر. مناسب عند الحاجة لدخول سريع (post-earnings مثلاً).'
+  },
+  'Time Stop': {
+    en: 'Time Stop',
+    ar: 'حد زمني',
+    desc: 'الخروج من الصفقة بعد فترة معينة بغض النظر عن السعر. يحمي من سحب الـ theta (للخيارات) أو من dead money (للأسهم).'
   }
 };
 
@@ -6226,6 +6372,187 @@ const Builder = (() => {
 
         ${Chart.render({ history, days: 90, rsRating: indicators.rsRating })}`;
 
+      // M10-B: Stock mode — separate flow, computes entry/stop/targets in stock prices
+      if (currentAssetMode === 'stock') {
+        if (matched.length > 0) {
+          // Pick primary by largest position size
+          const primary = matched.reduce((b, s) => {
+            const sSize = (s.stockStructure && s.stockStructure.positionSizePct) || 0;
+            const bSize = (b.stockStructure && b.stockStructure.positionSizePct) || 0;
+            return sSize > bSize ? s : b;
+          });
+          const st = primary.stockStructure;
+          if (!st) {
+            html += `<div class="rec-section" style="background:var(--red-bg);padding:14px;border-radius:var(--radius-sm);color:var(--red);">
+              ⚠️ هذه الاستراتيجية لا تدعم وضع الأسهم.
+            </div>`;
+          } else {
+            const entry = price;
+            const stopPrice = entry * (1 + st.stop.value);
+            const t1Price   = entry * (1 + st.target1.value);
+            const t2Price   = entry * (1 + st.target2.value);
+            const capital = PaperPortfolio.get().initialBalance || CONFIG.PAPER_DEFAULT_BALANCE;
+            const positionDollars = capital * (st.positionSizePct / 100);
+            // M10-B: Allow fractional shares (Alpaca paper supports them) — useful for small accounts + expensive stocks
+            const sharesRaw = positionDollars / entry;
+            const shares = sharesRaw >= 1 ? Math.floor(sharesRaw * 100) / 100 : +sharesRaw.toFixed(4);
+            const actualCost = shares * entry;
+            const riskPerShare = entry - stopPrice;
+            const totalRisk = shares * riskPerShare;
+            const totalRiskPct = capital ? (totalRisk / capital) * 100 : 0;
+            const rrRatio = riskPerShare > 0 ? ((t2Price - entry) / riskPerShare) : 0;
+            const rrClass = rrRatio >= 2.5 ? 'good' : rrRatio >= 1.5 ? 'ok' : 'bad';
+            const sharesDisplay = shares >= 1 ? shares.toFixed(2) : shares.toFixed(4);
+            const fractionalNote = shares < 1 ? ' <span style="font-size:10px;color:var(--yellow);">(كسري)</span>' : '';
+
+            const stopPctTxt = (st.stop.value * 100).toFixed(1);
+            const t1PctTxt   = '+' + (st.target1.value * 100).toFixed(1);
+            const t2PctTxt   = '+' + (st.target2.value * 100).toFixed(1);
+
+            html += `
+              <div class="rec-section">
+                <div class="rec-section-title">✅ الاستراتيجية المطابقة:</div>
+                <div style="padding:12px;background:var(--green-bg);border-radius:var(--radius-sm);border-right:3px solid var(--green);">
+                  <div style="font-weight:700;">${primary.icon} ${primary.name}<span class="stock-trade-type-badge">📊 Long Stock</span></div>
+                  <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">${primary.description}</div>
+                </div>
+              </div>
+
+              <div class="rec-section">
+                <div class="rec-section-title">🎯 خطة الدخول:</div>
+                <div class="stock-plan-grid">
+                  <div class="stock-plan-item">
+                    <div class="stock-plan-item-label">نقطة الدخول</div>
+                    <div class="stock-plan-item-value">$${entry.toFixed(2)}</div>
+                  </div>
+                  <div class="stock-plan-item">
+                    <div class="stock-plan-item-label">عدد الأسهم</div>
+                    <div class="stock-plan-item-value">${sharesDisplay}${fractionalNote} <span style="font-size:11px;color:var(--text-muted);">سهم</span></div>
+                  </div>
+                  <div class="stock-plan-item">
+                    <div class="stock-plan-item-label">التكلفة (${st.positionSizePct}% من ${capital})</div>
+                    <div class="stock-plan-item-value">$${actualCost.toFixed(0)}</div>
+                  </div>
+                  <div class="stock-plan-item">
+                    <div class="stock-plan-item-label">نوع الأمر</div>
+                    <div class="stock-plan-item-value" style="font-size:13px;">${st.orderType === 'limit' ? '🎯 Limit' : '⚡ Market'}</div>
+                  </div>
+                  <div class="stock-plan-item">
+                    <div class="stock-plan-item-label">Time Stop</div>
+                    <div class="stock-plan-item-value" style="font-size:13px;">${st.timeStop?.value || '—'} يوم</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rec-section">
+                <div class="rec-section-title">🛡️ إدارة المخاطر:</div>
+                <div class="stock-risk-grid">
+                  <div class="stock-risk-item stop">
+                    <div class="stock-risk-label" style="color:var(--red);">🔴 Stop Loss</div>
+                    <div class="stock-risk-price" style="color:var(--red);">$${stopPrice.toFixed(2)}</div>
+                    <div class="stock-risk-detail">${stopPctTxt}% من السعر</div>
+                  </div>
+                  <div class="stock-risk-item t1">
+                    <div class="stock-risk-label" style="color:#fb923c;">🟠 Target 1</div>
+                    <div class="stock-risk-price" style="color:#fb923c;">$${t1Price.toFixed(2)}</div>
+                    <div class="stock-risk-detail">${t1PctTxt}% → بيع ${st.target1.exitPct}%</div>
+                  </div>
+                  <div class="stock-risk-item t2">
+                    <div class="stock-risk-label" style="color:var(--green);">🟢 Target 2</div>
+                    <div class="stock-risk-price" style="color:var(--green);">$${t2Price.toFixed(2)}</div>
+                    <div class="stock-risk-detail">${t2PctTxt}% → بيع الباقي</div>
+                  </div>
+                </div>
+                <div class="stock-rr-summary">
+                  <div class="stock-rr-item">
+                    <div class="stock-rr-label">⚖️ R:R Ratio (للـ T2)</div>
+                    <div class="stock-rr-value ${rrClass}">1 : ${rrRatio.toFixed(2)}</div>
+                  </div>
+                  <div class="stock-rr-item">
+                    <div class="stock-rr-label">💸 Risk الكلي</div>
+                    <div class="stock-rr-value" style="color:var(--red);">$${totalRisk.toFixed(0)} <span style="font-size:11px;color:var(--text-muted);">(${totalRiskPct.toFixed(1)}%)</span></div>
+                  </div>
+                  <div class="stock-rr-item">
+                    <div class="stock-rr-label">🎁 Reward (للـ T2)</div>
+                    <div class="stock-rr-value" style="color:var(--green);">$${(shares * (t2Price - entry)).toFixed(0)}</div>
+                  </div>
+                </div>
+              </div>`;
+
+            // Save lastRec for stock journal entry
+            lastRec = {
+              assetType: 'stock',
+              sym,
+              matched,
+              strategies: matched.map(s => s.name).join('، '),
+              confidence: Math.min(95, 50 + matched.length * 15),
+              entry: +entry.toFixed(2),
+              stop: +stopPrice.toFixed(2),
+              t1: +t1Price.toFixed(2),
+              t2: +t2Price.toFixed(2),
+              shares,
+              cost: +actualCost.toFixed(2),
+              risk: +totalRisk.toFixed(2),
+              riskPct: +totalRiskPct.toFixed(2),
+              rrRatio: rrRatio.toFixed(2),
+              orderType: st.orderType,
+              positionSizePct: st.positionSizePct,
+              timeStop: st.timeStop,
+              stopPct: st.stop.value,
+              t1Pct: st.target1.value,
+              t2Pct: st.target2.value
+            };
+          }
+        } else {
+          html += `
+          <div class="rec-section" style="text-align:center;background:var(--yellow-bg);padding:20px;border-radius:var(--radius-sm);">
+            <div style="font-size:14px;color:var(--yellow);font-weight:700;margin-bottom:8px;">⏸️ لا توجد استراتيجية مطابقة حالياً</div>
+            <div style="font-size:12px;color:var(--text-secondary);">السهم لا يحقق شروط الدخول لأي من الاستراتيجيات المختارة في وضع الأسهم.</div>
+          </div>`;
+          lastRec = null;
+        }
+        // Jump to shared filter details + buttons (skip options flow)
+        html += `
+          <div class="rec-section">
+            <div class="rec-section-title">🔍 تفاصيل الفلاتر:</div>
+            ${evaluated.map(s => `
+              <div style="margin-bottom:14px;padding:12px;background:var(--bg);border-radius:var(--radius-sm);border-right:3px solid ${s.matches ? 'var(--green)' : 'var(--red)'};">
+                <div style="font-weight:700;margin-bottom:8px;font-size:13px;">
+                  ${s.matches ? '✅' : '❌'} ${s.icon} ${s.name}
+                  <span style="font-size:11px;color:var(--text-secondary);font-weight:normal;">
+                    (المطلوبة: ${s.reqPassed}/${s.reqTotal} • الاختيارية: ${s.optPassed}/${s.optTotal})
+                  </span>
+                </div>
+                <div class="filters-grid">
+                  ${[...s.required, ...s.optional].map(f => `
+                    <div class="filter-item ${f.todo ? 'optional' : (f.pass ? 'pass' : 'fail')}" title="${f.detail}">
+                      ${f.todo ? '⏳' : (f.pass ? '✅' : '❌')} ${f.label}
+                      ${f.todo ? '<span class="mock-badge">قريباً</span>' : ''}
+                      <div style="font-size:10px;color:var(--text-secondary);margin-top:2px;">${f.detail}</div>
+                    </div>`).join('')}
+                </div>
+              </div>`).join('')}
+          </div>
+
+          <div class="rec-disclaimer">
+            ⚠️ التوصية بناء على بيانات السوق الحقيقية + 16 فلتر تكنيكال. تنفيذ الأسهم على Alpaca Paper قادم لاحقاً.
+          </div>
+          ${matched.length > 0 ? `
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="Builder.saveToJournal()" style="flex:1;min-width:160px;padding:12px;font-weight:700;">
+              💾 احفظ في السجل
+            </button>
+            <button class="btn" disabled title="تنفيذ الأسهم على Alpaca Paper قادم لاحقاً" style="flex:1;min-width:160px;padding:12px;font-weight:700;opacity:0.5;cursor:not-allowed;">
+              🦙 Execute Paper (قريباً)
+            </button>
+          </div>` : ''}
+        </div>`;
+
+        // Render and exit (tooltip event delegation handles dynamic data-term automatically)
+        out.innerHTML = html;
+        return;
+      }
+
       // Matched strategies + entry/exit plan
       if (matched.length > 0) {
         const primary = matched.reduce((b, s) => s.structure.positionSizePct > b.structure.positionSizePct ? s : b);
@@ -6610,6 +6937,53 @@ const Builder = (() => {
   function saveToJournal() {
     if (!lastRec || !lastRec.matched.length) { alert('لا توجد توصية نشطة للحفظ'); return; }
     const journal = State.get().journal || [];
+
+    // M10-B: Stock journal entry (separate from options shape)
+    if (lastRec.assetType === 'stock') {
+      const notes = [
+        `📊 ${lastRec.sym} Long Stock @ $${lastRec.entry?.toFixed(2)}`,
+        `📦 ${lastRec.shares} سهم • تكلفة $${lastRec.cost}`,
+        `🎯 T1 $${lastRec.t1} | T2 $${lastRec.t2} | Stop $${lastRec.stop}`,
+        `⚖️ R:R 1:${lastRec.rrRatio}`,
+        `🧠 ${lastRec.strategies}`,
+        `💯 ثقة ${lastRec.confidence}%`,
+        `⏱️ Time Stop: ${lastRec.timeStop?.value || '—'} يوم`
+      ].filter(Boolean).join(' | ');
+
+      journal.unshift({
+        id: `rec-${Date.now()}`,
+        type: 'recommendation',
+        assetType: 'stock',
+        symbol: lastRec.sym,
+        entry: lastRec.entry,
+        entryPremium: lastRec.entry,  // alias so existing renderJournal % math works
+        t1: lastRec.t1,
+        t2: lastRec.t2,
+        stop: lastRec.stop,
+        shares: lastRec.shares,
+        cost: lastRec.cost,
+        risk: lastRec.risk,
+        riskPct: lastRec.riskPct,
+        rrRatio: lastRec.rrRatio,
+        orderType: lastRec.orderType,
+        positionSizePct: lastRec.positionSizePct,
+        timeStop: lastRec.timeStop,
+        strategies: lastRec.strategies,
+        confidence: lastRec.confidence,
+        date: new Date().toLocaleString('ar-SA'),
+        notes,
+        closed: false,
+        source: 'builder'
+      });
+
+      State.update({ journal });
+      UIRenderer.renderJournal();
+      UIRenderer.renderOpenPositions();
+      alert(`✅ تم حفظ توصية الأسهم (${lastRec.sym}) في السجل\n\nالدخول: $${lastRec.entry?.toFixed(2)} • ${lastRec.shares} سهم • تكلفة $${lastRec.cost}\nStop: $${lastRec.stop} | T1: $${lastRec.t1} | T2: $${lastRec.t2}\nR:R 1:${lastRec.rrRatio}`);
+      return;
+    }
+
+    // Original options journal entry (unchanged)
     const notes = [
       `📊 ${lastRec.sym} ${lastRec.optionType} @ $${lastRec.strike?.toFixed(2)}`,
       lastRec.expiryDate ? `📅 ${lastRec.expiryDate} (${lastRec.dte}d)` : null,
