@@ -1245,9 +1245,16 @@ button[data-term] {
     </div>
     <div id="paperClosedList"></div>
 
+    <!-- Live Alpaca Positions (v1.4.3) -->
+    <div class="paper-section-title">
+      <span>🦙 صفقات Alpaca المفتوحة (Live)</span>
+      <button class="btn" style="font-size: 11px; padding: 4px 10px;" onclick="App.refreshLivePositions()">🔄 تحديث</button>
+    </div>
+    <div id="livePositionsList"><div class="paper-empty">اضغط "تحديث" لجلب الصفقات من Alpaca</div></div>
+
     <!-- Stats -->
     <div class="paper-section-title">
-      <span>📊 ملخص الأداء</span>
+      <span>📊 ملخص الأداء (تخيلي)</span>
     </div>
     <div id="paperStats"></div>
   </div>
@@ -1854,10 +1861,37 @@ const AlpacaClient = (() => {
     return await get(`/orders/${orderId}`);
   }
 
+  // NEW v1.4.3: Position management
+  async function getPositions() {
+    return await get('/positions');
+  }
+
+  async function closePosition(symbol) {
+    const res = await fetch(`${workerBase()}/alpaca/positions/${encodeURIComponent(symbol)}`, {
+      method: 'DELETE'
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data?.error || data?.message || `Close failed: ${res.status}`);
+    }
+    return data;
+  }
+
+  // Check if option contract is available in Alpaca (returns true/false)
+  async function isOptionAvailable(occSymbol) {
+    try {
+      const res = await fetch(`${workerBase()}/alpaca/options/snapshots/${encodeURIComponent(occSymbol)}`);
+      return res.ok;
+    } catch (e) {
+      return false;
+    }
+  }
+
   return {
     account, clock, latestQuote, multiQuotes,
     optionsChain, optionSnapshots,
     submitOrder, getOrder,
+    getPositions, closePosition, isOptionAvailable,
     isConfigured, checkConfigured
   };
 })();
@@ -2739,10 +2773,21 @@ const UIRenderer = (() => {
       State.update({ journal });
 
       closeModal('executeModal');
-      alert(`✅ تم إرسال الأمر بنجاح!\n\nOrder ID: ${order.id}\nStatus: ${order.status}\n\nسُجِّل في Journal تلقائياً.`);
+      alert(`✅ تم إرسال الأمر بنجاح!\n\nOrder ID: ${order.id}\nStatus: ${order.status}\n\nسُجِّل في Journal وستظهر في Live Positions بعد الـ fill.`);
       renderJournal();
+      // Refresh live positions
+      App.refreshLivePositions();
     } catch (e) {
-      alert(`❌ فشل إرسال الأمر:\n\n${e.message}\n\nراجع Settings وتأكد من keys صحيحة وأن السوق مفتوح للـ options trading.`);
+      const msg = e.message || '';
+      if (msg.includes('not found') || msg.includes('asset')) {
+        alert(`⚠️ هذا العقد غير متاح في Alpaca Paper\n\nالـ contract: ${occ}\n\nالسبب: Alpaca paper account لا يدعم كل options contracts (قيد منصة معروف). جرّب strike أو expiry آخر متاح في Alpaca.\n\nهذا لا يؤثر على الـ SPY و SPX اللي اشتغلت من قبل.`);
+      } else if (msg.includes('insufficient') || msg.includes('buying power')) {
+        alert(`⚠️ رصيد غير كافٍ:\n\n${msg}\n\nتحقق من Buying Power في Alpaca dashboard.`);
+      } else if (msg.includes('market') && msg.includes('closed')) {
+        alert(`⚠️ السوق مغلق حالياً للـ options trading.\n\n${msg}`);
+      } else {
+        alert(`❌ فشل إرسال الأمر:\n\n${msg}`);
+      }
     }
   }
 
@@ -3330,6 +3375,79 @@ const App = (() => {
     UIRenderer.renderPaperPortfolio();
   }
 
+  // ===== Live Alpaca Positions (v1.4.3) =====
+  async function refreshLivePositions() {
+    const container = document.getElementById('livePositionsList');
+    if (!container) return;
+    container.innerHTML = '<div class="paper-empty">⏳ جاري الجلب...</div>';
+
+    try {
+      const positions = await AlpacaClient.getPositions();
+      if (!positions || positions.length === 0) {
+        container.innerHTML = '<div class="paper-empty">لا توجد صفقات مفتوحة على Alpaca</div>';
+        return;
+      }
+
+      container.innerHTML = positions.map(p => {
+        const qty = parseFloat(p.qty);
+        const avgEntry = parseFloat(p.avg_entry_price);
+        const currentPrice = parseFloat(p.current_price || 0);
+        const marketValue = parseFloat(p.market_value || 0);
+        const costBasis = parseFloat(p.cost_basis || 0);
+        const unrealizedPL = parseFloat(p.unrealized_pl || 0);
+        const unrealizedPLpc = parseFloat(p.unrealized_plpc || 0) * 100;
+        const plClass = unrealizedPL > 0 ? 'profit' : unrealizedPL < 0 ? 'loss' : '';
+        const plColor = unrealizedPL > 0 ? 'up' : unrealizedPL < 0 ? 'down' : 'neutral';
+
+        return `
+          <div class="paper-position ${plClass}">
+            <div class="paper-pos-header">
+              <div>
+                <div class="paper-pos-title" style="font-family: 'Consolas', monospace; font-size: 12px;">${p.symbol}</div>
+                <div class="paper-pos-meta">${qty} ${qty > 0 ? 'Long' : 'Short'} • Avg Entry: $${avgEntry.toFixed(2)}</div>
+              </div>
+              <button class="btn" onclick="App.closeLivePosition('${p.symbol}')"
+                style="font-size: 11px; padding: 6px 12px; color: var(--red); border-color: var(--red);">
+                ❌ Close Position
+              </button>
+            </div>
+            <div class="paper-pos-grid">
+              <div class="paper-pos-stat">
+                <div class="paper-pos-stat-label">Current</div>
+                <div class="paper-pos-stat-value">$${currentPrice.toFixed(2)}</div>
+              </div>
+              <div class="paper-pos-stat">
+                <div class="paper-pos-stat-label">Market Value</div>
+                <div class="paper-pos-stat-value">$${marketValue.toFixed(2)}</div>
+              </div>
+              <div class="paper-pos-stat">
+                <div class="paper-pos-stat-label">P&amp;L</div>
+                <div class="paper-pos-stat-value ${plColor}">${unrealizedPL >= 0 ? '+' : ''}$${unrealizedPL.toFixed(2)}</div>
+              </div>
+              <div class="paper-pos-stat">
+                <div class="paper-pos-stat-label">% Return</div>
+                <div class="paper-pos-stat-value ${plColor}">${unrealizedPLpc >= 0 ? '+' : ''}${unrealizedPLpc.toFixed(2)}%</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (e) {
+      container.innerHTML = `<div class="paper-empty" style="color: var(--red);">❌ فشل الجلب: ${e.message}</div>`;
+    }
+  }
+
+  async function closeLivePosition(symbol) {
+    if (!confirm(`إغلاق الصفقة بالكامل؟\n\n${symbol}\n\nسيتم إرسال market order للبيع فوراً.`)) return;
+    try {
+      const result = await AlpacaClient.closePosition(symbol);
+      alert(`✅ تم إرسال أمر الإغلاق\n\nOrder ID: ${result.id || 'submitted'}\nStatus: ${result.status || 'submitted'}`);
+      setTimeout(() => refreshLivePositions(), 1500);
+    } catch (e) {
+      alert(`❌ فشل الإغلاق:\n\n${e.message}`);
+    }
+  }
+
   function exportData() {
     const data = {
       tradingState: State.get(),
@@ -3364,7 +3482,10 @@ const App = (() => {
         if (tab.dataset.tab === 'calendar') UIRenderer.renderCalendar();
         if (tab.dataset.tab === 'journal') UIRenderer.renderJournal();
         if (tab.dataset.tab === 'performance') UIRenderer.renderPerformance();
-        if (tab.dataset.tab === 'paper') UIRenderer.renderPaperPortfolio();
+        if (tab.dataset.tab === 'paper') {
+          UIRenderer.renderPaperPortfolio();
+          refreshLivePositions();
+        }
       });
     });
   }
@@ -3429,7 +3550,9 @@ const App = (() => {
     paperManualClose,
     openPaperSettings,
     paperApplySettings,
-    paperReset
+    paperReset,
+    refreshLivePositions,
+    closeLivePosition
   };
 })();
 
