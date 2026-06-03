@@ -1482,6 +1482,87 @@ button[data-term] {
   margin: 12px 0;
   font-size: 13px;
 }
+
+/* ===== M10-A: Asset Class Toggle + Strategy Badges ===== */
+.asset-toggle {
+  display: inline-flex;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  margin-bottom: 14px;
+  gap: 2px;
+}
+.asset-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: calc(var(--radius-sm) - 2px);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.asset-toggle-btn:hover {
+  background: var(--card-hover);
+  color: var(--text);
+}
+.asset-toggle-btn.active {
+  background: var(--purple);
+  color: white;
+}
+.asset-toggle-btn.active:hover {
+  background: var(--purple);
+  filter: brightness(1.1);
+}
+.strategy-asset-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 3px;
+  margin-left: auto;
+  letter-spacing: 0.3px;
+}
+.strategy-asset-badge.asset-both {
+  background: rgba(139, 92, 246, 0.15);
+  color: var(--purple);
+  border: 1px solid var(--purple);
+}
+.strategy-asset-badge.asset-option {
+  background: var(--blue-bg);
+  color: var(--blue);
+  border: 1px solid var(--blue);
+}
+.strategy-asset-badge.asset-stock {
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid var(--green);
+}
+.asset-mode-banner {
+  background: var(--yellow-bg);
+  border: 1px solid var(--yellow);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--yellow);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.asset-toggle-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
 </style>
 </head>
 <body>
@@ -1597,6 +1678,19 @@ button[data-term] {
     <!-- Step 1: Strategies -->
     <div class="builder-section">
       <div class="builder-step-label">① اختر الاستراتيجيات</div>
+
+      <div class="asset-toggle-label">نوع الأصل:</div>
+      <div class="asset-toggle" id="assetToggle">
+        <button class="asset-toggle-btn active" onclick="Builder.setAssetMode('option')" data-mode="option">🎫 خيارات</button>
+        <button class="asset-toggle-btn" onclick="Builder.setAssetMode('stock')" data-mode="stock">📊 أسهم</button>
+      </div>
+
+      <div id="stocksModeBanner" style="display:none;">
+        <div class="asset-mode-banner">
+          🚧 وضع الأسهم — التصفية والاكتشاف يعملان، لكن توصيات الـ entry/stop/target ستُفعّل في Phase B.
+        </div>
+      </div>
+
       <div class="builder-helper">اختر وحدة أو أكثر — الموقع يكتشف الأسهم المطابقة</div>
       <div class="strategy-grid" id="strategyGrid"></div>
     </div>
@@ -2459,6 +2553,7 @@ const STRATEGIES = [
     icon: '🚀',
     category: 'trend',
     bias: 'bullish',
+    assetType: 'both',
     description: 'سهم يكسر مقاومة 20-day بحجم تداول قوي — الـ buyers يسيطرون والاتجاه صاعد.',
     when: 'أفضل في السوق الصاعد بعد فترة تراكم هادئة',
     requiredFilters: ['price_above_20d_high', 'volume_surge_1.5x', 'price_above_ma20'],
@@ -2473,6 +2568,7 @@ const STRATEGIES = [
     icon: '📉→📈',
     category: 'trend',
     bias: 'bullish',
+    assetType: 'both',
     description: 'في trend صاعد، السعر يتراجع ويلامس MA20 ثم يرتد — نقطة دخول محدودة المخاطرة.',
     when: 'يعمل لما السعر > MA50 وهناك trend طويل واضح',
     requiredFilters: ['price_above_ma50', 'price_near_ma20', 'trend_up'],
@@ -2487,6 +2583,7 @@ const STRATEGIES = [
     icon: '📊',
     category: 'trend',
     bias: 'bullish',
+    assetType: 'both',
     description: 'السعر > MA20 > MA50 > MA200 — أقوى إشارة trend ممكنة. كل المتوسطات تؤكد الصعود.',
     when: 'أعلى نسبة نجاح تاريخياً. الأنسب في السوق الصاعد القوي',
     requiredFilters: ['price_above_ma20', 'ma20_above_ma50', 'ma50_above_ma200'],
@@ -2501,6 +2598,7 @@ const STRATEGIES = [
     icon: '📢',
     category: 'news',
     bias: 'bullish',
+    assetType: 'both',
     description: 'بعد إعلان أرباح قوي، السعر يستمر بنفس الاتجاه 2-5 أيام. نلحق الحركة ونستفيد من الزخم.',
     when: 'في أول 24-48 ساعة بعد الإعلان — اعمل بسرعة أو اتركها',
     requiredFilters: ['earnings_just_released', 'price_gap_up_2pct', 'volume_surge_2x'],
@@ -2515,6 +2613,7 @@ const STRATEGIES = [
     icon: '🔄',
     category: 'counter',
     bias: 'bullish',
+    assetType: 'both',
     description: 'سهم انخفض بسرعة وصار oversold (RSI < 30) — نتوقع ارتداده للمتوسط. خلاف الاتجاه لكن محسوب.',
     when: 'في السوق الجانبي أو بعد panic sell. خطر عالٍ في downtrend قوي',
     requiredFilters: ['rsi_below_30', 'price_near_support'],
@@ -2529,6 +2628,7 @@ const STRATEGIES = [
     icon: '⚡',
     category: 'volatility',
     bias: 'neutral',
+    assetType: 'option',
     description: 'قبل FOMC/CPI/أرباح، الـ IV منخفض. نشتري options ونستفيد من ارتفاع الـ IV وحركة السعر.',
     when: 'قبل 2-7 أيام من الحدث. اخرج قبله أو بعده مباشرة، لا تمسك',
     requiredFilters: ['major_event_within_7d', 'iv_rank_below_40'],
@@ -4627,6 +4727,23 @@ const Glossary = {
     en: 'Sparkline',
     ar: 'الخط المصغّر',
     desc: 'شارت صغير بدون محاور يُظهر اتجاه السعر سريعاً. مفيد للبطاقات الموجزة.'
+  },
+
+  // ===== Asset Class / Trading Style (M10) =====
+  'Asset Type': {
+    en: 'Asset Type',
+    ar: 'نوع الأصل',
+    desc: 'يحدد ما تتداوله: أسهم (Shares) أو عقود خيارات (Options Contracts). كل نوع له رأس مال مختلف، إدارة مخاطر مختلفة، وأفق زمني مختلف.'
+  },
+  'Stock': {
+    en: 'Stock / Share',
+    ar: 'سهم',
+    desc: 'وحدة ملكية في شركة. تداول الأسهم = شراء/بيع مباشر. لا time decay، لا expiration، لكن capital requirement أعلى للمستوى نفسه من الـ exposure.'
+  },
+  'Long': {
+    en: 'Long Position',
+    ar: 'صفقة شراء',
+    desc: 'تملك الأصل وتتوقع ارتفاعه. عكس Short (البيع المكشوف). Long Call/Stock = توقع صعود، Long Put = توقع نزول.'
   }
 };
 
@@ -5768,6 +5885,40 @@ const Builder = (() => {
   let selected = new Set();
   let symbolData = null;
   let lastRec = null;
+  let currentAssetMode = 'option';  // M10-A: 'option' | 'stock'
+
+  // M10-A: Check if strategy is applicable to current asset mode
+  function isStrategyApplicable(strategy, mode = currentAssetMode) {
+    const t = strategy.assetType || 'option';  // default to 'option' for legacy strategies
+    if (mode === 'option') return t === 'option' || t === 'both';
+    if (mode === 'stock')  return t === 'stock'  || t === 'both';
+    return true;
+  }
+
+  // M10-A: Switch asset mode, deselect strategies not applicable, re-render
+  function setAssetMode(mode) {
+    if (mode !== 'option' && mode !== 'stock') return;
+    currentAssetMode = mode;
+
+    // Deselect strategies not applicable to new mode
+    const toRemove = [];
+    selected.forEach(id => {
+      const s = STRATEGIES.find(x => x.id === id);
+      if (!s || !isStrategyApplicable(s, mode)) toRemove.push(id);
+    });
+    toRemove.forEach(id => selected.delete(id));
+
+    // Update toggle button visual state
+    document.querySelectorAll('#assetToggle .asset-toggle-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+
+    // Show/hide banner
+    const banner = document.getElementById('stocksModeBanner');
+    if (banner) banner.style.display = (mode === 'stock') ? 'block' : 'none';
+
+    renderStrategyGrid();
+  }
 
   function init() {
     renderStrategyGrid();
@@ -5776,24 +5927,40 @@ const Builder = (() => {
   function renderStrategyGrid() {
     const grid = document.getElementById('strategyGrid');
     if (!grid) return;
-    grid.innerHTML = STRATEGIES.map(s => `
-      <div class="strategy-card" id="sc-${s.id}" onclick="Builder.toggle('${s.id}')">
+
+    // M10-A: Filter strategies by current asset mode
+    const visible = STRATEGIES.filter(s => isStrategyApplicable(s));
+
+    if (visible.length === 0) {
+      grid.innerHTML = `<div style="grid-column: 1/-1; padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
+        لا توجد استراتيجيات متاحة لهذا النوع حالياً
+      </div>`;
+      return;
+    }
+
+    grid.innerHTML = visible.map(s => {
+      const t = s.assetType || 'option';
+      const badgeText = t === 'both' ? '🎫📊 كلاهما' : t === 'stock' ? '📊 أسهم' : '🎫 خيارات';
+      return `
+      <div class="strategy-card ${selected.has(s.id) ? 'selected' : ''}" id="sc-${s.id}" onclick="Builder.toggle('${s.id}')">
         <div class="strategy-card-header">
           <div class="strategy-icon">${s.icon}</div>
           <div class="strategy-info">
             <div class="strategy-name">${s.name}</div>
             <div class="strategy-name-ar">${s.nameAr}</div>
           </div>
-          <div class="strategy-check" id="chk-${s.id}">☐</div>
+          <div class="strategy-check" id="chk-${s.id}">${selected.has(s.id) ? '☑' : '☐'}</div>
         </div>
         <div class="strategy-desc">${s.description}</div>
         <div class="strategy-when">${s.when}</div>
         <div class="strategy-badges">
           <span class="badge-cat badge-${s.category}">${s.category}</span>
           <span class="badge-cat badge-${s.bias}">${s.bias}</span>
+          <span class="strategy-asset-badge asset-${t}">${badgeText}</span>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
   }
 
   function toggle(id) {
@@ -6480,7 +6647,7 @@ const Builder = (() => {
     alert(`✅ تم حفظ التوصية (${lastRec.sym}) في السجل\n\nالـ Strike: $${lastRec.strike?.toFixed(2)} | Premium: $${lastRec.estPremium}\nT1: $${lastRec.t1} | T2: $${lastRec.t2} | Stop: $${lastRec.stop}`);
   }
 
-  return { init, toggle, fetchSymbol, generate, scanMarket, openRecommendation, saveToJournal, executeOnAlpaca, toggleLimitPrice, submitExecute };
+  return { init, toggle, fetchSymbol, generate, scanMarket, openRecommendation, saveToJournal, executeOnAlpaca, toggleLimitPrice, submitExecute, setAssetMode };
 })();
 
 // ============================================================
