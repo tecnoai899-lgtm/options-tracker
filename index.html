@@ -883,6 +883,82 @@ body {
   50% { opacity: 0.3; }
 }
 
+/* ===== RECOMMENDATION BUILDER (MVP 1) ===== */
+.builder-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.builder-section { margin-bottom: 24px; }
+.builder-step-label { font-size: 13px; font-weight: 700; color: var(--purple); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+.builder-helper { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+.builder-symbol-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.builder-symbol-result { display: flex; align-items: center; gap: 12px; padding: 10px; background: var(--bg-secondary); border-radius: var(--radius-sm); margin-top: 8px; }
+.bsr-name { font-weight: 700; font-size: 16px; }
+.bsr-price { font-family: 'Consolas', monospace; font-size: 18px; font-weight: 700; }
+.builder-loading { color: var(--text-secondary); font-size: 13px; padding: 10px 0; }
+
+.strategy-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 10px; }
+.strategy-card { background: var(--bg-secondary); border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 14px; cursor: pointer; transition: all 0.2s; }
+.strategy-card:hover { border-color: var(--purple); }
+.strategy-card.selected { border-color: var(--green); background: var(--green-bg); }
+.strategy-card-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+.strategy-icon { font-size: 22px; }
+.strategy-info { flex: 1; }
+.strategy-name { font-weight: 700; font-size: 13px; }
+.strategy-name-ar { font-size: 11px; color: var(--text-secondary); }
+.strategy-check { font-size: 18px; color: var(--green); }
+.strategy-desc { font-size: 11px; color: var(--text-secondary); margin-bottom: 6px; line-height: 1.4; }
+.strategy-when { font-size: 10px; color: var(--yellow); margin-bottom: 8px; }
+.strategy-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.badge-cat { font-size: 9px; padding: 2px 7px; border-radius: 8px; font-weight: 700; text-transform: uppercase; }
+.badge-trend { background: var(--blue-bg); color: var(--blue); }
+.badge-news { background: var(--purple-bg); color: var(--purple); }
+.badge-counter { background: var(--yellow-bg); color: var(--yellow); }
+.badge-volatility { background: var(--red-bg); color: var(--red); }
+.badge-bullish { background: var(--green-bg); color: var(--green); }
+.badge-bearish { background: var(--red-bg); color: var(--red); }
+.badge-neutral { background: var(--bg-tertiary); color: var(--text-secondary); }
+
+.recommendation-card { background: var(--bg-secondary); border: 2px solid var(--purple); border-radius: var(--radius); padding: 20px; margin-top: 20px; }
+.rec-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.rec-symbol { font-size: 24px; font-weight: 800; font-family: 'Consolas', monospace; }
+.rec-direction { font-size: 15px; font-weight: 700; margin-top: 4px; }
+.rec-confidence { text-align: center; background: var(--purple-bg); border-radius: var(--radius-sm); padding: 10px 16px; }
+.conf-value { font-size: 24px; font-weight: 800; color: var(--purple); }
+.conf-label { font-size: 10px; color: var(--text-secondary); }
+.rec-section { margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px dashed var(--border); }
+.rec-section:last-child { border-bottom: none; }
+.rec-section-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+.rec-strategy-match { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; padding: 4px 0; }
+.rsm-icon { font-size: 16px; }
+.rsm-name { font-weight: 700; color: var(--green); min-width: 160px; }
+.rsm-reason { color: var(--text-secondary); }
+.rec-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rec-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.rec-item { background: var(--bg); border-radius: var(--radius-sm); padding: 10px; }
+.ri-label { font-size: 10px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px; }
+.ri-value { font-size: 13px; font-weight: 600; font-family: 'Consolas', monospace; }
+.rr-risk .ri-value { color: var(--red); }
+.rr-reward .ri-value { color: var(--green); }
+.rr-ratio .ri-value { color: var(--blue); font-size: 16px; font-weight: 800; }
+.exit-plan-grid { display: flex; flex-direction: column; gap: 6px; }
+.exit-row { display: grid; grid-template-columns: 2fr 1fr 1fr; align-items: center; padding: 10px; border-radius: var(--radius-sm); }
+.exit-row.target1, .exit-row.target2 { background: var(--green-bg); border: 1px solid var(--green); }
+.exit-row.stop { background: var(--red-bg); border: 1px solid var(--red); }
+.ep-label { font-size: 12px; font-weight: 700; }
+.ep-price { font-family: 'Consolas', monospace; font-weight: 700; font-size: 14px; text-align: center; }
+.ep-action { font-size: 11px; color: var(--text-secondary); text-align: end; }
+.filters-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; }
+.filter-item { font-size: 11px; padding: 5px 8px; border-radius: var(--radius-sm); background: var(--bg-tertiary); }
+.filter-item.pass { color: var(--green); }
+.filter-item.fail { color: var(--red); }
+.filter-item.optional { opacity: 0.7; }
+.mock-badge { font-size: 8px; background: var(--yellow-bg); color: var(--yellow); padding: 1px 4px; border-radius: 4px; margin-inline-start: 4px; }
+.rec-disclaimer { font-size: 11px; color: var(--yellow); background: var(--yellow-bg); border-radius: var(--radius-sm); padding: 10px; text-align: center; margin-top: 8px; }
+
+@media (max-width: 768px) {
+  .strategy-grid { grid-template-columns: 1fr; }
+  .rec-grid-2, .rec-grid-3 { grid-template-columns: 1fr; }
+  .exit-row { grid-template-columns: 1fr; gap: 3px; }
+}
+
 /* ===== PAPER PORTFOLIO (v1.4) ===== */
 .paper-card {
   background: var(--card);
@@ -1220,6 +1296,7 @@ button[data-term] {
 <!-- ===== TABS ===== -->
 <div class="tabs">
   <button class="tab active" data-tab="dashboard">📈 المسارات المباشرة</button>
+  <button class="tab" data-tab="builder">🔮 صنع توصية</button>
   <button class="tab" data-tab="paper">🎯 محفظة الاختبار</button>
   <button class="tab" data-tab="calendar">📅 الأجندة الماكرو</button>
   <button class="tab" data-tab="journal">📓 سجل الصفقات</button>
@@ -1246,6 +1323,44 @@ button[data-term] {
   <!-- Trade Cards Grid -->
   <div class="trades-grid" id="tradesGrid">
     <!-- يُملأ ديناميكياً -->
+  </div>
+</div>
+
+<!-- ===== TAB: RECOMMENDATION BUILDER (MVP 1) ===== -->
+<div class="tab-content" id="tab-builder">
+  <div class="builder-card">
+
+    <!-- Step 1: Symbol -->
+    <div class="builder-section">
+      <div class="builder-step-label">① اختر السهم</div>
+      <div class="builder-symbol-row">
+        <input type="text" id="builderSymbol" placeholder="مثال: SPY, AAPL, NVDA"
+          class="form-input" autocomplete="off" autocapitalize="off" spellcheck="false"
+          style="font-family:'Consolas',monospace; font-size:15px; max-width:200px; text-transform:uppercase;">
+        <button class="btn btn-primary" onclick="Builder.fetchSymbol()">📊 جلب البيانات</button>
+      </div>
+      <div id="builderSymbolInfo"></div>
+    </div>
+
+    <!-- Step 2: Strategies -->
+    <div class="builder-section">
+      <div class="builder-step-label">② اختر الاستراتيجيات</div>
+      <div class="builder-helper">اختر وحدة أو أكثر — كل تطابق يزيد الثقة في التوصية</div>
+      <div class="strategy-grid" id="strategyGrid"></div>
+    </div>
+
+    <!-- Step 3: Generate -->
+    <div class="builder-section" style="margin-bottom: 0;">
+      <div class="builder-step-label">③ أنشئ التوصية</div>
+      <button class="btn btn-primary" onclick="Builder.generate()"
+        style="width:100%; padding:14px; font-size:16px; font-weight:700; background: linear-gradient(135deg, var(--purple), var(--blue)); border:none;">
+        🔮 أنشئ التوصية
+      </button>
+    </div>
+
+    <!-- Output -->
+    <div id="builderOutput"></div>
+
   </div>
 </div>
 
@@ -2047,6 +2162,96 @@ const CALENDAR = [
   { date: '16-17', month: 'يونيو', day: 'ثلاثاء-أربعاء', name: 'FOMC + Warsh First Press Conference', impact: '🔴 حدث ضخم', class: 'urgent', action: 'تجنّب 0DTE قبل 2:30 PM' },
   { date: '19', month: 'يونيو', day: 'الجمعة', name: 'Juneteenth Holiday (سوق مغلق)', impact: '—', class: '', action: '—' },
   { date: '20', month: 'يونيو', day: 'السبت', name: 'Triple Witching OPEX', impact: '🔴 pinning', class: 'urgent', action: 'تجنّب 0DTE Long' }
+];
+
+// ============================================================
+// STRATEGIES LIBRARY — 6 استراتيجيات لـ Recommendation Builder
+// ============================================================
+const STRATEGIES = [
+  {
+    id: 'momentum-breakout',
+    name: 'Momentum Breakout',
+    nameAr: 'كسر بزخم',
+    icon: '🚀',
+    category: 'trend',
+    bias: 'bullish',
+    description: 'سهم يكسر مقاومة 20-day بحجم تداول قوي — الـ buyers يسيطرون والاتجاه صاعد.',
+    when: 'أفضل في السوق الصاعد بعد فترة تراكم هادئة',
+    requiredFilters: ['price_above_20d_high', 'volume_surge_1.5x', 'price_above_ma20'],
+    optionalFilters: ['price_above_ma50', 'rsi_50_70', 'no_earnings_5d'],
+    structure: { optionType:'CALL', moneyness:'ATM', dteRange:{min:7,max:30}, positionSizePct:1.5, orderType:'limit',
+      stop:{type:'premium_pct',value:-0.60}, target1:{type:'premium_pct',value:0.75,exitPct:50}, target2:{type:'premium_pct',value:1.50,exitPct:100}, timeStop:{type:'dte',value:3} }
+  },
+  {
+    id: 'ma20-pullback',
+    name: 'MA20 Pullback',
+    nameAr: 'ارتداد من MA20',
+    icon: '📉→📈',
+    category: 'trend',
+    bias: 'bullish',
+    description: 'في trend صاعد، السعر يتراجع ويلامس MA20 ثم يرتد — نقطة دخول محدودة المخاطرة.',
+    when: 'يعمل لما السعر > MA50 وهناك trend طويل واضح',
+    requiredFilters: ['price_above_ma50', 'price_near_ma20', 'trend_up'],
+    optionalFilters: ['rsi_above_40', 'volume_normal'],
+    structure: { optionType:'CALL', moneyness:'ATM', dteRange:{min:10,max:30}, positionSizePct:1.5, orderType:'limit',
+      stop:{type:'premium_pct',value:-0.65}, target1:{type:'premium_pct',value:0.80,exitPct:50}, target2:{type:'premium_pct',value:1.60,exitPct:100}, timeStop:{type:'dte',value:3} }
+  },
+  {
+    id: 'triple-ma-alignment',
+    name: 'Triple MA Alignment',
+    nameAr: 'تساوق المتوسطات الثلاثة',
+    icon: '📊',
+    category: 'trend',
+    bias: 'bullish',
+    description: 'السعر > MA20 > MA50 > MA200 — أقوى إشارة trend ممكنة. كل المتوسطات تؤكد الصعود.',
+    when: 'أعلى نسبة نجاح تاريخياً. الأنسب في السوق الصاعد القوي',
+    requiredFilters: ['price_above_ma20', 'ma20_above_ma50', 'ma50_above_ma200'],
+    optionalFilters: ['rsi_50_70', 'volume_above_avg'],
+    structure: { optionType:'CALL', moneyness:'ATM', dteRange:{min:14,max:45}, positionSizePct:2.0, orderType:'limit',
+      stop:{type:'premium_pct',value:-0.55}, target1:{type:'premium_pct',value:1.00,exitPct:50}, target2:{type:'premium_pct',value:2.00,exitPct:100}, timeStop:{type:'dte',value:3} }
+  },
+  {
+    id: 'post-earnings-drift',
+    name: 'Post-Earnings Drift',
+    nameAr: 'زخم ما بعد الأرباح',
+    icon: '📢',
+    category: 'news',
+    bias: 'bullish',
+    description: 'بعد إعلان أرباح قوي، السعر يستمر بنفس الاتجاه 2-5 أيام. نلحق الحركة ونستفيد من الزخم.',
+    when: 'في أول 24-48 ساعة بعد الإعلان — اعمل بسرعة أو اتركها',
+    requiredFilters: ['earnings_just_released', 'price_gap_up_2pct', 'volume_surge_2x'],
+    optionalFilters: ['beat_estimates', 'positive_guidance'],
+    structure: { optionType:'CALL', moneyness:'ATM', dteRange:{min:5,max:14}, positionSizePct:1.0, orderType:'market',
+      stop:{type:'premium_pct',value:-0.50}, target1:{type:'premium_pct',value:1.00,exitPct:75}, target2:{type:'premium_pct',value:2.00,exitPct:100}, timeStop:{type:'days',value:3} }
+  },
+  {
+    id: 'mean-reversion',
+    name: 'Mean Reversion (Oversold)',
+    nameAr: 'ارتداد من التشبع البيعي',
+    icon: '🔄',
+    category: 'counter',
+    bias: 'bullish',
+    description: 'سهم انخفض بسرعة وصار oversold (RSI < 30) — نتوقع ارتداده للمتوسط. خلاف الاتجاه لكن محسوب.',
+    when: 'في السوق الجانبي أو بعد panic sell. خطر عالٍ في downtrend قوي',
+    requiredFilters: ['rsi_below_30', 'price_near_support'],
+    optionalFilters: ['bullish_divergence', 'oversold_duration_3d'],
+    structure: { optionType:'CALL', moneyness:'ATM', dteRange:{min:7,max:21}, positionSizePct:1.0, orderType:'limit',
+      stop:{type:'premium_pct',value:-0.55}, target1:{type:'premium_pct',value:0.60,exitPct:60}, target2:{type:'premium_pct',value:1.20,exitPct:100}, timeStop:{type:'dte',value:4} }
+  },
+  {
+    id: 'pre-event-vega',
+    name: 'Pre-Event Vega Play',
+    nameAr: 'لعبة الـ Vega قبل الحدث',
+    icon: '⚡',
+    category: 'volatility',
+    bias: 'neutral',
+    description: 'قبل FOMC/CPI/أرباح، الـ IV منخفض. نشتري options ونستفيد من ارتفاع الـ IV وحركة السعر.',
+    when: 'قبل 2-7 أيام من الحدث. اخرج قبله أو بعده مباشرة، لا تمسك',
+    requiredFilters: ['major_event_within_7d', 'iv_rank_below_40'],
+    optionalFilters: ['vix_below_20', 'market_consolidating'],
+    structure: { optionType:'CALL', moneyness:'ATM', dteRange:{min:7,max:14}, positionSizePct:1.0, orderType:'limit',
+      stop:{type:'premium_pct',value:-0.50}, target1:{type:'premium_pct',value:0.80,exitPct:50}, target2:{type:'premium_pct',value:1.50,exitPct:100}, timeStop:{type:'event',value:'before_1d'} }
+  }
 ];
 
 // ============================================================
@@ -3612,7 +3817,7 @@ const App = (() => {
         tab.classList.add('active');
         document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
 
-        if (tab.dataset.tab === 'calendar') UIRenderer.renderCalendar();
+        if (tab.dataset.tab === 'builder') Builder.init();
         if (tab.dataset.tab === 'journal') UIRenderer.renderJournal();
         if (tab.dataset.tab === 'performance') UIRenderer.renderPerformance();
         if (tab.dataset.tab === 'paper') {
@@ -3648,6 +3853,9 @@ const App = (() => {
 
     // Initialize tooltip system (glossary)
     TooltipManager.init();
+
+    // Pre-render builder grid (invisible until tab opens)
+    Builder.init();
 
     // Auto-refresh market status every 30 seconds + re-evaluate auto-refresh schedule
     setInterval(() => {
@@ -4295,6 +4503,191 @@ const PaperPortfolio = (() => {
     getStats,
     isAlreadyOpen
   };
+})();
+
+// ============================================================
+// RECOMMENDATION BUILDER MODULE (MVP 1)
+// ============================================================
+const Builder = (() => {
+  let selected = new Set();
+  let symbolData = null;
+
+  function init() {
+    renderStrategyGrid();
+  }
+
+  function renderStrategyGrid() {
+    const grid = document.getElementById('strategyGrid');
+    if (!grid) return;
+    grid.innerHTML = STRATEGIES.map(s => `
+      <div class="strategy-card" id="sc-${s.id}" onclick="Builder.toggle('${s.id}')">
+        <div class="strategy-card-header">
+          <div class="strategy-icon">${s.icon}</div>
+          <div class="strategy-info">
+            <div class="strategy-name">${s.name}</div>
+            <div class="strategy-name-ar">${s.nameAr}</div>
+          </div>
+          <div class="strategy-check" id="chk-${s.id}">☐</div>
+        </div>
+        <div class="strategy-desc">${s.description}</div>
+        <div class="strategy-when">${s.when}</div>
+        <div class="strategy-badges">
+          <span class="badge-cat badge-${s.category}">${s.category}</span>
+          <span class="badge-cat badge-${s.bias}">${s.bias}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function toggle(id) {
+    const card = document.getElementById(`sc-${id}`);
+    const chk = document.getElementById(`chk-${id}`);
+    if (selected.has(id)) {
+      selected.delete(id);
+      card.classList.remove('selected');
+      chk.textContent = '☐';
+    } else {
+      selected.add(id);
+      card.classList.add('selected');
+      chk.textContent = '☑';
+    }
+  }
+
+  async function fetchSymbol() {
+    const sym = (document.getElementById('builderSymbol').value || '').trim().toUpperCase();
+    if (!sym) return;
+    document.getElementById('builderSymbolInfo').innerHTML = '<div class="builder-loading">⏳ جاري جلب السعر...</div>';
+    try {
+      const d = await YahooClient.quote(sym);
+      symbolData = d;
+      const chgClass = d.changePercent > 0 ? 'up' : 'down';
+      document.getElementById('builderSymbolInfo').innerHTML = `
+        <div class="builder-symbol-result">
+          <div class="bsr-name">${sym}</div>
+          <div class="bsr-price">$${Utils.fmt(d.price)}</div>
+          <div class="bsr-change ${chgClass}">${d.changePercent > 0 ? '+' : ''}${Utils.fmtPct(d.changePercent)}</div>
+        </div>`;
+    } catch(e) {
+      document.getElementById('builderSymbolInfo').innerHTML = `<div style="color:var(--red);font-size:13px;margin-top:8px;">❌ ${e.message}</div>`;
+    }
+  }
+
+  function generate() {
+    const sym = (document.getElementById('builderSymbol').value || '').trim().toUpperCase();
+    if (!sym) { alert('أدخل رمز السهم أولاً (مثل SPY)'); return; }
+    if (selected.size === 0) { alert('اختر استراتيجية وحدة على الأقل'); return; }
+
+    const price = symbolData?.price || null;
+    if (!price) { alert('اضغط "جلب البيانات" أولاً للحصول على السعر الحالي'); return; }
+
+    const matched = STRATEGIES.filter(s => selected.has(s.id));
+
+    // MVP 1: mock filters — كلها تمر مع تعليق "يحتاج بيانات حقيقية"
+    const filtersStatus = (filters, type) => filters.map(f => ({
+      id: f, type, pass: type === 'required' ? true : Math.random() > 0.35
+    }));
+
+    const matchedFull = matched.map(s => ({
+      ...s,
+      filters: [
+        ...filtersStatus(s.requiredFilters, 'required'),
+        ...filtersStatus(s.optionalFilters, 'optional')
+      ]
+    }));
+
+    // أقوى استراتيجية = الأكبر position size
+    const primary = matched.reduce((b, s) => s.structure.positionSizePct > b.structure.positionSizePct ? s : b);
+    const st = primary.structure;
+
+    // احتساب Premium تقديري (BS)
+    const estPremium = price * 0.022;
+    const stop     = +(estPremium * (1 + st.stop.value)).toFixed(2);
+    const t1Price  = +(estPremium * (1 + st.target1.value)).toFixed(2);
+    const t2Price  = +(estPremium * (1 + st.target2.value)).toFixed(2);
+    const risk     = +(estPremium - stop).toFixed(2);
+    const reward   = +(t2Price - estPremium).toFixed(2);
+    const rrRatio  = risk > 0 ? (reward / risk).toFixed(1) : '—';
+    const confidence = Math.min(90, 40 + matched.length * 15);
+
+    document.getElementById('builderOutput').innerHTML = `
+      <div class="recommendation-card">
+        <div class="rec-header">
+          <div class="rec-title">
+            <div class="rec-symbol">${sym}</div>
+            <div class="rec-direction" style="color:var(--green);">↑ Long ${st.optionType}</div>
+          </div>
+          <div class="rec-confidence">
+            <div class="conf-value">${confidence}%</div>
+            <div class="conf-label">ثقة</div>
+          </div>
+        </div>
+
+        <div class="rec-section">
+          <div class="rec-section-title">✅ مطابقة لـ ${matched.length} ${matched.length===1?'استراتيجية':'استراتيجيات'}:</div>
+          ${matchedFull.map(s => `
+            <div class="rec-strategy-match">
+              <span class="rsm-icon">${s.icon}</span>
+              <span class="rsm-name">${s.name}</span>
+              <span class="rsm-reason">— ${s.description.split('.')[0]}</span>
+            </div>`).join('')}
+        </div>
+
+        <div class="rec-section">
+          <div class="rec-section-title">📈 خطة الدخول:</div>
+          <div class="rec-grid-2">
+            <div class="rec-item"><div class="ri-label">الـ Strike</div><div class="ri-value">$${Utils.fmt(price)} ATM ${st.optionType}</div></div>
+            <div class="rec-item"><div class="ri-label">انتهاء</div><div class="ri-value">${st.dteRange.min}–${st.dteRange.max} يوم</div></div>
+            <div class="rec-item"><div class="ri-label">سعر الدخول (تقديري)</div><div class="ri-value">~$${Utils.fmt(estPremium)} (${st.orderType})</div></div>
+            <div class="rec-item"><div class="ri-label">حجم الصفقة</div><div class="ri-value">${st.positionSizePct}% من المحفظة</div></div>
+          </div>
+        </div>
+
+        <div class="rec-section">
+          <div class="rec-section-title">🎯 خطة الخروج:</div>
+          <div class="exit-plan-grid">
+            <div class="exit-row target1">
+              <div class="ep-label">🎯 T1 (+${(st.target1.value*100).toFixed(0)}%)</div>
+              <div class="ep-price">$${Utils.fmt(t1Price)}</div>
+              <div class="ep-action">خروج ${st.target1.exitPct}%</div>
+            </div>
+            <div class="exit-row target2">
+              <div class="ep-label">🎯🎯 T2 (+${(st.target2.value*100).toFixed(0)}%)</div>
+              <div class="ep-price">$${Utils.fmt(t2Price)}</div>
+              <div class="ep-action">خروج 100%</div>
+            </div>
+            <div class="exit-row stop">
+              <div class="ep-label">❌ Stop (${(st.stop.value*100).toFixed(0)}%)</div>
+              <div class="ep-price">$${Utils.fmt(stop)}</div>
+              <div class="ep-action">خروج فوري</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rec-section">
+          <div class="rec-section-title">⚖️ Risk / Reward:</div>
+          <div class="rec-grid-3">
+            <div class="rec-item rr-risk"><div class="ri-label">المخاطرة</div><div class="ri-value">$${(risk*100).toFixed(0)}/عقد</div></div>
+            <div class="rec-item rr-reward"><div class="ri-label">العائد المتوقع</div><div class="ri-value">$${(reward*100).toFixed(0)}/عقد</div></div>
+            <div class="rec-item rr-ratio"><div class="ri-label">النسبة</div><div class="ri-value">1 : ${rrRatio}</div></div>
+          </div>
+        </div>
+
+        <div class="rec-section">
+          <div class="rec-section-title">🔍 الفلاتر (MVP — mock data):</div>
+          <div class="filters-grid">
+            ${matchedFull.flatMap(s => s.filters.map(f => `
+              <div class="filter-item ${f.pass?'pass':'fail'} ${f.type}">
+                ${f.pass?'✅':'❌'} ${f.id.replace(/_/g,' ')}
+                <span class="mock-badge">mock</span>
+              </div>`)).join('')}
+          </div>
+        </div>
+
+        <div class="rec-disclaimer">⚠️ الفلاتر mock — سيُضاف التحليل التكنيكالي الحقيقي في Sprint التالي</div>
+      </div>`;
+  }
+
+  return { init, toggle, fetchSymbol, generate };
 })();
 
 // ============================================================
