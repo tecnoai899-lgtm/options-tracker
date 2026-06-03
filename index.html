@@ -1268,6 +1268,150 @@ button[data-term] {
   font-size: 11.5px;
   line-height: 1.6;
 }
+
+/* ===== M8: Homepage / Market Overview ===== */
+.home-section { margin-bottom: 24px; }
+.home-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+.indices-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 720px) {
+  .indices-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.index-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  transition: border-color 0.2s;
+}
+.index-card:hover { border-color: var(--blue); }
+.index-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+}
+.index-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.index-price {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.index-change {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.sparkline {
+  width: 100%;
+  height: 40px;
+  display: block;
+}
+.sparkline-empty {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.mood-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 12px;
+}
+@media (max-width: 720px) {
+  .mood-grid { grid-template-columns: 1fr; }
+}
+.vix-card, .breadth-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.mood-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+.vix-value {
+  font-size: 36px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.vix-zone {
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+.vix-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.vix-change {
+  font-size: 11px;
+  margin-top: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.breadth-counts {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.breadth-count {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.breadth-up { background: var(--green-bg); color: var(--green); }
+.breadth-down { background: var(--red-bg); color: var(--red); }
+.breadth-flat { background: var(--bg-tertiary); color: var(--text-secondary); }
+.breadth-sma {
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.breadth-sma strong { color: var(--blue); }
+.breadth-disclaimer {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.breadth-empty, .home-loading {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 20px;
+  font-size: 13px;
+}
+.home-refresh-info {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 16px;
+  font-variant-numeric: tabular-nums;
+}
 </style>
 </head>
 <body>
@@ -1317,7 +1461,8 @@ button[data-term] {
 
 <!-- ===== TABS ===== -->
 <div class="tabs">
-  <button class="tab active" data-tab="dashboard">📈 المسارات المباشرة</button>
+  <button class="tab active" data-tab="home">🏠 الرئيسية</button>
+  <button class="tab" data-tab="dashboard">📈 المسارات المباشرة</button>
   <button class="tab" data-tab="builder">🔮 صنع توصية</button>
   <button class="tab" data-tab="positions">📌 صفقاتي</button>
   <button class="tab" data-tab="paper">🎯 محفظة الاختبار</button>
@@ -1327,8 +1472,34 @@ button[data-term] {
   <button class="tab" data-tab="settings">⚙️ الإعدادات</button>
 </div>
 
+<!-- ===== TAB: HOME / MARKET OVERVIEW (M8) ===== -->
+<div class="tab-content active" id="tab-home">
+  <div class="home-section">
+    <div class="home-section-title">📊 المؤشرات الرئيسية</div>
+    <div class="indices-grid" id="indicesGrid">
+      <div class="home-loading">جاري تحميل المؤشرات...</div>
+    </div>
+  </div>
+
+  <div class="home-section">
+    <div class="home-section-title">🎭 مزاج السوق</div>
+    <div class="mood-grid">
+      <div class="vix-card" id="vixCard">
+        <div class="mood-card-title">VIX — مؤشر الخوف</div>
+        <div class="home-loading">—</div>
+      </div>
+      <div class="breadth-card" id="breadthCard">
+        <div class="mood-card-title">Mini Breadth</div>
+        <div class="home-loading">جاري الحساب...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="home-refresh-info" id="homeRefreshInfo"></div>
+</div>
+
 <!-- ===== TAB: DASHBOARD ===== -->
-<div class="tab-content active" id="tab-dashboard">
+<div class="tab-content" id="tab-dashboard">
   <!-- 0DTE Section - جديد v1.3 -->
   <div class="zerodte-section">
     <div class="zerodte-header">
@@ -4003,6 +4174,7 @@ const App = (() => {
         tab.classList.add('active');
         document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
 
+        if (tab.dataset.tab === 'home') Home.refresh();
         if (tab.dataset.tab === 'builder') Builder.init();
         if (tab.dataset.tab === 'positions') UIRenderer.renderOpenPositions();
         if (tab.dataset.tab === 'journal') UIRenderer.renderJournal();
@@ -4043,6 +4215,9 @@ const App = (() => {
 
     // Pre-render builder grid (invisible until tab opens)
     Builder.init();
+
+    // M8: Initialize Homepage (default tab — renders + auto-refresh during market hours)
+    Home.init();
 
     // Auto-refresh market status every 30 seconds + re-evaluate auto-refresh schedule
     setInterval(() => {
@@ -4907,6 +5082,238 @@ const DataCache = (() => {
     },
     clear() { Object.keys(cache).forEach(k => delete cache[k]); }
   };
+})();
+
+// ============================================================
+// HOMEPAGE MODULE (M8 - Market Overview)
+// ============================================================
+const Home = (() => {
+  const INDICES = [
+    { sym: '^DJI',  name: 'DOW',     label: 'Dow Jones' },
+    { sym: '^IXIC', name: 'NASDAQ',  label: 'NASDAQ Comp.' },
+    { sym: '^GSPC', name: 'S&P 500', label: 'S&P 500' },
+    { sym: '^RUT',  name: 'RUSSELL', label: 'Russell 2000' }
+  ];
+  const VIX_SYMBOL = '^VIX';
+  const REFRESH_MS = 60 * 1000;
+  let refreshTimer = null;
+  let initialRenderDone = false;
+
+  function vixZone(v) {
+    if (v == null) return { label: '—', color: 'var(--text-muted)', emoji: '❔', desc: 'لا توجد بيانات' };
+    if (v < 16) return { label: 'Calm',   color: 'var(--green)',  emoji: '🟢', desc: 'هدوء — تذبذب منخفض' };
+    if (v < 20) return { label: 'Normal', color: 'var(--yellow)', emoji: '🟡', desc: 'طبيعي' };
+    if (v < 30) return { label: 'Tense',  color: '#f97316',       emoji: '🟠', desc: 'توتر — حذر' };
+    return { label: 'Fear', color: 'var(--red)', emoji: '🔴', desc: 'خوف — تذبذب عالي' };
+  }
+
+  function renderSparkline(closes, change) {
+    if (!closes || closes.length < 2) return '<div class="sparkline-empty">no intraday</div>';
+    const valid = closes.filter(c => c != null && !isNaN(c));
+    if (valid.length < 2) return '<div class="sparkline-empty">no intraday</div>';
+    const min = Math.min(...valid);
+    const max = Math.max(...valid);
+    const range = (max - min) || 1;
+    const w = 200, h = 40;
+    const stepX = w / (valid.length - 1);
+    const points = valid.map((c, i) =>
+      `${(i * stepX).toFixed(1)},${(h - ((c - min) / range) * h).toFixed(1)}`
+    ).join(' ');
+    const color = (change ?? 0) >= 0 ? 'var(--green)' : 'var(--red)';
+    return `<svg viewBox="0 0 ${w} ${h}" class="sparkline" preserveAspectRatio="none">
+      <polyline fill="none" stroke="${color}" stroke-width="1.5" points="${points}" />
+    </svg>`;
+  }
+
+  async function fetchAllQuotes() {
+    const symbols = [...INDICES.map(i => i.sym), VIX_SYMBOL];
+    try {
+      return await YahooClient.multipleQuotes(symbols);
+    } catch (e) {
+      console.error('Home: quotes fetch failed', e);
+      return [];
+    }
+  }
+
+  async function fetchIntraday(symbol) {
+    try {
+      return await YahooClient.history(symbol, '1d', '5m');
+    } catch (e) {
+      console.error('Home: intraday failed for', symbol, e);
+      return null;
+    }
+  }
+
+  function renderIndices(quotes, histories) {
+    const grid = document.getElementById('indicesGrid');
+    if (!grid) return;
+    const qMap = Object.fromEntries((quotes || []).map(q => [q.symbol, q]));
+    grid.innerHTML = INDICES.map(idx => {
+      const q = qMap[idx.sym] || {};
+      const priceNum = q.price;
+      const price = priceNum != null
+        ? Number(priceNum).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : '—';
+      const change = q.change != null ? Number(q.change).toFixed(2) : '—';
+      const changePct = q.changePercent != null ? Number(q.changePercent).toFixed(2) : '—';
+      const isUp = (q.change ?? 0) >= 0;
+      const color = isUp ? 'var(--green)' : 'var(--red)';
+      const sign = isUp ? '+' : '';
+      const h = histories[idx.sym];
+      const sparkline = h && h.closes
+        ? renderSparkline(h.closes, q.change ?? 0)
+        : '<div class="sparkline-empty">—</div>';
+      return `
+        <div class="index-card">
+          <div class="index-name">${idx.name}</div>
+          <div class="index-label">${idx.label}</div>
+          <div class="index-price">${price}</div>
+          <div class="index-change" style="color: ${color}">
+            ${sign}${change} (${sign}${changePct}%)
+          </div>
+          ${sparkline}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderVix(vixQuote) {
+    const card = document.getElementById('vixCard');
+    if (!card) return;
+    const v = vixQuote?.price;
+    const zone = vixZone(v);
+    const vStr = v != null ? Number(v).toFixed(2) : '—';
+    const changePct = vixQuote?.changePercent != null ? Number(vixQuote.changePercent).toFixed(2) : '—';
+    // VIX up = market fear up (bad for bulls) → display red. VIX down → green.
+    const changeColor = (vixQuote?.change ?? 0) >= 0 ? 'var(--red)' : 'var(--green)';
+    const sign = (vixQuote?.change ?? 0) >= 0 ? '+' : '';
+    card.innerHTML = `
+      <div class="mood-card-title">VIX — مؤشر الخوف</div>
+      <div class="vix-value" style="color: ${zone.color}">${vStr}</div>
+      <div class="vix-zone" style="color: ${zone.color}">${zone.emoji} ${zone.label}</div>
+      <div class="vix-desc">${zone.desc}</div>
+      <div class="vix-change" style="color: ${changeColor}">التغير اليوم: ${sign}${changePct}%</div>
+    `;
+  }
+
+  async function computeBreadth() {
+    try {
+      const quotes = await YahooClient.multipleQuotes(WATCHLIST);
+      if (!Array.isArray(quotes) || quotes.length === 0) return null;
+
+      let advancing = 0, declining = 0, unchanged = 0;
+      quotes.forEach(q => {
+        if (q.change == null) return;
+        if (q.change > 0) advancing++;
+        else if (q.change < 0) declining++;
+        else unchanged++;
+      });
+
+      // SMA50 computation — lazy, uses DataCache (5min TTL)
+      let aboveSma50 = 0;
+      let smaTotal = 0;
+      const qMap = Object.fromEntries(quotes.map(q => [q.symbol, q]));
+      await Promise.all(WATCHLIST.map(async sym => {
+        try {
+          const h = await DataCache.getHistory(sym);
+          if (!h?.closes || h.closes.length < 50) return;
+          const last50 = h.closes.slice(-50);
+          const sma50 = last50.reduce((a, b) => a + b, 0) / last50.length;
+          const livePrice = qMap[sym]?.price ?? h.closes[h.closes.length - 1];
+          smaTotal++;
+          if (livePrice > sma50) aboveSma50++;
+        } catch { /* skip */ }
+      }));
+
+      return {
+        total: quotes.length,
+        advancing,
+        declining,
+        unchanged,
+        aboveSma50,
+        smaTotal,
+        aboveSma50Pct: smaTotal ? Math.round((aboveSma50 / smaTotal) * 100) : 0
+      };
+    } catch (e) {
+      console.error('Home: breadth failed', e);
+      return null;
+    }
+  }
+
+  function renderBreadth(b) {
+    const card = document.getElementById('breadthCard');
+    if (!card) return;
+    if (!b || !b.total) {
+      card.innerHTML = `<div class="mood-card-title">Mini Breadth</div>
+        <div class="breadth-empty">تعذّر حساب breadth — تحقق من الاتصال</div>`;
+      return;
+    }
+    card.innerHTML = `
+      <div class="mood-card-title">Mini Breadth</div>
+      <div class="breadth-counts">
+        <div class="breadth-count breadth-up">▲ ${b.advancing}</div>
+        <div class="breadth-count breadth-down">▼ ${b.declining}</div>
+        <div class="breadth-count breadth-flat">• ${b.unchanged}</div>
+      </div>
+      <div class="breadth-sma">
+        فوق MA50: <strong>${b.aboveSma50}/${b.smaTotal}</strong> (${b.aboveSma50Pct}%)
+      </div>
+      <div class="breadth-disclaimer">⚠️ بناءً على ${b.total} سهم في watchlist، ليس السوق الكامل</div>
+    `;
+  }
+
+  function updateRefreshInfo() {
+    const info = document.getElementById('homeRefreshInfo');
+    if (!info) return;
+    const now = new Date().toLocaleTimeString('ar-SA');
+    const status = MarketStatus.getStatus();
+    const note = status.state === 'open'
+      ? '🔄 تحديث تلقائي كل 60 ثانية'
+      : '⏸️ السوق مغلق — لا تحديث تلقائي';
+    info.textContent = `آخر تحديث: ${now} | ${note}`;
+  }
+
+  async function refresh() {
+    // 1. Quotes (single batch: 4 indices + VIX)
+    const quotes = await fetchAllQuotes();
+    const qMap = Object.fromEntries((quotes || []).map(q => [q.symbol, q]));
+    const vixQuote = qMap[VIX_SYMBOL];
+
+    // 2. Intraday sparklines (parallel, only on first render or stale)
+    const histories = {};
+    await Promise.all(INDICES.map(async idx => {
+      histories[idx.sym] = await fetchIntraday(idx.sym);
+    }));
+
+    // 3. Render indices + VIX immediately
+    renderIndices(quotes, histories);
+    renderVix(vixQuote);
+    updateRefreshInfo();
+
+    // 4. Mini breadth — fire and forget (slower, doesn't block UI)
+    computeBreadth().then(renderBreadth);
+
+    initialRenderDone = true;
+  }
+
+  function scheduleRefresh() {
+    if (refreshTimer) clearInterval(refreshTimer);
+    refreshTimer = setInterval(() => {
+      const status = MarketStatus.getStatus();
+      if (status.state === 'open') {
+        refresh();
+      } else {
+        updateRefreshInfo();
+      }
+    }, REFRESH_MS);
+  }
+
+  function init() {
+    refresh();
+    scheduleRefresh();
+  }
+
+  return { init, refresh };
 })();
 
 // ============================================================
