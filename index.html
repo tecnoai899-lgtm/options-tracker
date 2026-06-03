@@ -5148,8 +5148,11 @@ const Builder = (() => {
         </div>
         ${matched.length > 0 ? `
         <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="Builder.saveToJournal()" style="flex:1;padding:12px;font-weight:700;">
-            💾 احفظ التوصية في السجل
+          <button class="btn btn-primary" onclick="Builder.saveToJournal()" style="flex:1;min-width:160px;padding:12px;font-weight:700;">
+            💾 احفظ في السجل
+          </button>
+          <button class="btn" onclick="Builder.executeOnAlpaca()" style="flex:1;min-width:160px;padding:12px;font-weight:700;background:var(--green);border-color:var(--green);color:white;">
+            🦙 نفّذ على Paper
           </button>
         </div>` : ''}
       </div>`;
@@ -5158,6 +5161,194 @@ const Builder = (() => {
     } catch (e) {
       out.innerHTML = `<div style="color:var(--red);padding:30px;text-align:center;font-size:14px;">❌ ${e.message}</div>`;
       console.error(e);
+    }
+  }
+
+  // ===== MVP 5: Execute on Alpaca Paper from Builder =====
+  async function executeOnAlpaca() {
+    if (!lastRec || !lastRec.matched.length) { alert('لا توجد توصية نشطة للتنفيذ'); return; }
+    if (!lastRec.strike || !lastRec.expiryDate) {
+      alert('بيانات الـ Strike/Expiry ناقصة — الـ Premium قد يكون تقديري. لا يمكن بناء OCC symbol.');
+      return;
+    }
+
+    // تحقق من Alpaca configured
+    if (!AlpacaClient.isConfigured()) {
+      alert('فعّل Alpaca في Settings أولاً (Test Connection ينجح)');
+      return;
+    }
+
+    const occ = Utils.buildOCCSymbol(lastRec.sym, lastRec.expiryDate, lastRec.optionType, lastRec.strike);
+
+    // تحقق availability على Alpaca paper
+    const checkBtn = event?.target;
+    if (checkBtn) checkBtn.textContent = '⏳ جاري التحقق...';
+    try {
+      const available = await AlpacaClient.isOptionAvailable(occ);
+      if (!available) {
+        alert(`⚠️ هذا العقد غير متاح في Alpaca Paper:\n${occ}\n\nAlpaca paper لا يدعم كل الـ option contracts. جرّب strike أو expiry مختلف.`);
+        if (checkBtn) checkBtn.textContent = '🦙 نفّذ على Paper';
+        return;
+      }
+    } catch (e) {
+      alert('فشل التحقق من توفر العقد: ' + e.message);
+      if (checkBtn) checkBtn.textContent = '🦙 نفّذ على Paper';
+      return;
+    }
+
+    showBuilderExecuteModal(occ);
+  }
+
+  function showBuilderExecuteModal(occ) {
+    const r = lastRec;
+    const totalCost = (r.estPremium * 100).toFixed(2);
+
+    const overlay = document.createElement('div');
+    overlay.id = 'builderExecOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+    overlay.innerHTML = `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;">
+        <div style="font-size:16px;font-weight:700;margin-bottom:16px;">🦙 تنفيذ على Alpaca Paper</div>
+
+        <div style="background:var(--bg-secondary);padding:10px;border-radius:var(--radius-sm);margin-bottom:16px;font-family:'Consolas',monospace;font-size:11px;text-align:center;">
+          ${occ}
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+          <div style="background:var(--bg);padding:10px;border-radius:var(--radius-sm);">
+            <div style="font-size:10px;color:var(--text-secondary);">Symbol</div>
+            <div style="font-weight:700;font-size:14px;">${r.sym}</div>
+          </div>
+          <div style="background:var(--bg);padding:10px;border-radius:var(--radius-sm);">
+            <div style="font-size:10px;color:var(--text-secondary);">Strike</div>
+            <div style="font-weight:700;font-size:14px;">$${r.strike.toFixed(2)} ${r.optionType}</div>
+          </div>
+          <div style="background:var(--bg);padding:10px;border-radius:var(--radius-sm);">
+            <div style="font-size:10px;color:var(--text-secondary);">Expiry</div>
+            <div style="font-weight:700;font-size:14px;">${r.expiryDate} (${r.dte}d)</div>
+          </div>
+          <div style="background:var(--bg);padding:10px;border-radius:var(--radius-sm);">
+            <div style="font-size:10px;color:var(--text-secondary);">السعر (${r.premiumSource})</div>
+            <div style="font-weight:700;font-size:14px;color:var(--green);">$${r.estPremium}</div>
+          </div>
+        </div>
+
+        <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">عدد العقود</label>
+        <input id="be_contracts" type="number" min="1" value="1" class="form-input" style="width:100%;margin-bottom:12px;">
+
+        <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">نوع الأمر</label>
+        <select id="be_orderType" class="form-input" style="width:100%;margin-bottom:12px;" onchange="Builder.toggleLimitPrice()">
+          <option value="limit" ${r.orderType === 'limit' ? 'selected' : ''}>Limit (سعر محدد)</option>
+          <option value="market" ${r.orderType === 'market' ? 'selected' : ''}>Market (سعر السوق)</option>
+        </select>
+
+        <div id="be_limitPriceWrapper" style="${r.orderType === 'market' ? 'display:none;' : ''}">
+          <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">Limit Price ($)</label>
+          <input id="be_limitPrice" type="number" step="0.01" value="${r.estPremium}" class="form-input" style="width:100%;margin-bottom:12px;">
+        </div>
+
+        <div style="background:var(--yellow-bg);color:var(--yellow);padding:10px;border-radius:var(--radius-sm);font-size:12px;margin-bottom:16px;text-align:center;">
+          ⚠️ أمر على Alpaca <strong>Paper</strong> — لا أموال حقيقية
+        </div>
+
+        <div id="be_totalCost" style="text-align:center;font-size:14px;margin-bottom:16px;padding:10px;background:var(--purple-bg);border-radius:var(--radius-sm);">
+          إجمالي التكلفة المتوقعة: <span style="font-weight:800;color:var(--purple);font-size:18px;">$${totalCost}</span>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" onclick="Builder.submitExecute('${occ}')" style="flex:1;padding:12px;font-weight:700;background:var(--green);border-color:var(--green);">✅ تأكيد التنفيذ</button>
+          <button class="btn" onclick="document.getElementById('builderExecOverlay').remove()" style="padding:12px;">إلغاء</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+
+    // Live update total
+    const updateTotal = () => {
+      const c = parseInt(document.getElementById('be_contracts').value) || 1;
+      const p = parseFloat(document.getElementById('be_limitPrice')?.value) || lastRec.estPremium;
+      document.getElementById('be_totalCost').innerHTML = `إجمالي التكلفة المتوقعة: <span style="font-weight:800;color:var(--purple);font-size:18px;">$${(p * 100 * c).toFixed(2)}</span>`;
+    };
+    document.getElementById('be_contracts').addEventListener('input', updateTotal);
+    const lp = document.getElementById('be_limitPrice');
+    if (lp) lp.addEventListener('input', updateTotal);
+  }
+
+  function toggleLimitPrice() {
+    const type = document.getElementById('be_orderType').value;
+    document.getElementById('be_limitPriceWrapper').style.display = type === 'market' ? 'none' : '';
+  }
+
+  async function submitExecute(occ) {
+    const contracts = parseInt(document.getElementById('be_contracts').value) || 1;
+    const orderType = document.getElementById('be_orderType').value;
+    const limitPriceEl = document.getElementById('be_limitPrice');
+    const limitPrice = limitPriceEl ? parseFloat(limitPriceEl.value) : null;
+
+    if (contracts < 1) { alert('عدد العقود لازم يكون 1 على الأقل'); return; }
+    if (orderType === 'limit' && (isNaN(limitPrice) || limitPrice <= 0)) { alert('سعر Limit غير صحيح'); return; }
+
+    const orderData = {
+      symbol: occ,
+      qty: contracts,
+      side: 'buy',
+      type: orderType,
+      time_in_force: 'day',
+      order_class: 'simple'
+    };
+    if (orderType === 'limit') orderData.limit_price = limitPrice.toFixed(2);
+
+    try {
+      const order = await AlpacaClient.submitOrder(orderData);
+
+      // إضافة للـ journal مع كل التفاصيل
+      const journal = State.get().journal || [];
+      const notes = [
+        `🦙 Alpaca Paper`,
+        `Order: ${order.id}`,
+        `${orderType.toUpperCase()}${orderType === 'limit' ? ' @ $' + limitPrice : ''}`,
+        `Qty: ${contracts}`,
+        `Status: ${order.status || 'submitted'}`
+      ].join(' | ');
+
+      journal.unshift({
+        id: `alp-${Date.now()}`,
+        type: 'alpaca_execution',
+        symbol: lastRec.sym,
+        strike: lastRec.strike,
+        expiryDate: lastRec.expiryDate,
+        optionType: lastRec.optionType,
+        contracts,
+        entryPremium: orderType === 'limit' ? limitPrice : lastRec.estPremium,
+        t1: lastRec.t1,
+        t2: lastRec.t2,
+        stop: lastRec.stop,
+        strategies: lastRec.strategies,
+        confidence: lastRec.confidence,
+        orderId: order.id,
+        occSymbol: occ,
+        orderStatus: order.status,
+        date: new Date().toLocaleString('ar-SA'),
+        notes,
+        closed: false,
+        source: 'alpaca_paper'
+      });
+      State.update({ journal });
+      UIRenderer.renderJournal();
+
+      document.getElementById('builderExecOverlay').remove();
+      alert(`✅ تم إرسال الأمر!\n\nOrder ID: ${order.id}\nStatus: ${order.status}\nالعقد: ${occ}\nالكمية: ${contracts}\n\nسُجِّل في السجل وستظهر في "محفظة الاختبار → Live Positions" بعد الـ fill.`);
+    } catch (e) {
+      const msg = e.message || '';
+      if (msg.includes('not found') || msg.includes('asset')) {
+        alert(`⚠️ العقد غير متاح في Alpaca Paper:\n${occ}\n\nجرّب strike أو expiry مختلف.`);
+      } else if (msg.includes('insufficient') || msg.includes('buying power')) {
+        alert(`⚠️ رصيد غير كافٍ:\n${msg}`);
+      } else if (msg.includes('market') && msg.includes('closed')) {
+        alert(`⚠️ سوق الـ Options مغلق حالياً.\n${msg}`);
+      } else {
+        alert(`❌ فشل إرسال الأمر:\n${msg}`);
+      }
     }
   }
 
@@ -5200,7 +5391,7 @@ const Builder = (() => {
     alert(`✅ تم حفظ التوصية (${lastRec.sym}) في السجل\n\nالـ Strike: $${lastRec.strike?.toFixed(2)} | Premium: $${lastRec.estPremium}\nT1: $${lastRec.t1} | T2: $${lastRec.t2} | Stop: $${lastRec.stop}`);
   }
 
-  return { init, toggle, fetchSymbol, generate, saveToJournal };
+  return { init, toggle, fetchSymbol, generate, saveToJournal, executeOnAlpaca, toggleLimitPrice, submitExecute };
 })();
 
 // ============================================================
