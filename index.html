@@ -1344,6 +1344,160 @@ button[data-term] {
   border-radius: var(--radius);
   padding: 16px;
 }
+
+/* ===== Phase B.5: Market Sentiment Card ===== */
+.sentiment-card {
+  background: linear-gradient(135deg, var(--card) 0%, var(--bg-secondary) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.sentiment-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: var(--purple);
+}
+.sentiment-card.strong-bull::before { background: linear-gradient(180deg, var(--green) 0%, #10b981 100%); }
+.sentiment-card.bull::before        { background: var(--green); }
+.sentiment-card.neutral::before     { background: var(--text-muted); }
+.sentiment-card.bear::before        { background: #fb923c; }
+.sentiment-card.strong-bear::before { background: var(--red); }
+
+.sentiment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.sentiment-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.3px;
+}
+.sentiment-meta {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.sentiment-hero {
+  text-align: center;
+  margin-bottom: 18px;
+}
+.sentiment-emoji {
+  font-size: 42px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.sentiment-label {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.sentiment-score-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.sentiment-score-track {
+  width: 200px;
+  max-width: 50vw;
+  height: 8px;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.sentiment-score-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--red) 0%, #fb923c 30%, var(--text-muted) 50%, var(--green) 70%, #10b981 100%);
+  transition: width 0.4s ease;
+}
+.sentiment-score-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+}
+.sentiment-score-max {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.sentiment-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+@media (max-width: 720px) {
+  .sentiment-metrics { grid-template-columns: repeat(2, 1fr); }
+}
+.sentiment-metric {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 10px;
+  text-align: center;
+}
+.sm-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  margin-bottom: 6px;
+}
+.sm-value {
+  font-size: 17px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.sm-value.up   { color: var(--green); }
+.sm-value.down { color: var(--red); }
+.sm-value.neutral { color: var(--text); }
+.sm-sub {
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+.sentiment-sparkline-wrap {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sentiment-spark-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.sentiment-spark-svg {
+  flex: 1;
+  height: 32px;
+}
+.sentiment-disclaimer {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 10px;
+  text-align: center;
+  font-style: italic;
+}
+.sentiment-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
 .mood-card-title {
   font-size: 12px;
   font-weight: 700;
@@ -2093,6 +2247,13 @@ button[data-term] {
     <div class="home-section-title">📊 المؤشرات الرئيسية</div>
     <div class="indices-grid" id="indicesGrid">
       <div class="home-loading">جاري تحميل المؤشرات...</div>
+    </div>
+  </div>
+
+  <div class="home-section">
+    <div class="home-section-title">🧠 <span data-term="Sentiment Score">مشاعر السوق</span></div>
+    <div class="sentiment-card" id="sentimentCard">
+      <div class="sentiment-loading">جاري حساب مؤشرات الاتساع من 80 سهم...</div>
     </div>
   </div>
 
@@ -3079,13 +3240,54 @@ const CALENDAR = [
 // STRATEGIES LIBRARY — 6 استراتيجيات لـ Recommendation Builder
 // ============================================================
 // ============================================================
-// WATCHLIST — universe الأسهم للـ Scanner
+// WATCHLIST — universe الأسهم للـ Scanner + Breadth (Phase B.1: 26 → 80)
 // ============================================================
 const WATCHLIST = [
+  // Index ETFs (4)
   'SPY', 'QQQ', 'IWM', 'DIA',
-  'AAPL', 'MSFT', 'NVDA', 'GOOGL', 'META', 'AMZN', 'TSLA', 'AMD',
-  'NFLX', 'AVGO', 'JPM', 'BAC', 'COIN', 'PLTR', 'MSTR', 'SMCI',
-  'INTC', 'MU', 'DIS', 'UBER', 'SHOP', 'CRM'
+
+  // Sector SPDR ETFs (11) — full sector coverage for breadth
+  'XLK',   // Tech
+  'XLF',   // Financials
+  'XLE',   // Energy
+  'XLV',   // Healthcare
+  'XLI',   // Industrials
+  'XLY',   // Consumer Discretionary
+  'XLP',   // Consumer Staples
+  'XLB',   // Materials
+  'XLU',   // Utilities
+  'XLRE',  // Real Estate
+  'XLC',   // Communication Services
+
+  // Mega-cap Tech (10)
+  'AAPL', 'MSFT', 'NVDA', 'GOOGL', 'META', 'AMZN', 'TSLA', 'AMD', 'AVGO', 'NFLX',
+
+  // Semiconductors (5)
+  'INTC', 'MU', 'QCOM', 'TSM', 'ASML',
+
+  // Financials (8)
+  'JPM', 'BAC', 'WFC', 'GS', 'MS', 'V', 'MA', 'BLK',
+
+  // Healthcare & Pharma (8)
+  'UNH', 'JNJ', 'LLY', 'PFE', 'ABBV', 'MRK', 'TMO', 'ABT',
+
+  // Consumer & Retail (8)
+  'WMT', 'COST', 'HD', 'NKE', 'MCD', 'SBUX', 'TGT', 'LOW',
+
+  // Energy (5)
+  'XOM', 'CVX', 'COP', 'SLB', 'OXY',
+
+  // Industrials & Defense (6)
+  'BA', 'CAT', 'GE', 'HON', 'UPS', 'LMT',
+
+  // Communication & Media (4)
+  'DIS', 'CMCSA', 'T', 'VZ',
+
+  // High-Beta / Momentum / Mid-Cap Leaders (10)
+  'COIN', 'PLTR', 'MSTR', 'SMCI', 'CRM', 'SHOP', 'UBER', 'CRWD', 'SNOW', 'DDOG',
+
+  // Volatility (1)
+  'VXX'
 ];
 
 // ============================================================
@@ -5475,6 +5677,23 @@ const Glossary = {
     en: 'Position Sizing',
     ar: 'تحديد حجم المركز',
     desc: 'حساب عدد الأسهم/العقود بناءً على المخاطرة المسموحة وفقاً للوقف. الصيغة: shares = risk_budget_per_trade / (entry − stop). يضمن أن كل صفقة تخاطر بنفس المبلغ الدولاري بغض النظر عن سعر السهم.'
+  },
+
+  // ===== Phase B: Market Breadth & Sentiment =====
+  'Sentiment Score': {
+    en: 'Market Sentiment Score',
+    ar: 'مؤشر مشاعر السوق',
+    desc: 'مقياس مركّب من 0-10 يجمع 5 مؤشرات لاتساع السوق: A/D Ratio (30%), % > SMA50 (25%), % > SMA200 (20%), Put/Call Ratio (15%), VIX (10%). يساعد في تقييم الاتجاه العام للسوق بسرعة.'
+  },
+  'A/D Ratio': {
+    en: 'Advance/Decline Ratio',
+    ar: 'نسبة الصاعدة للهابطة',
+    desc: 'نسبة الأسهم الصاعدة في اليوم إلى الهابطة. >1.5 = اتجاه صاعد قوي، 1.0 = متوازن، <0.7 = اتجاه هابط. مؤشر مهم لاتساع الـ rally أو الـ selloff (هل كل القطاعات تشارك؟).'
+  },
+  'Put/Call Ratio': {
+    en: 'Put/Call Ratio',
+    ar: 'نسبة عقود البيع للشراء',
+    desc: 'نسبة حجم تداول عقود Put إلى Call. منخفضة (< 0.7) = تفاؤل (المتداولون يشترون calls)، عالية (>1.2) = خوف (شراء puts للحماية). يُستخدم كـ contrarian indicator عند المستويات المتطرفة.'
   }
 };
 
@@ -6505,6 +6724,285 @@ const DataCache = (() => {
 })();
 
 // ============================================================
+// BREADTH ENGINE MODULE (Phase B.2 - Market Breadth & Sentiment)
+// ============================================================
+// المصدر الموحّد لكل مؤشرات اتساع السوق + Sentiment Score.
+// يقرأ منه: Home (Sentiment Card)، RiskConsole (Stage suggestion).
+// يخزن daily snapshot في localStorage لرسم 7-day trend.
+const BreadthEngine = (() => {
+  const SNAPSHOT_KEY = 'wabran_breadth_daily_v1';
+  const MAX_SNAPSHOTS = 14;   // نحتفظ بـ 14 يوم (للـ 7-day chart مع buffer)
+  const CACHE_TTL_MS = 60_000; // cache نتائج الحساب 60 ثانية
+
+  let lastResult = null;
+  let lastComputedAt = 0;
+  let inflight = null;
+
+  // ===== Persistent snapshot storage (daily) =====
+  function loadSnapshots() {
+    try {
+      const raw = localStorage.getItem(SNAPSHOT_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      console.warn('BreadthEngine: snapshot load failed', e);
+      return [];
+    }
+  }
+
+  function saveSnapshots(arr) {
+    try {
+      localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(arr));
+    } catch (e) {
+      console.warn('BreadthEngine: snapshot save failed', e);
+    }
+  }
+
+  function todayKey() {
+    return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  }
+
+  // أضف snapshot لليوم (أو حدّث الموجود)
+  function recordDailySnapshot(result) {
+    const today = todayKey();
+    const snapshots = loadSnapshots().filter(s => s.date !== today);
+    snapshots.push({
+      date: today,
+      ts: Date.now(),
+      advancing: result.advancing,
+      declining: result.declining,
+      total: result.total,
+      adRatio: result.adRatio,
+      aboveSma50Pct: result.aboveSma50Pct,
+      aboveSma200Pct: result.aboveSma200Pct,
+      putCallRatio: result.putCallRatio,
+      vix: result.vix,
+      score: result.sentimentScore
+    });
+    // اقتطع للحد الأقصى
+    const trimmed = snapshots.slice(-MAX_SNAPSHOTS);
+    saveSnapshots(trimmed);
+  }
+
+  function getHistorySnapshots(days = 7) {
+    return loadSnapshots().slice(-days);
+  }
+
+  // ===== Compute breadth from WATCHLIST =====
+  async function compute(vixValue = null) {
+    // Cache check
+    if (lastResult && (Date.now() - lastComputedAt) < CACHE_TTL_MS) {
+      return lastResult;
+    }
+    // De-dupe concurrent calls
+    if (inflight) return inflight;
+
+    inflight = (async () => {
+      try {
+        const quotes = await YahooClient.multipleQuotes(WATCHLIST);
+        if (!Array.isArray(quotes) || quotes.length === 0) {
+          throw new Error('No quotes returned');
+        }
+
+        // 1) Advancing / Declining (من intraday change)
+        let advancing = 0, declining = 0, unchanged = 0;
+        quotes.forEach(q => {
+          if (q.change == null) return;
+          if (q.change > 0) advancing++;
+          else if (q.change < 0) declining++;
+          else unchanged++;
+        });
+        const total = quotes.length;
+        const adRatio = declining > 0 ? +(advancing / declining).toFixed(2) : (advancing > 0 ? advancing : 0);
+
+        // 2-3) % above SMA50 + SMA200 (يحتاج history لكل سهم)
+        const qMap = Object.fromEntries(quotes.map(q => [q.symbol, q]));
+        let aboveSma50 = 0, sma50Total = 0;
+        let aboveSma200 = 0, sma200Total = 0;
+
+        await Promise.all(WATCHLIST.map(async sym => {
+          try {
+            const h = await DataCache.getHistory(sym);
+            if (!h?.closes || h.closes.length < 50) return;
+            const livePrice = qMap[sym]?.price ?? h.closes[h.closes.length - 1];
+            // SMA50
+            const last50 = h.closes.slice(-50);
+            const sma50 = last50.reduce((a, b) => a + b, 0) / last50.length;
+            sma50Total++;
+            if (livePrice > sma50) aboveSma50++;
+            // SMA200
+            if (h.closes.length >= 200) {
+              const last200 = h.closes.slice(-200);
+              const sma200 = last200.reduce((a, b) => a + b, 0) / last200.length;
+              sma200Total++;
+              if (livePrice > sma200) aboveSma200++;
+            }
+          } catch { /* skip individual failures */ }
+        }));
+
+        const aboveSma50Pct  = sma50Total  ? Math.round((aboveSma50  / sma50Total)  * 100) : null;
+        const aboveSma200Pct = sma200Total ? Math.round((aboveSma200 / sma200Total) * 100) : null;
+
+        // 4) Put/Call Ratio (Phase B.3 — implemented separately, fallback null for now)
+        const putCallRatio = await tryFetchPutCallRatio();
+
+        // 5) Sentiment Score (Phase B.4 — formula)
+        const sentimentScore = computeSentimentScore({
+          adRatio,
+          aboveSma50Pct,
+          aboveSma200Pct,
+          putCallRatio,
+          vix: vixValue
+        });
+
+        const result = {
+          total,
+          advancing,
+          declining,
+          unchanged,
+          adRatio,
+          aboveSma50, sma50Total, aboveSma50Pct,
+          aboveSma200, sma200Total, aboveSma200Pct,
+          putCallRatio,
+          vix: vixValue,
+          sentimentScore,
+          sentimentBadge: scoreToBadge(sentimentScore),
+          computedAt: Date.now()
+        };
+
+        lastResult = result;
+        lastComputedAt = Date.now();
+        recordDailySnapshot(result);
+        return result;
+      } catch (e) {
+        console.error('BreadthEngine: compute failed', e);
+        return null;
+      } finally {
+        inflight = null;
+      }
+    })();
+
+    return inflight;
+  }
+
+  // ===== Put/Call Ratio fetch (Phase B.3) =====
+  // محاولات متعددة، fallback لـ null إذا كلها فشلت
+  async function tryFetchPutCallRatio() {
+    // Strategy: SPY options chain → sum put_volume / sum call_volume
+    // هذا يعطي proxy جيد للـ market-wide P/C ratio (SPY = most-traded)
+    try {
+      const chain = await YahooClient.optionsChain('SPY');
+      if (!chain?.options?.[0]) return null;
+      const opts = chain.options[0];
+      const calls = opts.calls || [];
+      const puts  = opts.puts  || [];
+
+      let callVol = 0, putVol = 0;
+      calls.forEach(c => { callVol += (c.volume || 0); });
+      puts.forEach(p  => { putVol  += (p.volume || 0); });
+
+      if (callVol === 0) return null;
+      return +(putVol / callVol).toFixed(2);
+    } catch (e) {
+      console.warn('BreadthEngine: P/C fetch failed', e.message);
+      return null;
+    }
+  }
+
+  // ===== Sentiment Score (Phase B.4) =====
+  // إخراج: 0-10
+  // formula weights: A/D 30%, SMA50 25%, SMA200 20%, P/C 15%, VIX 10%
+  function computeSentimentScore({ adRatio, aboveSma50Pct, aboveSma200Pct, putCallRatio, vix }) {
+    let totalScore = 0;
+    let totalWeight = 0;
+
+    // A/D Ratio: 1.0 = neutral, >1.5 strong bull, <0.67 strong bear
+    if (adRatio != null) {
+      let s;
+      if      (adRatio >= 2.5) s = 10;
+      else if (adRatio >= 1.5) s = 8;
+      else if (adRatio >= 1.0) s = 6;
+      else if (adRatio >= 0.67) s = 4;
+      else if (adRatio >= 0.4) s = 2;
+      else                       s = 0;
+      totalScore += s * 0.30;
+      totalWeight += 0.30;
+    }
+
+    // % > SMA50: linear-ish mapping
+    if (aboveSma50Pct != null) {
+      const s = Math.max(0, Math.min(10, aboveSma50Pct / 10));
+      totalScore += s * 0.25;
+      totalWeight += 0.25;
+    }
+
+    // % > SMA200: same approach
+    if (aboveSma200Pct != null) {
+      const s = Math.max(0, Math.min(10, aboveSma200Pct / 10));
+      totalScore += s * 0.20;
+      totalWeight += 0.20;
+    }
+
+    // Put/Call: inverted (low P/C = bullish). 0.5 = bullish, 1.0 = neutral, 1.5+ = bearish
+    if (putCallRatio != null) {
+      let s;
+      if      (putCallRatio <= 0.5) s = 10;
+      else if (putCallRatio <= 0.7) s = 8;
+      else if (putCallRatio <= 0.9) s = 6;
+      else if (putCallRatio <= 1.1) s = 5;
+      else if (putCallRatio <= 1.4) s = 3;
+      else                            s = 1;
+      totalScore += s * 0.15;
+      totalWeight += 0.15;
+    }
+
+    // VIX: lower = calmer/bullish
+    if (vix != null) {
+      let s;
+      if      (vix < 13) s = 10;
+      else if (vix < 16) s = 8;
+      else if (vix < 20) s = 6;
+      else if (vix < 25) s = 4;
+      else if (vix < 30) s = 2;
+      else                 s = 0;
+      totalScore += s * 0.10;
+      totalWeight += 0.10;
+    }
+
+    if (totalWeight === 0) return null;
+    return +(totalScore / totalWeight).toFixed(1);
+  }
+
+  function scoreToBadge(score) {
+    if (score == null) return { label: 'غير متاح', emoji: '⚪', color: 'var(--text-muted)', tone: 'neutral' };
+    if (score >= 8.0) return { label: 'صاعدة قوية', emoji: '🔥', color: 'var(--green)', tone: 'strong-bull' };
+    if (score >= 6.0) return { label: 'صاعدة',       emoji: '🟢', color: 'var(--green)', tone: 'bull' };
+    if (score >= 4.0) return { label: 'محايد',       emoji: '⚪', color: 'var(--text)',  tone: 'neutral' };
+    if (score >= 2.0) return { label: 'هابطة',       emoji: '🟠', color: '#fb923c',     tone: 'bear' };
+    return                  { label: 'هابطة قوية',   emoji: '🔴', color: 'var(--red)',   tone: 'strong-bear' };
+  }
+
+  // Public: get cached latest result (no compute)
+  function getLast() {
+    return lastResult;
+  }
+
+  // Public: force refresh
+  function invalidate() {
+    lastResult = null;
+    lastComputedAt = 0;
+  }
+
+  return {
+    compute,
+    getLast,
+    invalidate,
+    getHistorySnapshots,
+    scoreToBadge,
+    computeSentimentScore   // exposed for testing
+  };
+})();
+
+// ============================================================
 // HOMEPAGE MODULE (M8 - Market Overview)
 // ============================================================
 const Home = (() => {
@@ -6676,7 +7174,7 @@ const Home = (() => {
         <div class="breadth-count breadth-flat">• ${b.unchanged}</div>
       </div>
       <div class="breadth-sma">
-        فوق MA50: <strong>${b.aboveSma50}/${b.smaTotal}</strong> (${b.aboveSma50Pct}%)
+        فوق MA50: <strong>${b.aboveSma50}/${b.sma50Total || b.smaTotal}</strong> (${b.aboveSma50Pct}%)
       </div>
       <div class="breadth-disclaimer">⚠️ بناءً على ${b.total} سهم في watchlist، ليس السوق الكامل</div>
     `;
@@ -6698,6 +7196,7 @@ const Home = (() => {
     const quotes = await fetchAllQuotes();
     const qMap = Object.fromEntries((quotes || []).map(q => [q.symbol, q]));
     const vixQuote = qMap[VIX_SYMBOL];
+    const vixValue = vixQuote?.price ?? null;
 
     // 2. Intraday sparklines (parallel, only on first render or stale)
     const histories = {};
@@ -6710,10 +7209,140 @@ const Home = (() => {
     renderVix(vixQuote);
     updateRefreshInfo();
 
-    // 4. Mini breadth — fire and forget (slower, doesn't block UI)
-    computeBreadth().then(renderBreadth);
+    // 4. Phase B: Compute breadth + sentiment via BreadthEngine (async, doesn't block)
+    BreadthEngine.compute(vixValue).then(result => {
+      if (result) {
+        renderBreadth(result);            // Existing mini breadth card
+        renderSentimentCard(result);      // Phase B: new sentiment card
+      } else {
+        renderSentimentCard(null);
+      }
+    });
 
     initialRenderDone = true;
+  }
+
+  // ===== Phase B.5: Sentiment Card rendering =====
+  function renderSentimentCard(b) {
+    const card = document.getElementById('sentimentCard');
+    if (!card) return;
+    if (!b) {
+      card.innerHTML = `<div class="sentiment-loading">⚠️ تعذّر حساب مشاعر السوق — تحقق من الاتصال</div>`;
+      return;
+    }
+
+    const badge = b.sentimentBadge || { label: '—', emoji: '⚪', tone: 'neutral' };
+    const scoreText = b.sentimentScore != null ? b.sentimentScore.toFixed(1) : '—';
+    const scorePct = b.sentimentScore != null ? (b.sentimentScore / 10) * 100 : 0;
+
+    const adRatioColor = b.adRatio >= 1.5 ? 'up' : b.adRatio >= 0.7 ? 'neutral' : 'down';
+    const adRatioText = b.adRatio != null ? b.adRatio.toFixed(2) : '—';
+
+    const sma50Color  = b.aboveSma50Pct  != null ? (b.aboveSma50Pct  >= 60 ? 'up' : b.aboveSma50Pct  >= 40 ? 'neutral' : 'down') : 'neutral';
+    const sma200Color = b.aboveSma200Pct != null ? (b.aboveSma200Pct >= 60 ? 'up' : b.aboveSma200Pct >= 40 ? 'neutral' : 'down') : 'neutral';
+    const pcColor     = b.putCallRatio != null ? (b.putCallRatio <= 0.8 ? 'up' : b.putCallRatio <= 1.1 ? 'neutral' : 'down') : 'neutral';
+    const pcText      = b.putCallRatio != null ? b.putCallRatio.toFixed(2) : 'غير متاح';
+    const pcInterpret = b.putCallRatio != null
+      ? (b.putCallRatio <= 0.7 ? 'تفاؤل' : b.putCallRatio <= 1.0 ? 'متوازن' : b.putCallRatio <= 1.3 ? 'حذر' : 'خوف')
+      : '—';
+
+    // Build mini sparkline from snapshots
+    const snapshots = BreadthEngine.getHistorySnapshots(7);
+    const sparkSvg = buildSentimentSparkline(snapshots);
+
+    card.className = `sentiment-card ${badge.tone}`;
+    card.innerHTML = `
+      <div class="sentiment-header">
+        <div class="sentiment-title">🧠 <span data-term="Sentiment Score">Sentiment Score</span></div>
+        <div class="sentiment-meta">${b.total} سهم • محدّث ${new Date(b.computedAt).toLocaleTimeString('ar-SA', { hour:'2-digit', minute:'2-digit' })}</div>
+      </div>
+
+      <div class="sentiment-hero">
+        <div class="sentiment-emoji">${badge.emoji}</div>
+        <div class="sentiment-label" style="color:${badge.color}">${badge.label}</div>
+        <div class="sentiment-score-bar">
+          <div class="sentiment-score-track">
+            <div class="sentiment-score-fill" style="width:${scorePct}%"></div>
+          </div>
+          <div>
+            <span class="sentiment-score-value" style="color:${badge.color}">${scoreText}</span><span class="sentiment-score-max">/10</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sentiment-metrics">
+        <div class="sentiment-metric">
+          <div class="sm-label"><span data-term="A/D Ratio">A/D Ratio</span></div>
+          <div class="sm-value ${adRatioColor}">${adRatioText}</div>
+          <div class="sm-sub">${b.advancing}↑ / ${b.declining}↓</div>
+        </div>
+        <div class="sentiment-metric">
+          <div class="sm-label">% > <span data-term="MA50">SMA50</span></div>
+          <div class="sm-value ${sma50Color}">${b.aboveSma50Pct != null ? b.aboveSma50Pct + '%' : '—'}</div>
+          <div class="sm-sub">${b.aboveSma50}/${b.sma50Total}</div>
+        </div>
+        <div class="sentiment-metric">
+          <div class="sm-label">% > <span data-term="MA200">SMA200</span></div>
+          <div class="sm-value ${sma200Color}">${b.aboveSma200Pct != null ? b.aboveSma200Pct + '%' : '—'}</div>
+          <div class="sm-sub">${b.aboveSma200}/${b.sma200Total}</div>
+        </div>
+        <div class="sentiment-metric">
+          <div class="sm-label"><span data-term="Put/Call Ratio">Put/Call</span></div>
+          <div class="sm-value ${pcColor}">${pcText}</div>
+          <div class="sm-sub">${pcInterpret}</div>
+        </div>
+      </div>
+
+      ${snapshots.length >= 2 ? `
+        <div class="sentiment-sparkline-wrap">
+          <span class="sentiment-spark-label">📊 ${snapshots.length}-day trend:</span>
+          ${sparkSvg}
+        </div>
+      ` : `
+        <div class="sentiment-disclaimer">📊 الـ trend الـ 7-day يظهر بعد جمع snapshots لعدة أيام</div>
+      `}
+
+      <div class="sentiment-disclaimer">
+        ⓘ محسوب من ${b.total} سهم رائد (S&P 500 leaders + 11 sector ETFs) — proxy للسوق العام
+      </div>
+    `;
+  }
+
+  // ===== Phase B.6: Mini sparkline for sentiment history =====
+  function buildSentimentSparkline(snapshots) {
+    if (!snapshots || snapshots.length < 2) return '<svg class="sentiment-spark-svg"></svg>';
+
+    const W = 200, H = 32, pad = 2;
+    const scores = snapshots.map(s => s.score).filter(v => v != null);
+    if (scores.length < 2) return '<svg class="sentiment-spark-svg"></svg>';
+
+    const min = Math.min(0, Math.min(...scores) - 0.5);
+    const max = Math.max(10, Math.max(...scores) + 0.5);
+    const range = max - min || 1;
+
+    const step = (W - pad * 2) / Math.max(1, scores.length - 1);
+    const points = scores.map((v, i) => {
+      const x = pad + i * step;
+      const y = pad + (1 - (v - min) / range) * (H - pad * 2);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    });
+
+    const lastScore = scores[scores.length - 1];
+    const lineColor = lastScore >= 6 ? '#10b981' : lastScore >= 4 ? '#94a3b8' : '#ef4444';
+
+    // Build smoothed area under curve
+    const areaPath = `M ${pad},${H} L ${points.join(' L ')} L ${W - pad},${H} Z`;
+    const linePath = `M ${points.join(' L ')}`;
+
+    return `<svg class="sentiment-spark-svg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <path d="${areaPath}" fill="${lineColor}" fill-opacity="0.15" />
+      <path d="${linePath}" stroke="${lineColor}" stroke-width="1.8" fill="none" stroke-linejoin="round" />
+      ${scores.map((v, i) => {
+        const x = pad + i * step;
+        const y = pad + (1 - (v - min) / range) * (H - pad * 2);
+        return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2" fill="${lineColor}" />`;
+      }).join('')}
+    </svg>`;
   }
 
   function scheduleRefresh() {
@@ -6929,26 +7558,37 @@ const RiskConsole = (() => {
   }
 
   // Manually trigger auto-suggest based on current market data
-  function autoSuggestStage() {
-    // Read VIX and breadth from Home module data (if available)
-    // Fallback: look at cached values
-    const vixEl = document.querySelector('#vixCard .vix-value');
-    const breadthEl = document.querySelector('#breadthCard .breadth-sma strong');
+  async function autoSuggestStage() {
+    // Phase B: Read directly from BreadthEngine (single source of truth)
+    // This fixes the bug where DOM selectors didn't match the actual Home structure
+    let result = BreadthEngine.getLast();
 
-    let vix = null, breadth = null;
-    if (vixEl) {
-      const v = parseFloat(vixEl.textContent);
-      if (!isNaN(v)) vix = v;
+    // If no cached result yet, compute (Home may not have loaded yet)
+    if (!result) {
+      const btn = document.querySelector('.stage-auto-btn');
+      const originalText = btn?.textContent;
+      if (btn) btn.textContent = '⏳ جاري الحساب...';
+      try {
+        result = await BreadthEngine.compute();
+      } catch (e) {
+        if (btn) btn.textContent = originalText;
+        alert('فشل في حساب البيانات — تحقق من الاتصال');
+        return;
+      }
+      if (btn) btn.textContent = originalText;
     }
-    if (breadthEl) {
-      // Extract percentage from text like "18/26"
-      const txt = breadthEl.textContent;
-      const m = txt.match(/(\d+)\s*\/\s*(\d+)/);
-      if (m) breadth = (parseInt(m[1], 10) / parseInt(m[2], 10)) * 100;
+
+    if (!result) {
+      alert('لم أتمكن من حساب البيانات — تحقق من الاتصال');
+      return;
     }
+
+    // Use the most informative breadth signal (% > SMA50)
+    const breadth = result.aboveSma50Pct;
+    const vix = result.vix;
 
     if (vix == null || breadth == null) {
-      alert('لم أتمكن من قراءة VIX/Breadth — افتح Home tab أولاً لتحميل البيانات');
+      alert(`بيانات ناقصة:\n• VIX = ${vix ?? 'غير متاح'}\n• Breadth = ${breadth ?? 'غير متاح'}\n\nافتح Home tab وانتظر تحميل البيانات.`);
       return;
     }
 
@@ -6961,7 +7601,8 @@ const RiskConsole = (() => {
     Portfolio.setStage(suggested);
     refresh();
     const info = Portfolio.getStageInfo(suggested);
-    alert(`🤖 المرحلة المقترحة: Stage ${suggested} ${info.emoji} ${info.ar}\n\nبناءً على:\n• VIX = ${vix.toFixed(2)}\n• Breadth = ${breadth.toFixed(0)}%`);
+    const sentText = result.sentimentBadge ? `${result.sentimentBadge.emoji} ${result.sentimentBadge.label}` : '—';
+    alert(`🤖 المرحلة المقترحة: Stage ${suggested} ${info.emoji} ${info.ar}\n\nبناءً على:\n• VIX = ${vix.toFixed(2)}\n• Breadth = ${breadth.toFixed(0)}%\n• Sentiment = ${sentText} (${result.sentimentScore?.toFixed(1) || '—'}/10)`);
   }
 
   function refresh() {
