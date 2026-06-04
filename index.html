@@ -1498,6 +1498,88 @@ button[data-term] {
   color: var(--text-muted);
   font-size: 13px;
 }
+
+/* ===== M11.3: Pattern Cards ===== */
+.patterns-list {
+  display: grid;
+  gap: 10px;
+}
+.pattern-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  border-right: 4px solid;
+}
+.pattern-card.pattern-bull {
+  border-right-color: var(--green);
+  background: linear-gradient(90deg, rgba(16,185,129,0.06) 0%, var(--bg) 30%);
+}
+.pattern-card.pattern-bear {
+  border-right-color: var(--red);
+  background: linear-gradient(90deg, rgba(239,68,68,0.06) 0%, var(--bg) 30%);
+}
+.pattern-card.primary {
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.08);
+}
+.pattern-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.pattern-icon {
+  font-size: 26px;
+  line-height: 1;
+}
+.pattern-name-block {
+  flex: 1;
+}
+.pattern-name {
+  font-weight: 800;
+  font-size: 14px;
+}
+.pattern-name-en {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.pattern-confidence {
+  font-size: 22px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.pattern-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.pattern-levels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+@media (max-width: 720px) {
+  .pattern-levels { grid-template-columns: 1fr; }
+}
+.pattern-level {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 6px 9px;
+  border-radius: 4px;
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.pl-label {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.pl-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
 .mood-card-title {
   font-size: 12px;
   font-weight: 700;
@@ -5694,6 +5776,33 @@ const Glossary = {
     en: 'Put/Call Ratio',
     ar: 'نسبة عقود البيع للشراء',
     desc: 'نسبة حجم تداول عقود Put إلى Call. منخفضة (< 0.7) = تفاؤل (المتداولون يشترون calls)، عالية (>1.2) = خوف (شراء puts للحماية). يُستخدم كـ contrarian indicator عند المستويات المتطرفة.'
+  },
+
+  // ===== M11: Pattern Recognition =====
+  'Pattern Recognition': {
+    en: 'Chart Pattern Recognition',
+    ar: 'التعرّف على الأنماط الفنية',
+    desc: 'كشف تلقائي للأنماط الكلاسيكية في الشارت: Double Bottom/Top، الرأس والكتفين، الكوب والمقبض. كل نمط له confidence score (0-100) + هدف سعري محسوب من الـ pattern نفسه (measured move).'
+  },
+  'Double Bottom': {
+    en: 'Double Bottom (W)',
+    ar: 'القاع المزدوج',
+    desc: 'نمط انعكاسي صعودي على شكل حرف W. قاعان عند نفس السعر مع قمّة في المنتصف. الاختراق فوق قمّة المنتصف يؤكد النمط. الهدف = الاختراق + ارتفاع النمط.'
+  },
+  'Double Top': {
+    en: 'Double Top (M)',
+    ar: 'القمّة المزدوجة',
+    desc: 'نمط انعكاسي هبوطي على شكل حرف M. قمّتان عند نفس السعر مع قاع في المنتصف. الكسر تحت قاع المنتصف يؤكد النمط.'
+  },
+  'Head and Shoulders': {
+    en: 'Head & Shoulders',
+    ar: 'الرأس والكتفين',
+    desc: 'نمط انعكاسي هبوطي قوي. ثلاث قمم: الوسطى (الرأس) أعلى من الجانبيتين (الكتفين). خط العنق (Neckline) يصل بين القاعين بين القمم. الكسر تحت Neckline يؤكد النمط.'
+  },
+  'Cup and Handle': {
+    en: 'Cup & Handle',
+    ar: 'الكوب والمقبض',
+    desc: 'نمط استمراري صعودي. الكوب = شكل U كلاسيكي (تراجع 12-33% ثم تعافٍ). المقبض = تراجع صغير (5-15%) بعد الكوب. الاختراق فوق حافة الكوب اليمنى يؤكد النمط. مكتشف بواسطة William O\'Neil.'
   }
 };
 
@@ -7623,6 +7732,497 @@ const RiskConsole = (() => {
 })();
 
 // ============================================================
+// PATTERN ENGINE MODULE (M11.1 — Chart Pattern Recognition)
+// ============================================================
+// يكتشف الأنماط الفنية الكلاسيكية من بيانات history.
+// Patterns: Double Bottom/Top, H&S, Inverse H&S, Cup & Handle.
+// لكل pattern: detector function + confidence score + visualization points.
+const PatternEngine = (() => {
+
+  // ===== Utilities =====
+
+  // Find pivot highs (peaks) and pivot lows (troughs).
+  // A pivot at index i requires `window` bars on each side that are STRICTLY higher/lower.
+  // Strict comparison (>) + dedupe handles flat regions correctly.
+  function findPivots(highs, lows, window = 5) {
+    const peaks = [];
+    const troughs = [];
+    const n = highs.length;
+    for (let i = window; i < n - window; i++) {
+      let isPeak = true, isTrough = true;
+      for (let j = i - window; j <= i + window; j++) {
+        if (j === i) continue;
+        if (highs[j] > highs[i]) isPeak = false;
+        if (lows[j]  < lows[i])  isTrough = false;
+      }
+      if (isPeak) {
+        // Dedupe: skip if previous peak has same price within last `window` bars
+        const lastPeak = peaks[peaks.length - 1];
+        if (!lastPeak || (i - lastPeak.idx) > window || lastPeak.price !== highs[i]) {
+          peaks.push({ idx: i, price: highs[i] });
+        }
+      }
+      if (isTrough) {
+        const lastTrough = troughs[troughs.length - 1];
+        if (!lastTrough || (i - lastTrough.idx) > window || lastTrough.price !== lows[i]) {
+          troughs.push({ idx: i, price: lows[i] });
+        }
+      }
+    }
+    return { peaks, troughs };
+  }
+
+  // Linear interpolation between two points to find y at given x
+  function lerpY(p1, p2, x) {
+    if (p2.idx === p1.idx) return p1.price;
+    const slope = (p2.price - p1.price) / (p2.idx - p1.idx);
+    return p1.price + slope * (x - p1.idx);
+  }
+
+  // Confidence scoring helpers
+  // priceSymmetry: how close two prices are (0-1, 1 = identical)
+  function priceSymmetry(p1, p2) {
+    const avg = (p1 + p2) / 2;
+    return 1 - Math.abs(p1 - p2) / avg;
+  }
+
+  // ===== Pattern 1: Double Bottom (W) =====
+  // Bullish reversal: 2 troughs at similar prices, peak between them, recent price approaching peak
+  function detectDoubleBottom(history) {
+    const { troughs, peaks } = findPivots(history.highs, history.lows, 4);
+    if (troughs.length < 2) return null;
+
+    const n = history.closes.length;
+    // Look at recent troughs (last 3 for flexibility)
+    const recentTroughs = troughs.slice(-3);
+
+    let best = null;
+
+    for (let i = 0; i < recentTroughs.length - 1; i++) {
+      for (let j = i + 1; j < recentTroughs.length; j++) {
+        const t1 = recentTroughs[i];
+        const t2 = recentTroughs[j];
+
+        // Symmetry check: prices within 3%
+        const sym = priceSymmetry(t1.price, t2.price);
+        if (sym < 0.97) continue;
+
+        // Distance: 10-100 bars
+        const dist = t2.idx - t1.idx;
+        if (dist < 10 || dist > 100) continue;
+
+        // Find peak between troughs
+        let midPeakIdx = -1, midPeakPrice = -Infinity;
+        for (let k = t1.idx + 1; k < t2.idx; k++) {
+          if (history.highs[k] > midPeakPrice) {
+            midPeakPrice = history.highs[k];
+            midPeakIdx = k;
+          }
+        }
+        if (midPeakIdx === -1) continue;
+
+        // Peak should be at least 5% above troughs (depth)
+        const avgTrough = (t1.price + t2.price) / 2;
+        const liftPct = (midPeakPrice - avgTrough) / avgTrough;
+        if (liftPct < 0.05) continue;
+
+        // T2 should be recent (within last 25% of bars)
+        if (t2.idx < n * 0.7) continue;
+
+        // Confidence
+        const symmetryScore = sym * 40;     // 0-40
+        const depthScore = Math.min(25, liftPct * 100);  // depth bonus, capped
+        const recencyScore = Math.min(20, (n - t2.idx) <= 10 ? 20 : 10);
+        const distanceScore = Math.min(15, Math.abs(dist - 30) < 20 ? 15 : 8);
+        const confidence = Math.round(symmetryScore + depthScore + recencyScore + distanceScore);
+
+        if (!best || confidence > best.confidence) {
+          best = {
+            type: 'double-bottom',
+            nameAr: 'قاع مزدوج (W)',
+            nameEn: 'Double Bottom',
+            icon: 'W',
+            bullish: true,
+            confidence,
+            points: {
+              trough1: t1,
+              peak: { idx: midPeakIdx, price: midPeakPrice },
+              trough2: t2
+            },
+            // Measured move target
+            target: +(midPeakPrice + (midPeakPrice - avgTrough)).toFixed(2),
+            breakoutLevel: +midPeakPrice.toFixed(2),
+            invalidation: +(Math.min(t1.price, t2.price) * 0.97).toFixed(2),
+            description: 'نموذج W — انعكاس صعودي. الاختراق فوق قمّة المنتصف يؤكد النمط.'
+          };
+        }
+      }
+    }
+
+    return best;
+  }
+
+  // ===== Pattern 2: Double Top (M) =====
+  // Bearish reversal — mirror of Double Bottom
+  function detectDoubleTop(history) {
+    const { peaks } = findPivots(history.highs, history.lows, 4);
+    if (peaks.length < 2) return null;
+
+    const n = history.closes.length;
+    const recentPeaks = peaks.slice(-3);
+    let best = null;
+
+    for (let i = 0; i < recentPeaks.length - 1; i++) {
+      for (let j = i + 1; j < recentPeaks.length; j++) {
+        const p1 = recentPeaks[i];
+        const p2 = recentPeaks[j];
+
+        const sym = priceSymmetry(p1.price, p2.price);
+        if (sym < 0.97) continue;
+
+        const dist = p2.idx - p1.idx;
+        if (dist < 10 || dist > 100) continue;
+
+        let midTroughIdx = -1, midTroughPrice = Infinity;
+        for (let k = p1.idx + 1; k < p2.idx; k++) {
+          if (history.lows[k] < midTroughPrice) {
+            midTroughPrice = history.lows[k];
+            midTroughIdx = k;
+          }
+        }
+        if (midTroughIdx === -1) continue;
+
+        const avgPeak = (p1.price + p2.price) / 2;
+        const dropPct = (avgPeak - midTroughPrice) / avgPeak;
+        if (dropPct < 0.05) continue;
+
+        if (p2.idx < n * 0.7) continue;
+
+        const symmetryScore = sym * 40;
+        const depthScore = Math.min(25, dropPct * 100);
+        const recencyScore = Math.min(20, (n - p2.idx) <= 10 ? 20 : 10);
+        const distanceScore = Math.min(15, Math.abs(dist - 30) < 20 ? 15 : 8);
+        const confidence = Math.round(symmetryScore + depthScore + recencyScore + distanceScore);
+
+        if (!best || confidence > best.confidence) {
+          best = {
+            type: 'double-top',
+            nameAr: 'قمّة مزدوجة (M)',
+            nameEn: 'Double Top',
+            icon: 'M',
+            bullish: false,
+            confidence,
+            points: {
+              peak1: p1,
+              trough: { idx: midTroughIdx, price: midTroughPrice },
+              peak2: p2
+            },
+            target: +(midTroughPrice - (avgPeak - midTroughPrice)).toFixed(2),
+            breakoutLevel: +midTroughPrice.toFixed(2),
+            invalidation: +(Math.max(p1.price, p2.price) * 1.03).toFixed(2),
+            description: 'نموذج M — انعكاس هبوطي. الكسر تحت قاع المنتصف يؤكد النمط.'
+          };
+        }
+      }
+    }
+
+    return best;
+  }
+
+  // ===== Pattern 3: Head & Shoulders =====
+  // Bearish reversal: 3 peaks, middle (head) higher than the 2 shoulders. Neckline through troughs.
+  function detectHeadAndShoulders(history) {
+    const { peaks, troughs } = findPivots(history.highs, history.lows, 4);
+    if (peaks.length < 3 || troughs.length < 2) return null;
+
+    const n = history.closes.length;
+    const recentPeaks = peaks.slice(-5);  // give some flexibility
+    let best = null;
+
+    // Try every triple (left, head, right)
+    for (let i = 0; i <= recentPeaks.length - 3; i++) {
+      for (let j = i + 1; j < recentPeaks.length - 1; j++) {
+        for (let k = j + 1; k < recentPeaks.length; k++) {
+          const left  = recentPeaks[i];
+          const head  = recentPeaks[j];
+          const right = recentPeaks[k];
+
+          // Head must be highest
+          if (head.price <= left.price || head.price <= right.price) continue;
+
+          // Shoulders should be similar (within 5%)
+          const shoulderSym = priceSymmetry(left.price, right.price);
+          if (shoulderSym < 0.94) continue;
+
+          // Head should be at least 3% above shoulders avg
+          const shoulderAvg = (left.price + right.price) / 2;
+          const headLift = (head.price - shoulderAvg) / shoulderAvg;
+          if (headLift < 0.03) continue;
+
+          // Find troughs between left-head and head-right (the neckline anchors)
+          const t1 = troughs.find(t => t.idx > left.idx && t.idx < head.idx);
+          const t2 = troughs.find(t => t.idx > head.idx && t.idx < right.idx);
+          if (!t1 || !t2) continue;
+
+          // Right should be recent enough
+          if (right.idx < n * 0.6) continue;
+
+          // Neckline level at the right end
+          const necklineAtRight = lerpY(t1, t2, right.idx);
+
+          const symScore = shoulderSym * 35;
+          const liftScore = Math.min(25, headLift * 200);
+          const recencyScore = Math.min(25, (n - right.idx) <= 15 ? 25 : 15);
+          const necklineScore = 15;
+          const confidence = Math.round(symScore + liftScore + recencyScore + necklineScore);
+
+          if (!best || confidence > best.confidence) {
+            const necklineMid = (t1.price + t2.price) / 2;
+            // Measured move: distance from head to neckline, projected below
+            const measure = head.price - necklineMid;
+
+            best = {
+              type: 'head-shoulders',
+              nameAr: 'الرأس والكتفين',
+              nameEn: 'Head & Shoulders',
+              icon: '👤',
+              bullish: false,
+              confidence,
+              points: {
+                leftShoulder: left,
+                leftNeck: t1,
+                head,
+                rightNeck: t2,
+                rightShoulder: right
+              },
+              target: +(necklineMid - measure).toFixed(2),
+              breakoutLevel: +necklineAtRight.toFixed(2),
+              invalidation: +(head.price * 1.02).toFixed(2),
+              description: 'الرأس والكتفين — نمط انعكاس هبوطي قوي. الكسر تحت خط العنق (Neckline) يؤكده.'
+            };
+          }
+        }
+      }
+    }
+
+    return best;
+  }
+
+  // ===== Pattern 4: Inverse Head & Shoulders =====
+  // Bullish reversal — mirror image
+  function detectInverseHeadAndShoulders(history) {
+    const { peaks, troughs } = findPivots(history.highs, history.lows, 4);
+    if (peaks.length < 2 || troughs.length < 3) return null;
+
+    const n = history.closes.length;
+    const recentTroughs = troughs.slice(-5);
+    let best = null;
+
+    for (let i = 0; i <= recentTroughs.length - 3; i++) {
+      for (let j = i + 1; j < recentTroughs.length - 1; j++) {
+        for (let k = j + 1; k < recentTroughs.length; k++) {
+          const left  = recentTroughs[i];
+          const head  = recentTroughs[j];
+          const right = recentTroughs[k];
+
+          // Head (middle trough) must be lowest
+          if (head.price >= left.price || head.price >= right.price) continue;
+
+          const shoulderSym = priceSymmetry(left.price, right.price);
+          if (shoulderSym < 0.94) continue;
+
+          const shoulderAvg = (left.price + right.price) / 2;
+          const headDrop = (shoulderAvg - head.price) / shoulderAvg;
+          if (headDrop < 0.03) continue;
+
+          // Peaks between troughs form the neckline
+          const p1 = peaks.find(p => p.idx > left.idx && p.idx < head.idx);
+          const p2 = peaks.find(p => p.idx > head.idx && p.idx < right.idx);
+          if (!p1 || !p2) continue;
+
+          if (right.idx < n * 0.6) continue;
+
+          const necklineAtRight = lerpY(p1, p2, right.idx);
+
+          const symScore = shoulderSym * 35;
+          const dropScore = Math.min(25, headDrop * 200);
+          const recencyScore = Math.min(25, (n - right.idx) <= 15 ? 25 : 15);
+          const necklineScore = 15;
+          const confidence = Math.round(symScore + dropScore + recencyScore + necklineScore);
+
+          if (!best || confidence > best.confidence) {
+            const necklineMid = (p1.price + p2.price) / 2;
+            const measure = necklineMid - head.price;
+
+            best = {
+              type: 'inverse-head-shoulders',
+              nameAr: 'الرأس والكتفين المعكوس',
+              nameEn: 'Inverse H&S',
+              icon: '🙃',
+              bullish: true,
+              confidence,
+              points: {
+                leftShoulder: left,
+                leftNeck: p1,
+                head,
+                rightNeck: p2,
+                rightShoulder: right
+              },
+              target: +(necklineMid + measure).toFixed(2),
+              breakoutLevel: +necklineAtRight.toFixed(2),
+              invalidation: +(head.price * 0.98).toFixed(2),
+              description: 'الرأس والكتفين المعكوس — نمط انعكاس صعودي. الاختراق فوق خط العنق يؤكده.'
+            };
+          }
+        }
+      }
+    }
+
+    return best;
+  }
+
+  // ===== Pattern 5: Cup & Handle =====
+  // Bullish continuation: rounded U-shape cup, then a small consolidation (handle)
+  function detectCupAndHandle(history) {
+    const n = history.closes.length;
+    if (n < 40) return null;  // Need enough bars
+
+    const { peaks, troughs } = findPivots(history.highs, history.lows, 5);
+    if (peaks.length < 2 || troughs.length < 1) return null;
+
+    let best = null;
+
+    // Strategy: find two peaks with a deep trough between them (the cup),
+    // then a small consolidation after the right peak (the handle).
+    const recentPeaks = peaks.slice(-4);
+
+    for (let i = 0; i < recentPeaks.length - 1; i++) {
+      for (let j = i + 1; j < recentPeaks.length; j++) {
+        const leftRim  = recentPeaks[i];
+        const rightRim = recentPeaks[j];
+
+        // Rims roughly equal (within 5%)
+        const rimSym = priceSymmetry(leftRim.price, rightRim.price);
+        if (rimSym < 0.95) continue;
+
+        // Cup duration: 15-80 bars
+        const cupDuration = rightRim.idx - leftRim.idx;
+        if (cupDuration < 15 || cupDuration > 80) continue;
+
+        // Find the bottom of the cup
+        const cupTrough = troughs.find(t => t.idx > leftRim.idx && t.idx < rightRim.idx);
+        if (!cupTrough) continue;
+
+        const rimAvg = (leftRim.price + rightRim.price) / 2;
+        const cupDepth = (rimAvg - cupTrough.price) / rimAvg;
+        // Classic cup: 12-33% deep
+        if (cupDepth < 0.10 || cupDepth > 0.40) continue;
+
+        // The cup trough should be near the middle (within outer 25%)
+        const cupMidIdx = (leftRim.idx + rightRim.idx) / 2;
+        const troughDeviation = Math.abs(cupTrough.idx - cupMidIdx) / cupDuration;
+        if (troughDeviation > 0.35) continue;
+
+        // ===== Handle detection =====
+        // After right rim, look for a small pullback (5-15% deep, short duration)
+        const handleStart = rightRim.idx;
+        const handleSearchEnd = Math.min(n - 1, handleStart + 20);  // up to 20 bars
+
+        let handleLow = rightRim.price;
+        let handleLowIdx = handleStart;
+        for (let k = handleStart + 1; k <= handleSearchEnd; k++) {
+          if (history.lows[k] < handleLow) {
+            handleLow = history.lows[k];
+            handleLowIdx = k;
+          }
+        }
+
+        const handleDepth = (rightRim.price - handleLow) / rightRim.price;
+        // Handle should be 3-15% pullback
+        if (handleDepth < 0.02 || handleDepth > 0.18) continue;
+
+        // Handle should be in the upper half of the cup (not too deep)
+        if (handleLow < rimAvg - (cupDepth * rimAvg * 0.5)) continue;
+
+        // Handle low should be recent
+        if (handleLowIdx < n - 25) continue;
+
+        // ===== Confidence scoring =====
+        const rimScore   = rimSym * 25;
+        const depthScore = cupDepth >= 0.12 && cupDepth <= 0.33 ? 20 : 10;  // ideal range
+        const handleScore = handleDepth >= 0.05 && handleDepth <= 0.12 ? 20 : 12;
+        const recencyScore = Math.min(20, (n - handleLowIdx) <= 10 ? 20 : 12);
+        const shapeScore = troughDeviation < 0.20 ? 15 : 8;
+        const confidence = Math.round(rimScore + depthScore + handleScore + recencyScore + shapeScore);
+
+        if (!best || confidence > best.confidence) {
+          const breakoutLevel = Math.max(leftRim.price, rightRim.price);
+          best = {
+            type: 'cup-handle',
+            nameAr: 'الكوب والمقبض',
+            nameEn: 'Cup & Handle',
+            icon: '☕',
+            bullish: true,
+            confidence,
+            points: {
+              leftRim,
+              cupTrough,
+              rightRim,
+              handleLow: { idx: handleLowIdx, price: handleLow }
+            },
+            // Measured move: cup depth projected above breakout
+            target: +(breakoutLevel + (rimAvg - cupTrough.price)).toFixed(2),
+            breakoutLevel: +breakoutLevel.toFixed(2),
+            invalidation: +(handleLow * 0.97).toFixed(2),
+            description: 'الكوب والمقبض — نمط استمراري صعودي. الاختراق فوق حافة الكوب اليمنى يؤكده.'
+          };
+        }
+      }
+    }
+
+    return best;
+  }
+
+  // ===== Master detector — runs all patterns, returns matches sorted by confidence =====
+  function detectAll(history, minConfidence = 60) {
+    if (!history || !history.closes || history.closes.length < 30) return [];
+
+    const detectors = [
+      detectDoubleBottom,
+      detectDoubleTop,
+      detectHeadAndShoulders,
+      detectInverseHeadAndShoulders,
+      detectCupAndHandle
+    ];
+
+    const results = [];
+    detectors.forEach(fn => {
+      try {
+        const r = fn(history);
+        if (r && r.confidence >= minConfidence) results.push(r);
+      } catch (e) {
+        console.warn('Pattern detector failed:', fn.name, e.message);
+      }
+    });
+
+    // Sort by confidence descending
+    results.sort((a, b) => b.confidence - a.confidence);
+    return results;
+  }
+
+  return {
+    detectAll,
+    findPivots,
+    // Individual detectors exposed for testing
+    detectDoubleBottom,
+    detectDoubleTop,
+    detectHeadAndShoulders,
+    detectInverseHeadAndShoulders,
+    detectCupAndHandle
+  };
+})();
+
+// ============================================================
 // CHART MODULE (M9-B — Mini Candlestick + Overlays + RS Badge)
 // ============================================================
 const Chart = (() => {
@@ -7658,10 +8258,11 @@ const Chart = (() => {
   function escapeAttr(s) { return String(s).replace(/"/g, '&quot;'); }
 
   // Main render — returns HTML string ready to embed
-  // options: { history, days = 90, rsRating = null, tradeMarkers = null }
+  // options: { history, days = 90, rsRating = null, tradeMarkers = null, patterns = null }
   // tradeMarkers (M10-C): { entry, stop, t1, t2 } in stock prices
+  // patterns (M11.2): array of PatternEngine.detectAll() results, indices are RAW (not yet sliced)
   function render(options) {
-    const { history, days = 90, rsRating = null, tradeMarkers = null } = options || {};
+    const { history, days = 90, rsRating = null, tradeMarkers = null, patterns = null } = options || {};
 
     if (!history || !history.closes || history.closes.length < 20) {
       return '<div class="mini-chart-empty">⚠️ بيانات الشارت غير كافية (يحتاج 20 يوم على الأقل)</div>';
@@ -7783,6 +8384,101 @@ const Chart = (() => {
     svg += drawSeries(ema21,  COLORS.ema21);
     svg += drawSeries(sma50,  COLORS.sma50);
     svg += drawSeries(sma200, COLORS.sma200, '4,3');
+
+    // M11.2: Pattern overlays (draw connecting lines + labels for detected patterns)
+    if (patterns && patterns.length > 0) {
+      patterns.forEach((pat, patIdx) => {
+        const color = pat.bullish ? '#10b981' : '#ef4444';
+        const dashStyle = patIdx === 0 ? 'none' : '6,3';  // primary = solid, secondary = dashed
+        const lineOpacity = patIdx === 0 ? 0.85 : 0.55;
+
+        // Convert pattern's full-history indices to chart-local x positions
+        // Filter out points that fall outside the visible range
+        function toChartXY(pt) {
+          const localIdx = pt.idx - start;
+          if (localIdx < 0 || localIdx >= n) return null;
+          return { x: xAt(localIdx), y: yAt(pt.price), idx: localIdx };
+        }
+
+        // Collect the points to draw (order matters per pattern type)
+        let polyline = [];
+        if (pat.type === 'double-bottom') {
+          polyline = [
+            toChartXY(pat.points.trough1),
+            toChartXY(pat.points.peak),
+            toChartXY(pat.points.trough2)
+          ];
+        } else if (pat.type === 'double-top') {
+          polyline = [
+            toChartXY(pat.points.peak1),
+            toChartXY(pat.points.trough),
+            toChartXY(pat.points.peak2)
+          ];
+        } else if (pat.type === 'head-shoulders') {
+          polyline = [
+            toChartXY(pat.points.leftShoulder),
+            toChartXY(pat.points.leftNeck),
+            toChartXY(pat.points.head),
+            toChartXY(pat.points.rightNeck),
+            toChartXY(pat.points.rightShoulder)
+          ];
+        } else if (pat.type === 'inverse-head-shoulders') {
+          polyline = [
+            toChartXY(pat.points.leftShoulder),
+            toChartXY(pat.points.leftNeck),
+            toChartXY(pat.points.head),
+            toChartXY(pat.points.rightNeck),
+            toChartXY(pat.points.rightShoulder)
+          ];
+        } else if (pat.type === 'cup-handle') {
+          polyline = [
+            toChartXY(pat.points.leftRim),
+            toChartXY(pat.points.cupTrough),
+            toChartXY(pat.points.rightRim),
+            toChartXY(pat.points.handleLow)
+          ];
+        }
+
+        // Skip if any required point isn't visible
+        polyline = polyline.filter(p => p !== null);
+        if (polyline.length < 2) return;
+
+        // Build polyline string
+        const pointsStr = polyline.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+        svg += `<polyline points="${pointsStr}" stroke="${color}" stroke-width="1.8" fill="none" opacity="${lineOpacity}" ${dashStyle !== 'none' ? `stroke-dasharray="${dashStyle}"` : ''} />`;
+
+        // Circle markers at each key point
+        polyline.forEach(p => {
+          svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="${color}" opacity="${lineOpacity}" />`;
+        });
+
+        // Neckline for H&S patterns (extended horizontal/sloped line)
+        if (pat.type === 'head-shoulders' || pat.type === 'inverse-head-shoulders') {
+          const n1 = toChartXY(pat.points.leftNeck);
+          const n2 = toChartXY(pat.points.rightNeck);
+          if (n1 && n2) {
+            // Extend neckline to right edge
+            const slope = n1.x !== n2.x ? (n2.y - n1.y) / (n2.x - n1.x) : 0;
+            const xEnd = pad.left + chartW;
+            const yEnd = n2.y + slope * (xEnd - n2.x);
+            svg += `<line x1="${n1.x.toFixed(1)}" y1="${n1.y.toFixed(1)}" x2="${xEnd.toFixed(1)}" y2="${yEnd.toFixed(1)}" stroke="${color}" stroke-width="1" stroke-dasharray="3,2" opacity="0.4" />`;
+          }
+        }
+
+        // Label at the rightmost point (top-right corner of the pattern)
+        if (patIdx === 0) {  // only label the primary pattern to avoid clutter
+          const lastPt = polyline[polyline.length - 1];
+          if (lastPt) {
+            const labelText = `${pat.icon} ${pat.nameEn} ${pat.confidence}%`;
+            const labelW = labelText.length * 6.2 + 14;
+            const labelX = Math.min(lastPt.x + 6, pad.left + chartW - labelW);
+            const labelY = Math.max(lastPt.y - 22, pad.top + 8);
+            svg += `<rect x="${labelX.toFixed(1)}" y="${labelY.toFixed(1)}" width="${labelW.toFixed(1)}" height="16" fill="${color}" rx="2" />`;
+            svg += `<text x="${(labelX + labelW/2).toFixed(1)}" y="${(labelY + 11.5).toFixed(1)}" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">${labelText}</text>`;
+          }
+        }
+      });
+    }
 
     // M10-C: Trade Markers (entry/stop/t1/t2) + Risk/Reward zones
     if (tradeMarkers) {
@@ -8265,6 +8961,9 @@ const Builder = (() => {
 
       const price = indicators.currentPrice;
 
+      // M11.3: Pattern detection (runs on full history, returns top-confidence matches)
+      const detectedPatterns = PatternEngine.detectAll(history, 65);
+
       // 2. Evaluate each selected strategy
       const strategies = STRATEGIES.filter(s => selected.has(s.id));
       const evaluated = strategies.map(s => {
@@ -8312,6 +9011,47 @@ const Builder = (() => {
             <div class="rec-item"><div class="ri-label">الحجم</div><div class="ri-value">${(indicators.currentVolume / (indicators.avgVolume20 || 1)).toFixed(2)}× المتوسط</div></div>
           </div>
         </div>
+
+        ${detectedPatterns.length > 0 ? `
+          <div class="rec-section">
+            <div class="rec-section-title">📐 <span data-term="Pattern Recognition">الأنماط المكتشفة</span>:</div>
+            <div class="patterns-list">
+              ${detectedPatterns.map((p, i) => {
+                const bgClass = p.bullish ? 'pattern-bull' : 'pattern-bear';
+                const arrow = p.bullish ? '📈' : '📉';
+                return `
+                  <div class="pattern-card ${bgClass} ${i === 0 ? 'primary' : ''}">
+                    <div class="pattern-card-header">
+                      <span class="pattern-icon">${p.icon}</span>
+                      <div class="pattern-name-block">
+                        <div class="pattern-name">${p.nameAr}</div>
+                        <div class="pattern-name-en">${p.nameEn} ${arrow}</div>
+                      </div>
+                      <div class="pattern-confidence" style="color:${p.bullish ? 'var(--green)' : 'var(--red)'};">
+                        ${p.confidence}%
+                      </div>
+                    </div>
+                    <div class="pattern-desc">${p.description}</div>
+                    <div class="pattern-levels">
+                      <div class="pattern-level">
+                        <span class="pl-label">🎯 Target:</span>
+                        <span class="pl-value">$${p.target?.toFixed(2) || '—'}</span>
+                      </div>
+                      <div class="pattern-level">
+                        <span class="pl-label">⚡ Breakout:</span>
+                        <span class="pl-value">$${p.breakoutLevel?.toFixed(2) || '—'}</span>
+                      </div>
+                      <div class="pattern-level">
+                        <span class="pl-label">🛑 Invalidation:</span>
+                        <span class="pl-value">$${p.invalidation?.toFixed(2) || '—'}</span>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        ` : ''}
 
         <!-- M10-C: Chart placeholder — replaced after mode-specific data is computed -->
         __CHART_PLACEHOLDER__`;
@@ -8536,11 +9276,13 @@ const Builder = (() => {
         </div>`;
 
         // M10-C: Replace chart placeholder with markers-enabled chart for stock mode
+        // M11.3: Patterns overlay
         const stockChart = Chart.render({
           history,
           days: 90,
           rsRating: indicators.rsRating,
-          tradeMarkers: stockTradeMarkers
+          tradeMarkers: stockTradeMarkers,
+          patterns: detectedPatterns
         });
         html = html.replace('__CHART_PLACEHOLDER__', stockChart);
 
@@ -8792,10 +9534,12 @@ const Builder = (() => {
       </div>`;
 
       // M10-C: Options mode — chart without trade markers (premium-based, not stock-price-based)
+      // M11.3: Patterns overlay
       const optionChart = Chart.render({
         history,
         days: 90,
-        rsRating: indicators.rsRating
+        rsRating: indicators.rsRating,
+        patterns: detectedPatterns
       });
       html = html.replace('__CHART_PLACEHOLDER__', optionChart);
 
