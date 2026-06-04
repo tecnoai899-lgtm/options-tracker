@@ -1679,6 +1679,353 @@ button[data-term] {
   border-radius: 4px;
   margin-left: 8px;
 }
+
+/* ===== R2: Trade Strategy Selector ===== */
+.trade-strategy-selector {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+.trade-strategy-selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.trade-strategy-selector-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.trade-strategy-auto-badge {
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg);
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+.trade-strategy-select {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.trade-strategy-select:hover {
+  border-color: var(--purple);
+}
+.trade-strategy-preview {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+@media (max-width: 720px) {
+  .trade-strategy-preview { grid-template-columns: repeat(2, 1fr); }
+}
+.tsp-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+.tsp-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.tsp-value {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+.tsp-value.up { color: var(--green); }
+.tsp-value.down { color: var(--red); }
+.trade-strategy-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* ===== R4: Risk Console Tab ===== */
+.risk-section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+.risk-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.risk-capital-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.risk-capital-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-width: 90px;
+}
+.risk-capital-input {
+  flex: 1;
+  max-width: 200px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-family: inherit;
+}
+.stage-selector {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr) auto;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+@media (max-width: 720px) {
+  .stage-selector { grid-template-columns: repeat(2, 1fr); }
+}
+.stage-btn {
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+  font-family: inherit;
+  color: var(--text);
+}
+.stage-btn:hover {
+  border-color: var(--purple);
+}
+.stage-btn.active {
+  border-color: var(--purple);
+  background: var(--purple-bg);
+}
+.stage-btn-emoji {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+.stage-btn-label {
+  font-size: 12px;
+  font-weight: 700;
+}
+.stage-btn-mult {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.stage-auto-btn {
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--blue);
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.stage-auto-btn:hover {
+  border-color: var(--blue);
+  background: var(--blue-bg);
+}
+.stage-auto-info {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  font-style: italic;
+}
+.risk-budget-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+@media (max-width: 720px) {
+  .risk-budget-grid { grid-template-columns: 1fr; }
+}
+.risk-budget-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  border-left: 4px solid;
+}
+.risk-budget-card.total { border-color: var(--blue); }
+.risk-budget-card.used { border-color: var(--red); }
+.risk-budget-card.available { border-color: var(--green); }
+.rbc-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+.rbc-value {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.rbc-value.total { color: var(--blue); }
+.rbc-value.used { color: var(--red); }
+.rbc-value.available { color: var(--green); }
+.rbc-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.risk-progress {
+  height: 12px;
+  background: var(--bg);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.risk-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green) 0%, var(--yellow) 60%, var(--red) 100%);
+  transition: width 0.3s;
+}
+.slots-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.slot-cell {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.slot-cell.base {
+  background: var(--bg-secondary);
+}
+.slot-cell.base.used {
+  background: var(--purple);
+  color: white;
+  border-color: var(--purple);
+}
+.slot-cell.extra {
+  border-style: dashed;
+}
+.slot-cell.extra.used {
+  background: var(--yellow);
+  color: var(--bg);
+  border-style: solid;
+  border-color: var(--yellow);
+}
+.slot-divider {
+  width: 1px;
+  background: var(--border);
+  margin: 0 4px;
+}
+.open-positions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.open-positions-table th {
+  text-align: right;
+  padding: 8px 10px;
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid var(--border);
+}
+.open-positions-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+.open-positions-table tr:last-child td {
+  border-bottom: none;
+}
+.risk-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.risk-setting-row:last-child {
+  border-bottom: none;
+}
+.risk-setting-label {
+  font-size: 13px;
+  color: var(--text);
+}
+.risk-setting-toggle {
+  width: 44px;
+  height: 24px;
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.risk-setting-toggle.on {
+  background: var(--green);
+  border-color: var(--green);
+}
+.risk-setting-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+.risk-setting-toggle.on::after {
+  left: 22px;
+}
+.risk-empty-state {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
 </style>
 </head>
 <body>
@@ -1735,6 +2082,7 @@ button[data-term] {
   <button class="tab" data-tab="paper">🎯 محفظة الاختبار</button>
   <button class="tab" data-tab="calendar">📅 الأجندة الماكرو</button>
   <button class="tab" data-tab="journal">📓 سجل الصفقات</button>
+  <button class="tab" data-tab="risk">🛡️ Risk Console</button>
   <button class="tab" data-tab="performance">📊 الأداء</button>
   <button class="tab" data-tab="settings">⚙️ الإعدادات</button>
 </div>
@@ -1811,9 +2159,25 @@ button[data-term] {
       <div class="strategy-grid" id="strategyGrid"></div>
     </div>
 
+    <!-- Step 1.5: Trade Strategy Selector (R2) -->
+    <div class="builder-section">
+      <div class="builder-step-label">② اختر أسلوب الصفقة (Trade Strategy)</div>
+      <div class="trade-strategy-selector">
+        <div class="trade-strategy-selector-header">
+          <div class="trade-strategy-selector-title">📐 أسلوب الدخول والخروج</div>
+          <div class="trade-strategy-auto-badge" id="tradeStrategyAutoBadge">🤖 تلقائي حسب الـ Screener</div>
+        </div>
+        <select class="trade-strategy-select" id="tradeStrategySelect" onchange="Builder.setTradeStrategy(this.value)">
+          <option value="auto">🤖 تلقائي (حسب الـ Screener المختار)</option>
+        </select>
+        <div class="trade-strategy-preview" id="tradeStrategyPreview"></div>
+        <div class="trade-strategy-desc" id="tradeStrategyDesc"></div>
+      </div>
+    </div>
+
     <!-- Step 2: Scan or Single -->
     <div class="builder-section" style="margin-bottom: 0;">
-      <div class="builder-step-label">② اكتشف الفرص</div>
+      <div class="builder-step-label">③ اكتشف الفرص</div>
 
       <button class="btn btn-primary" onclick="Builder.scanMarket()"
         style="width:100%; padding:16px; font-size:16px; font-weight:700; background: linear-gradient(135deg, var(--purple), var(--blue)); border:none; margin-bottom:14px;">
@@ -1910,6 +2274,69 @@ button[data-term] {
     <button class="btn btn-primary" style="flex: 0 0 auto;" onclick="UIRenderer.showAddJournalModal()">+ إضافة سجل</button>
   </div>
   <div id="journalList"></div>
+</div>
+
+<!-- ===== TAB: RISK CONSOLE (R4) ===== -->
+<div class="tab-content" id="tab-risk">
+  <h2 style="font-size: 18px; margin-bottom: 16px;">🛡️ <span data-term="Risk Budget">Risk</span> Console</h2>
+
+  <!-- Capital + Stage -->
+  <div class="risk-section">
+    <div class="risk-section-title">💰 رأس المال + <span data-term="Market Stage">المرحلة</span></div>
+
+    <div class="risk-capital-row">
+      <div class="risk-capital-label">رأس المال:</div>
+      <input type="number" id="riskCapitalInput" class="risk-capital-input" min="100" step="100" />
+      <button class="btn" onclick="RiskConsole.saveCapital()" style="padding:8px 14px;font-weight:700;">حفظ</button>
+    </div>
+
+    <div style="margin-top:12px;">
+      <div class="risk-capital-label" style="margin-bottom:8px;">المرحلة الحالية:</div>
+      <div class="stage-selector" id="stageSelector"></div>
+      <div class="stage-auto-info" id="stageAutoInfo"></div>
+    </div>
+  </div>
+
+  <!-- Risk Budget -->
+  <div class="risk-section">
+    <div class="risk-section-title">📊 <span data-term="Risk Budget">Risk Budget</span></div>
+
+    <div class="risk-budget-grid" id="riskBudgetGrid"></div>
+
+    <div style="margin-top:10px;">
+      <div class="risk-progress">
+        <div class="risk-progress-fill" id="riskProgressFill" style="width:0%"></div>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:4px;text-align:center;font-variant-numeric:tabular-nums;" id="riskProgressLabel">—</div>
+    </div>
+  </div>
+
+  <!-- Slot Allocation -->
+  <div class="risk-section">
+    <div class="risk-section-title">🎰 توزيع المراكز (Slots)</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">
+      4 مراكز أساسية + 4 إضافية. الإضافية تُفعّل تلقائياً إذا فيه risk budget متبقي.
+    </div>
+    <div class="slots-grid" id="slotsGrid"></div>
+  </div>
+
+  <!-- Open Positions Risk -->
+  <div class="risk-section">
+    <div class="risk-section-title">📋 المخاطرة لكل صفقة مفتوحة</div>
+    <div id="openPositionsRiskTable"></div>
+  </div>
+
+  <!-- Settings -->
+  <div class="risk-section">
+    <div class="risk-section-title">⚙️ إعدادات</div>
+    <div class="risk-setting-row">
+      <div>
+        <div class="risk-setting-label">اقتراح المرحلة تلقائياً</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">من Mini <span data-term="Breadth">Breadth</span> + <span data-term="VIX">VIX</span> في الصفحة الرئيسية</div>
+      </div>
+      <div class="risk-setting-toggle" id="autoStageToggle" onclick="RiskConsole.toggleAutoStage()"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ===== TAB: PERFORMANCE ===== -->
@@ -2661,6 +3088,120 @@ const WATCHLIST = [
   'INTC', 'MU', 'DIS', 'UBER', 'SHOP', 'CRM'
 ];
 
+// ============================================================
+// MODULE 8b: TRADE STRATEGIES (R1 — Separated from Screeners)
+// ============================================================
+// كل Trade Strategy تحدد كيف ندخل ونخرج من الصفقة (stop/targets/timing)،
+// منفصلة تماماً عن الـ Screener (الفلتر اللي اكتشف السهم).
+// نفس الـ screener (مثلاً Triple MA) يمكن دمجه مع أي trade strategy.
+const TRADE_STRATEGIES = [
+  {
+    id: 'tight-breakout',
+    name: 'Tight Breakout',
+    nameAr: 'اختراق ضيّق',
+    icon: '⚡',
+    description: 'دخول سريع، stop ضيّق، أهداف قريبة. مناسب للـ momentum القوي والـ breakouts العنيفة.',
+    fitFor: 'momentum، post-earnings، gap-up plays',
+    // Stocks structure
+    stop:    { type: 'stock_pct', value: -0.03 },
+    target1: { type: 'stock_pct', value: 0.06, exitPct: 50 },
+    target2: { type: 'stock_pct', value: 0.12, exitPct: 100 },
+    timeStopDays: 7,
+    orderType: 'limit',
+    // Options structure (للـ option mode)
+    optionStructure: {
+      stop:    { type: 'premium_pct', value: -0.50 },
+      target1: { type: 'premium_pct', value: 0.75, exitPct: 50 },
+      target2: { type: 'premium_pct', value: 1.50, exitPct: 100 },
+      dteRange: { min: 5, max: 14 }
+    }
+  },
+  {
+    id: 'standard-swing',
+    name: 'Standard Swing',
+    nameAr: 'سوينغ معياري',
+    icon: '🎯',
+    description: 'الأسلوب الافتراضي — توازن بين الـ stop والأهداف. الأنسب لمعظم setups.',
+    fitFor: 'trend continuation، MA pullbacks، breakouts العادية',
+    stop:    { type: 'stock_pct', value: -0.05 },
+    target1: { type: 'stock_pct', value: 0.10, exitPct: 50 },
+    target2: { type: 'stock_pct', value: 0.20, exitPct: 100 },
+    timeStopDays: 21,
+    orderType: 'limit',
+    optionStructure: {
+      stop:    { type: 'premium_pct', value: -0.60 },
+      target1: { type: 'premium_pct', value: 0.80, exitPct: 50 },
+      target2: { type: 'premium_pct', value: 1.60, exitPct: 100 },
+      dteRange: { min: 14, max: 30 }
+    }
+  },
+  {
+    id: 'long-hold',
+    name: 'Long Hold',
+    nameAr: 'احتفاظ طويل',
+    icon: '🏔️',
+    description: 'stop أوسع، أهداف بعيدة، فترة احتفاظ طويلة. للـ trends القوية المؤكدة.',
+    fitFor: 'Triple MA alignment، long-term leaders، RS>85',
+    stop:    { type: 'stock_pct', value: -0.07 },
+    target1: { type: 'stock_pct', value: 0.15, exitPct: 50 },
+    target2: { type: 'stock_pct', value: 0.30, exitPct: 100 },
+    timeStopDays: 60,
+    orderType: 'limit',
+    optionStructure: {
+      stop:    { type: 'premium_pct', value: -0.55 },
+      target1: { type: 'premium_pct', value: 1.00, exitPct: 50 },
+      target2: { type: 'premium_pct', value: 2.00, exitPct: 100 },
+      dteRange: { min: 30, max: 60 }
+    }
+  },
+  {
+    id: 'counter-trend-tight',
+    name: 'Counter-Trend Tight',
+    nameAr: 'عكس الاتجاه — ضيّق',
+    icon: '🔄',
+    description: 'stop ضيّق جداً لأن المخاطرة عكس الاتجاه. للـ mean reversion والـ oversold bounces.',
+    fitFor: 'mean reversion، RSI<30 bounces، support tests',
+    stop:    { type: 'stock_pct', value: -0.03 },
+    target1: { type: 'stock_pct', value: 0.05, exitPct: 60 },
+    target2: { type: 'stock_pct', value: 0.10, exitPct: 100 },
+    timeStopDays: 5,
+    orderType: 'limit',
+    optionStructure: {
+      stop:    { type: 'premium_pct', value: -0.50 },
+      target1: { type: 'premium_pct', value: 0.60, exitPct: 60 },
+      target2: { type: 'premium_pct', value: 1.20, exitPct: 100 },
+      dteRange: { min: 5, max: 14 }
+    }
+  },
+  {
+    id: 'event-play',
+    name: 'Event Play',
+    nameAr: 'لعبة الحدث',
+    icon: '📢',
+    description: 'لعب على momentum بعد catalyst (earnings, news). دخول سريع، أهداف متوسطة.',
+    fitFor: 'post-earnings drift، FDA news، product launches',
+    stop:    { type: 'stock_pct', value: -0.04 },
+    target1: { type: 'stock_pct', value: 0.06, exitPct: 60 },
+    target2: { type: 'stock_pct', value: 0.12, exitPct: 100 },
+    timeStopDays: 5,
+    orderType: 'market',
+    optionStructure: {
+      stop:    { type: 'premium_pct', value: -0.50 },
+      target1: { type: 'premium_pct', value: 1.00, exitPct: 75 },
+      target2: { type: 'premium_pct', value: 2.00, exitPct: 100 },
+      dteRange: { min: 5, max: 14 }
+    }
+  }
+];
+
+// Helper: lookup trade strategy by id (with fallback)
+const TradeStrategyLookup = {
+  get(id) {
+    return TRADE_STRATEGIES.find(t => t.id === id) || TRADE_STRATEGIES.find(t => t.id === 'standard-swing');
+  },
+  all() { return TRADE_STRATEGIES; }
+};
+
 const STRATEGIES = [
   {
     id: 'momentum-breakout',
@@ -2670,6 +3211,7 @@ const STRATEGIES = [
     category: 'trend',
     bias: 'bullish',
     assetType: 'both',
+    defaultTradeStrategyId: 'tight-breakout',  // R1: default trade style
     description: 'سهم يكسر مقاومة 20-day بحجم تداول قوي — الـ buyers يسيطرون والاتجاه صاعد.',
     when: 'أفضل في السوق الصاعد بعد فترة تراكم هادئة',
     requiredFilters: ['price_above_20d_high', 'volume_surge_1.5x', 'price_above_ma20'],
@@ -2687,6 +3229,7 @@ const STRATEGIES = [
     category: 'trend',
     bias: 'bullish',
     assetType: 'both',
+    defaultTradeStrategyId: 'standard-swing',
     description: 'في trend صاعد، السعر يتراجع ويلامس MA20 ثم يرتد — نقطة دخول محدودة المخاطرة.',
     when: 'يعمل لما السعر > MA50 وهناك trend طويل واضح',
     requiredFilters: ['price_above_ma50', 'price_near_ma20', 'trend_up'],
@@ -2704,6 +3247,7 @@ const STRATEGIES = [
     category: 'trend',
     bias: 'bullish',
     assetType: 'both',
+    defaultTradeStrategyId: 'long-hold',
     description: 'السعر > MA20 > MA50 > MA200 — أقوى إشارة trend ممكنة. كل المتوسطات تؤكد الصعود.',
     when: 'أعلى نسبة نجاح تاريخياً. الأنسب في السوق الصاعد القوي',
     requiredFilters: ['price_above_ma20', 'ma20_above_ma50', 'ma50_above_ma200'],
@@ -2721,6 +3265,7 @@ const STRATEGIES = [
     category: 'news',
     bias: 'bullish',
     assetType: 'both',
+    defaultTradeStrategyId: 'event-play',
     description: 'بعد إعلان أرباح قوي، السعر يستمر بنفس الاتجاه 2-5 أيام. نلحق الحركة ونستفيد من الزخم.',
     when: 'في أول 24-48 ساعة بعد الإعلان — اعمل بسرعة أو اتركها',
     requiredFilters: ['earnings_just_released', 'price_gap_up_2pct', 'volume_surge_2x'],
@@ -2738,6 +3283,7 @@ const STRATEGIES = [
     category: 'counter',
     bias: 'bullish',
     assetType: 'both',
+    defaultTradeStrategyId: 'counter-trend-tight',
     description: 'سهم انخفض بسرعة وصار oversold (RSI < 30) — نتوقع ارتداده للمتوسط. خلاف الاتجاه لكن محسوب.',
     when: 'في السوق الجانبي أو بعد panic sell. خطر عالٍ في downtrend قوي',
     requiredFilters: ['rsi_below_30', 'price_near_support'],
@@ -2755,6 +3301,7 @@ const STRATEGIES = [
     category: 'volatility',
     bias: 'neutral',
     assetType: 'option',
+    defaultTradeStrategyId: 'event-play',
     description: 'قبل FOMC/CPI/أرباح، الـ IV منخفض. نشتري options ونستفيد من ارتفاع الـ IV وحركة السعر.',
     when: 'قبل 2-7 أيام من الحدث. اخرج قبله أو بعده مباشرة، لا تمسك',
     requiredFilters: ['major_event_within_7d', 'iv_rank_below_40'],
@@ -3679,9 +4226,12 @@ const UIRenderer = (() => {
       return `
         <div class="journal-entry">
           <div class="journal-header">
-            <div style="display:flex;align-items:center;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
               <div class="journal-symbol">${e.symbol || 'N/A'}</div>
               ${e.optionType ? `<span style="font-size:11px;font-weight:700;color:${e.optionType==='CALL'?'var(--green)':'var(--red)'};">${e.optionType}</span>` : ''}
+              ${e.assetType === 'stock' ? `<span style="font-size:10px;background:var(--green-bg);color:var(--green);padding:2px 7px;border-radius:6px;font-weight:700;">📊 Stock</span>` : ''}
+              ${e.tradeStrategyName ? `<span style="font-size:10px;background:rgba(139,92,246,0.15);color:var(--purple);padding:2px 7px;border-radius:6px;font-weight:700;border:1px solid var(--purple);" data-term="Trade Strategy">📐 ${e.tradeStrategyName}</span>` : ''}
+              ${e.stage ? `<span style="font-size:10px;background:var(--bg);color:var(--text);padding:2px 7px;border-radius:6px;font-weight:700;border:1px solid var(--border);" data-term="Market Stage">🎯 Stage ${e.stage}</span>` : ''}
               ${srcBadge ? `<span style="font-size:10px;background:var(--purple-bg);color:var(--purple);padding:2px 7px;border-radius:6px;">${srcBadge}</span>` : ''}
             </div>
             <div style="font-size:11px;color:var(--text-secondary);">${e.date || ''}</div>
@@ -3689,6 +4239,10 @@ const UIRenderer = (() => {
 
           ${e.strike ? `<div style="font-family:'Consolas',monospace;font-size:12px;color:var(--purple);margin:4px 0 10px;">
             Strike $${e.strike.toFixed(2)} ${e.expiryDate ? '→ ' + e.expiryDate + (e.dte ? ' (' + e.dte + 'd)' : '') : ''}
+          </div>` : ''}
+
+          ${e.assetType === 'stock' && e.shares ? `<div style="font-family:'Consolas',monospace;font-size:12px;color:var(--green);margin:4px 0 10px;">
+            ${e.shares} سهم • Cost $${e.cost} • Risk $${e.risk} (${e.riskPct}%)
           </div>` : ''}
 
           <div class="journal-stats" style="grid-template-columns:repeat(4,1fr);">
@@ -4480,6 +5034,7 @@ const App = (() => {
         document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
 
         if (tab.dataset.tab === 'home') Home.refresh();
+        if (tab.dataset.tab === 'risk') RiskConsole.refresh();
         if (tab.dataset.tab === 'builder') Builder.init();
         if (tab.dataset.tab === 'positions') UIRenderer.renderOpenPositions();
         if (tab.dataset.tab === 'journal') UIRenderer.renderJournal();
@@ -4523,6 +5078,9 @@ const App = (() => {
 
     // M8: Initialize Homepage (default tab — renders + auto-refresh during market hours)
     Home.init();
+
+    // R4: Initialize Risk Console (pre-render so first tab open is instant)
+    RiskConsole.init();
 
     // Auto-refresh market status every 30 seconds + re-evaluate auto-refresh schedule
     setInterval(() => {
@@ -4890,6 +5448,33 @@ const Glossary = {
     en: 'Time Stop',
     ar: 'حد زمني',
     desc: 'الخروج من الصفقة بعد فترة معينة بغض النظر عن السعر. يحمي من سحب الـ theta (للخيارات) أو من dead money (للأسهم).'
+  },
+
+  // ===== R-Phases: Architectural Concepts =====
+  'Screener': {
+    en: 'Stock Screener',
+    ar: 'فلتر اكتشاف',
+    desc: 'قواعد لاكتشاف الأسهم المرشحة (مثل: سعر > MA200، RS > 80). الـ Screener يجيب على سؤال "ما الذي أنظر إليه؟"، منفصل عن منطق الدخول/الخروج.'
+  },
+  'Trade Strategy': {
+    en: 'Trade Strategy',
+    ar: 'استراتيجية الصفقة',
+    desc: 'أسلوب التعامل مع الصفقة بعد اختيار السهم: stop، targets، time exit. الـ Trade Strategy يجيب على "كيف أتعامل مع هذي الصفقة؟"، منفصل عن الفلترة.'
+  },
+  'Market Stage': {
+    en: 'Market Stage',
+    ar: 'مرحلة السوق',
+    desc: 'تصنيف صحة السوق العامة (1-4). Stage 1 = ضعيف، Stage 4 = قوي. يحدد حجم التعرض الكلي للمحفظة — كلما الـ Stage أعلى، الـ Risk Budget أكبر.'
+  },
+  'Risk Budget': {
+    en: 'Risk Budget',
+    ar: 'ميزانية المخاطرة',
+    desc: 'الحد الأقصى للخسارة المسموحة عبر كل الصفقات المفتوحة، مقاساً بالدولار. يتحدد من رأس المال × multiplier المرحلة. مثلاً: $25K × 4% (Stage 3) = $1,000 risk budget.'
+  },
+  'Position Sizing': {
+    en: 'Position Sizing',
+    ar: 'تحديد حجم المركز',
+    desc: 'حساب عدد الأسهم/العقود بناءً على المخاطرة المسموحة وفقاً للوقف. الصيغة: shares = risk_budget_per_trade / (entry − stop). يضمن أن كل صفقة تخاطر بنفس المبلغ الدولاري بغض النظر عن سعر السهم.'
   }
 };
 
@@ -4990,6 +5575,248 @@ const TooltipManager = (() => {
 // ============================================================
 // MODULE 15: PAPER PORTFOLIO (محفظة الاختبار التخيلية - v1.4)
 // ============================================================
+// ============================================================
+// MODULE 14b: PORTFOLIO MANAGEMENT (R3 — Stage + Risk Budget)
+// ============================================================
+// يدير رأس المال، مرحلة السوق، ميزانية المخاطرة الكلية، والـ slot allocation.
+// منفصل عن PaperPortfolio (اللي يتابع الـ paper executions الفعلية).
+const Portfolio = (() => {
+  const STORAGE_KEY = 'wabran_portfolio_config_v1';
+
+  // Stage multipliers: كل مرحلة لها مضاعف risk budget من القاعدة (~4% from capital)
+  const STAGE_MULTIPLIERS = {
+    1: 0.4,   // سوق ضعيف — تعرض خفيف (1.6% risk)
+    2: 0.7,   // سوق متوسط — تدريجي (2.8%)
+    3: 1.0,   // baseline — سوق جيد (4%)
+    4: 1.3    // سوق قوي — توسع محسوب (5.2%)
+  };
+
+  const STAGE_NAMES = {
+    1: { ar: 'ضعيف', en: 'Weak',     emoji: '🔴', desc: 'دخول خفيف، حذر' },
+    2: { ar: 'متوسط', en: 'Moderate', emoji: '🟡', desc: 'دخول تدريجي' },
+    3: { ar: 'جيد',   en: 'Healthy',  emoji: '🟢', desc: 'baseline، تعرض طبيعي' },
+    4: { ar: 'قوي',   en: 'Strong',   emoji: '🔥', desc: 'توسع محسوب، أعلى تعرض' }
+  };
+
+  const defaultState = {
+    capital: 25000,         // رأس المال الكلي
+    stage: 3,               // المرحلة الحالية (1-4)
+    autoStage: true,        // هل المنصة تقترح تلقائياً من Breadth/VIX؟
+    baseRiskPct: 0.04,      // 4% baseline risk من رأس المال (Stage 3)
+    baseSlots: 4,           // 4 مراكز أساسية
+    extraSlots: 4           // 4 مراكز إضافية (تُفعّل إذا فيه risk budget متبقي)
+  };
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return { ...defaultState };
+      return { ...defaultState, ...JSON.parse(raw) };
+    } catch (e) {
+      console.warn('Portfolio load failed:', e);
+      return { ...defaultState };
+    }
+  }
+
+  function save(s) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+    catch (e) { console.warn('Portfolio save failed:', e); }
+  }
+
+  let state = load();
+
+  // ===== Public API =====
+  function get() { return { ...state }; }
+
+  function update(patch) {
+    state = { ...state, ...patch };
+    save(state);
+  }
+
+  function setCapital(amount) {
+    const v = Number(amount);
+    if (!isFinite(v) || v <= 0) return;
+    update({ capital: v });
+  }
+
+  function setStage(stage) {
+    const s = parseInt(stage, 10);
+    if (![1, 2, 3, 4].includes(s)) return;
+    update({ stage: s });
+  }
+
+  function setAutoStage(flag) {
+    update({ autoStage: !!flag });
+  }
+
+  // ===== Computed values =====
+
+  // Total risk budget بالدولار للمرحلة الحالية
+  function getRiskBudget() {
+    const mult = STAGE_MULTIPLIERS[state.stage] || 1.0;
+    return state.capital * state.baseRiskPct * mult;
+  }
+
+  // Risk لكل slot أساسي (يُقسم على عدد المراكز الأساسية)
+  function getRiskPerSlot() {
+    return getRiskBudget() / state.baseSlots;
+  }
+
+  // معلومات المرحلة الحالية للعرض
+  function getStageInfo(s = state.stage) {
+    return {
+      stage: s,
+      multiplier: STAGE_MULTIPLIERS[s],
+      ...STAGE_NAMES[s],
+      effectiveRiskPct: state.baseRiskPct * STAGE_MULTIPLIERS[s]
+    };
+  }
+
+  // ===== Auto-suggest stage from Mini Breadth + VIX =====
+  // Heuristic: VIX low + breadth high = strong market
+  // Inputs: vix (number), breadthPct (% above SMA50 of watchlist)
+  function suggestStage(vix, breadthPct) {
+    if (vix == null || breadthPct == null) return null;
+
+    // Stage 4: very calm + broad participation
+    if (vix < 16 && breadthPct >= 70) return 4;
+    // Stage 3: normal volatility + healthy breadth
+    if (vix < 20 && breadthPct >= 55) return 3;
+    // Stage 2: elevated vol or weakening breadth
+    if (vix < 25 && breadthPct >= 40) return 2;
+    // Stage 1: high vol or breadth deteriorating
+    return 1;
+  }
+
+  // Apply auto-suggested stage (only if autoStage flag is on)
+  function applyAutoStage(vix, breadthPct) {
+    if (!state.autoStage) return null;
+    const suggested = suggestStage(vix, breadthPct);
+    if (suggested && suggested !== state.stage) {
+      setStage(suggested);
+      return suggested;
+    }
+    return null;
+  }
+
+  function reset() {
+    state = { ...defaultState };
+    save(state);
+  }
+
+  return {
+    get, update, setCapital, setStage, setAutoStage,
+    getRiskBudget, getRiskPerSlot, getStageInfo,
+    suggestStage, applyAutoStage, reset,
+    STAGE_MULTIPLIERS, STAGE_NAMES
+  };
+})();
+
+// ============================================================
+// MODULE 14c: POSITION SIZER (R4 — Risk-based sizing)
+// ============================================================
+// يحسب حجم المركز بناءً على المخاطرة المسموحة + الـ stop، بدل النسبة الثابتة.
+// الفكرة: كل صفقة تخاطر بنفس المبلغ الدولاري بغض النظر عن سعر السهم.
+//
+// مثال: capital=$25K، Stage 3 → risk budget=$1000، per slot=$250
+//   AAPL @ $190، stop @ $180 → risk/share = $10 → shares = $250/$10 = 25
+//   حجم المركز الفعلي = 25 × $190 = $4,750
+//
+//   Cheap stock @ $20، stop @ $19 → risk/share = $1 → shares = $250
+//   حجم المركز الفعلي = $5,000 (مختلف عن AAPL بسبب الـ leverage)
+const PositionSizer = (() => {
+  // Compute sizing for a single trade idea
+  // Inputs:
+  //   entry: stock entry price
+  //   stop: stock stop loss price (< entry for longs)
+  //   usedRiskDollars: total risk currently allocated to open positions (default 0)
+  //   slotMode: 'base' (use per-slot allocation) or 'flexible' (use remaining budget)
+  function compute({ entry, stop, usedRiskDollars = 0, slotMode = 'base' }) {
+    if (!entry || !stop || entry <= stop) {
+      return { allowed: false, reason: 'Entry must be greater than stop (for long positions)', shares: 0 };
+    }
+
+    const config = Portfolio.get();
+    const totalBudget = Portfolio.getRiskBudget();
+    const perSlot = Portfolio.getRiskPerSlot();
+    const remaining = totalBudget - usedRiskDollars;
+
+    if (remaining <= 0) {
+      return {
+        allowed: false,
+        reason: 'تجاوزت الـ Risk Budget — أغلق صفقة قبل ما تفتح جديدة',
+        shares: 0,
+        totalBudget, usedRiskDollars, remaining: 0
+      };
+    }
+
+    const riskPerShare = entry - stop;
+
+    // Slot allocation: base uses fixed per-slot, flexible uses up to remaining
+    const allocatedRisk = slotMode === 'flexible'
+      ? Math.min(remaining, perSlot * 1.5)  // flexible: up to 1.5x slot
+      : Math.min(perSlot, remaining);       // base: capped at slot or remaining
+
+    // Compute shares (fractional supported)
+    const sharesRaw = allocatedRisk / riskPerShare;
+    const shares = sharesRaw >= 1
+      ? Math.floor(sharesRaw * 100) / 100
+      : +sharesRaw.toFixed(4);
+
+    const actualPositionDollars = shares * entry;
+    const actualRiskDollars = shares * riskPerShare;
+    const positionPctOfCapital = config.capital ? (actualPositionDollars / config.capital) * 100 : 0;
+    const riskPctOfCapital = config.capital ? (actualRiskDollars / config.capital) * 100 : 0;
+
+    // Warning if position dollars > 20% of capital (concentration risk)
+    let warning = null;
+    if (positionPctOfCapital > 20) {
+      warning = `⚠️ هذا المركز يستهلك ${positionPctOfCapital.toFixed(1)}% من رأس المال — تركيز مرتفع`;
+    }
+
+    return {
+      allowed: true,
+      shares,
+      entry,
+      stop,
+      riskPerShare: +riskPerShare.toFixed(4),
+      allocatedRisk: +allocatedRisk.toFixed(2),
+      actualRiskDollars: +actualRiskDollars.toFixed(2),
+      actualPositionDollars: +actualPositionDollars.toFixed(2),
+      positionPctOfCapital: +positionPctOfCapital.toFixed(2),
+      riskPctOfCapital: +riskPctOfCapital.toFixed(2),
+      slotMode,
+      totalBudget,
+      usedRiskDollars,
+      remaining: +remaining.toFixed(2),
+      warning
+    };
+  }
+
+  // Compute open risk from journal (sum of risk of all open positions)
+  function computeOpenRisk() {
+    const journal = (typeof State !== 'undefined' ? State.get().journal : []) || [];
+    const openTrades = journal.filter(e => !e.closed && e.type === 'recommendation');
+    let totalRisk = 0;
+    openTrades.forEach(t => {
+      if (t.assetType === 'stock' && t.risk != null) {
+        totalRisk += Number(t.risk);
+      }
+      // For option trades, risk = full premium paid (max loss)
+      else if (t.entryPremium && t.shares) {
+        totalRisk += t.entryPremium * t.shares * 100;  // options = 100x multiplier
+      }
+    });
+    return {
+      totalRisk: +totalRisk.toFixed(2),
+      openCount: openTrades.length,
+      trades: openTrades
+    };
+  }
+
+  return { compute, computeOpenRisk };
+})();
+
 const PaperPortfolio = (() => {
   const defaultState = {
     initialBalance: CONFIG.PAPER_DEFAULT_BALANCE,
@@ -5834,6 +6661,251 @@ const Home = (() => {
 })();
 
 // ============================================================
+// RISK CONSOLE MODULE (R4 — Portfolio + Stage + Sizer UI)
+// ============================================================
+const RiskConsole = (() => {
+
+  function fmtMoney(n) {
+    if (n == null || isNaN(n)) return '—';
+    return '$' + Math.round(n).toLocaleString('en-US');
+  }
+
+  function renderStageSelector() {
+    const grid = document.getElementById('stageSelector');
+    if (!grid) return;
+    const current = Portfolio.get().stage;
+    const stages = [1, 2, 3, 4];
+
+    grid.innerHTML = stages.map(s => {
+      const info = Portfolio.getStageInfo(s);
+      const isActive = s === current;
+      return `
+        <button class="stage-btn ${isActive ? 'active' : ''}" onclick="RiskConsole.setStage(${s})">
+          <div class="stage-btn-emoji">${info.emoji}</div>
+          <div class="stage-btn-label">Stage ${s}</div>
+          <div class="stage-btn-mult">${info.ar} • ×${info.multiplier}</div>
+        </button>
+      `;
+    }).join('') + `
+      <button class="stage-auto-btn" onclick="RiskConsole.autoSuggestStage()">
+        🤖 اقترح من السوق
+      </button>
+    `;
+  }
+
+  function renderRiskBudget() {
+    const grid = document.getElementById('riskBudgetGrid');
+    if (!grid) return;
+
+    const total = Portfolio.getRiskBudget();
+    const open = PositionSizer.computeOpenRisk();
+    const used = open.totalRisk;
+    const available = Math.max(0, total - used);
+    const usedPct = total > 0 ? (used / total) * 100 : 0;
+
+    grid.innerHTML = `
+      <div class="risk-budget-card total">
+        <div class="rbc-label">📊 الميزانية الكلية</div>
+        <div class="rbc-value total">${fmtMoney(total)}</div>
+        <div class="rbc-sub">${(Portfolio.getStageInfo().effectiveRiskPct * 100).toFixed(1)}% من رأس المال</div>
+      </div>
+      <div class="risk-budget-card used">
+        <div class="rbc-label">🔴 المستخدمة</div>
+        <div class="rbc-value used">${fmtMoney(used)}</div>
+        <div class="rbc-sub">${open.openCount} صفقة مفتوحة</div>
+      </div>
+      <div class="risk-budget-card available">
+        <div class="rbc-label">🟢 المتاحة</div>
+        <div class="rbc-value available">${fmtMoney(available)}</div>
+        <div class="rbc-sub">${available > 0 ? 'يمكن فتح صفقات إضافية' : '✋ تجاوزت الحد'}</div>
+      </div>
+    `;
+
+    // Progress bar
+    const fill = document.getElementById('riskProgressFill');
+    const label = document.getElementById('riskProgressLabel');
+    if (fill) fill.style.width = Math.min(100, usedPct) + '%';
+    if (label) label.textContent = `استهلاك: ${usedPct.toFixed(1)}% من الميزانية`;
+  }
+
+  function renderSlots() {
+    const container = document.getElementById('slotsGrid');
+    if (!container) return;
+    const cfg = Portfolio.get();
+    const open = PositionSizer.computeOpenRisk();
+    const usedCount = open.openCount;
+
+    let html = '';
+
+    // Base slots
+    for (let i = 0; i < cfg.baseSlots; i++) {
+      const isUsed = i < usedCount;
+      html += `<div class="slot-cell base ${isUsed ? 'used' : ''}">${i + 1}</div>`;
+    }
+    // Divider
+    html += '<div class="slot-divider"></div>';
+    // Extra slots
+    for (let i = 0; i < cfg.extraSlots; i++) {
+      const slotIdx = cfg.baseSlots + i;
+      const isUsed = slotIdx < usedCount;
+      html += `<div class="slot-cell extra ${isUsed ? 'used' : ''}">+${i + 1}</div>`;
+    }
+
+    container.innerHTML = html;
+  }
+
+  function renderOpenPositions() {
+    const container = document.getElementById('openPositionsRiskTable');
+    if (!container) return;
+    const open = PositionSizer.computeOpenRisk();
+    const total = Portfolio.getRiskBudget();
+
+    if (open.openCount === 0) {
+      container.innerHTML = `
+        <div class="risk-empty-state">
+          📭 لا توجد صفقات مفتوحة حالياً<br>
+          <span style="font-size:11px;">عندك ${fmtMoney(total)} risk budget كامل متاح</span>
+        </div>
+      `;
+      return;
+    }
+
+    const rows = open.trades.map((t, i) => {
+      const risk = t.assetType === 'stock' ? Number(t.risk || 0)
+                 : (t.entryPremium * (t.shares || 1) * 100);
+      const pctOfBudget = total > 0 ? (risk / total) * 100 : 0;
+      const assetIcon = t.assetType === 'stock' ? '📊' : '🎫';
+
+      return `
+        <tr>
+          <td>${i + 1}</td>
+          <td><strong>${t.symbol || '—'}</strong> ${assetIcon}</td>
+          <td>${t.strategies?.split('،')[0] || '—'}</td>
+          <td style="color:var(--red);">${fmtMoney(risk)}</td>
+          <td>${pctOfBudget.toFixed(1)}%</td>
+        </tr>
+      `;
+    }).join('');
+
+    container.innerHTML = `
+      <table class="open-positions-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Symbol</th>
+            <th>Strategy</th>
+            <th>Risk $</th>
+            <th>% Budget</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }
+
+  function renderAutoStageToggle() {
+    const toggle = document.getElementById('autoStageToggle');
+    if (!toggle) return;
+    const isOn = Portfolio.get().autoStage;
+    toggle.classList.toggle('on', isOn);
+  }
+
+  function renderCapitalInput() {
+    const input = document.getElementById('riskCapitalInput');
+    if (!input) return;
+    input.value = Portfolio.get().capital;
+  }
+
+  function renderAutoStageInfo() {
+    const info = document.getElementById('stageAutoInfo');
+    if (!info) return;
+    const cfg = Portfolio.get();
+    if (!cfg.autoStage) {
+      info.textContent = '✋ المرحلة يدوية حالياً — فعّل الاقتراح التلقائي من الإعدادات أدناه';
+      return;
+    }
+    info.textContent = '🤖 الاقتراح التلقائي مُفعّل — المرحلة تتحدّث من Mini Breadth + VIX';
+  }
+
+  // ===== Public actions =====
+
+  function setStage(stage) {
+    Portfolio.setStage(stage);
+    refresh();
+  }
+
+  function saveCapital() {
+    const input = document.getElementById('riskCapitalInput');
+    if (!input) return;
+    const v = Number(input.value);
+    if (!isFinite(v) || v < 100) {
+      alert('رأس المال يجب أن يكون رقم >= 100');
+      return;
+    }
+    Portfolio.setCapital(v);
+    refresh();
+  }
+
+  function toggleAutoStage() {
+    const cfg = Portfolio.get();
+    Portfolio.setAutoStage(!cfg.autoStage);
+    refresh();
+  }
+
+  // Manually trigger auto-suggest based on current market data
+  function autoSuggestStage() {
+    // Read VIX and breadth from Home module data (if available)
+    // Fallback: look at cached values
+    const vixEl = document.querySelector('#vixCard .vix-value');
+    const breadthEl = document.querySelector('#breadthCard .breadth-sma strong');
+
+    let vix = null, breadth = null;
+    if (vixEl) {
+      const v = parseFloat(vixEl.textContent);
+      if (!isNaN(v)) vix = v;
+    }
+    if (breadthEl) {
+      // Extract percentage from text like "18/26"
+      const txt = breadthEl.textContent;
+      const m = txt.match(/(\d+)\s*\/\s*(\d+)/);
+      if (m) breadth = (parseInt(m[1], 10) / parseInt(m[2], 10)) * 100;
+    }
+
+    if (vix == null || breadth == null) {
+      alert('لم أتمكن من قراءة VIX/Breadth — افتح Home tab أولاً لتحميل البيانات');
+      return;
+    }
+
+    const suggested = Portfolio.suggestStage(vix, breadth);
+    if (!suggested) {
+      alert('لم أستطع تحديد المرحلة من البيانات الحالية');
+      return;
+    }
+
+    Portfolio.setStage(suggested);
+    refresh();
+    const info = Portfolio.getStageInfo(suggested);
+    alert(`🤖 المرحلة المقترحة: Stage ${suggested} ${info.emoji} ${info.ar}\n\nبناءً على:\n• VIX = ${vix.toFixed(2)}\n• Breadth = ${breadth.toFixed(0)}%`);
+  }
+
+  function refresh() {
+    renderCapitalInput();
+    renderStageSelector();
+    renderRiskBudget();
+    renderSlots();
+    renderOpenPositions();
+    renderAutoStageToggle();
+    renderAutoStageInfo();
+  }
+
+  function init() {
+    refresh();
+  }
+
+  return { init, refresh, setStage, saveCapital, toggleAutoStage, autoSuggestStage };
+})();
+
+// ============================================================
 // CHART MODULE (M9-B — Mini Candlestick + Overlays + RS Badge)
 // ============================================================
 const Chart = (() => {
@@ -5869,9 +6941,10 @@ const Chart = (() => {
   function escapeAttr(s) { return String(s).replace(/"/g, '&quot;'); }
 
   // Main render — returns HTML string ready to embed
-  // options: { history, days = 90, rsRating = null }
+  // options: { history, days = 90, rsRating = null, tradeMarkers = null }
+  // tradeMarkers (M10-C): { entry, stop, t1, t2 } in stock prices
   function render(options) {
-    const { history, days = 90, rsRating = null } = options || {};
+    const { history, days = 90, rsRating = null, tradeMarkers = null } = options || {};
 
     if (!history || !history.closes || history.closes.length < 20) {
       return '<div class="mini-chart-empty">⚠️ بيانات الشارت غير كافية (يحتاج 20 يوم على الأقل)</div>';
@@ -5909,7 +6982,7 @@ const Chart = (() => {
     const chartW = W - pad.left - pad.right;
     const volTop = pad.top + priceH + 6;
 
-    // Price range: include all candles + overlay values, with small breathing room
+    // Price range: include all candles + overlay values + trade markers, with small breathing room
     const priceValues = [];
     for (let i = 0; i < n; i++) {
       if (highs[i] != null) priceValues.push(highs[i]);
@@ -5918,6 +6991,13 @@ const Chart = (() => {
       if (ema21[i]  != null) priceValues.push(ema21[i]);
       if (sma50[i]  != null) priceValues.push(sma50[i]);
       if (sma200[i] != null) priceValues.push(sma200[i]);
+    }
+    // M10-C: Include trade marker prices so lines/zones stay on-chart
+    if (tradeMarkers) {
+      ['entry', 'stop', 't1', 't2'].forEach(k => {
+        const v = tradeMarkers[k];
+        if (v != null && !isNaN(v)) priceValues.push(v);
+      });
     }
     if (priceValues.length === 0) {
       return '<div class="mini-chart-empty">⚠️ بيانات الشارت غير كافية</div>';
@@ -5987,6 +7067,67 @@ const Chart = (() => {
     svg += drawSeries(sma50,  COLORS.sma50);
     svg += drawSeries(sma200, COLORS.sma200, '4,3');
 
+    // M10-C: Trade Markers (entry/stop/t1/t2) + Risk/Reward zones
+    if (tradeMarkers) {
+      const m = tradeMarkers;
+      const xL = pad.left;
+      const xR = pad.left + chartW;
+      const tagH = 16;
+
+      // Helper: build a label tag (rect + text) at the right end of a line
+      function buildTag(yPos, text, fill, textColor = '#fff') {
+        const tagW = text.length * 6.5 + 12;
+        const tagX = xR - tagW;
+        const tagY = yPos - tagH / 2;
+        return `<rect x="${tagX.toFixed(1)}" y="${tagY.toFixed(1)}" width="${tagW.toFixed(1)}" height="${tagH}" fill="${fill}" rx="2" />
+                <text x="${(tagX + tagW / 2).toFixed(1)}" y="${(yPos + 4).toFixed(1)}" font-size="10" font-weight="700" fill="${textColor}" text-anchor="middle" font-family="monospace">${text}</text>`;
+      }
+
+      // ===== Risk Zone (entry → stop, red transparent) =====
+      if (m.entry != null && m.stop != null) {
+        const yEntry = yAt(m.entry);
+        const yStop  = yAt(m.stop);
+        const zoneY = Math.min(yEntry, yStop);
+        const zoneH = Math.abs(yStop - yEntry);
+        svg += `<rect x="${xL}" y="${zoneY.toFixed(1)}" width="${chartW.toFixed(1)}" height="${zoneH.toFixed(1)}" fill="rgba(239, 68, 68, 0.08)" />`;
+      }
+
+      // ===== Reward Zone (entry → t2, green transparent) =====
+      if (m.entry != null && m.t2 != null) {
+        const yEntry = yAt(m.entry);
+        const yT2    = yAt(m.t2);
+        const zoneY = Math.min(yEntry, yT2);
+        const zoneH = Math.abs(yT2 - yEntry);
+        svg += `<rect x="${xL}" y="${zoneY.toFixed(1)}" width="${chartW.toFixed(1)}" height="${zoneH.toFixed(1)}" fill="rgba(16, 185, 129, 0.07)" />`;
+      }
+
+      // ===== Horizontal lines + Tags =====
+      // T2 (dashed, dark green) — drawn first so other lines appear on top
+      if (m.t2 != null) {
+        const y = yAt(m.t2);
+        svg += `<line x1="${xL}" y1="${y.toFixed(1)}" x2="${xR}" y2="${y.toFixed(1)}" stroke="#059669" stroke-width="1.2" stroke-dasharray="5,3" />`;
+        svg += buildTag(y, `T2 $${m.t2.toFixed(2)}`, '#059669');
+      }
+      // T1 (dashed, orange)
+      if (m.t1 != null) {
+        const y = yAt(m.t1);
+        svg += `<line x1="${xL}" y1="${y.toFixed(1)}" x2="${xR}" y2="${y.toFixed(1)}" stroke="#f97316" stroke-width="1.2" stroke-dasharray="5,3" />`;
+        svg += buildTag(y, `T1 $${m.t1.toFixed(2)}`, '#f97316');
+      }
+      // Stop (dashed, red)
+      if (m.stop != null) {
+        const y = yAt(m.stop);
+        svg += `<line x1="${xL}" y1="${y.toFixed(1)}" x2="${xR}" y2="${y.toFixed(1)}" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="5,3" />`;
+        svg += buildTag(y, `Stop $${m.stop.toFixed(2)}`, '#ef4444');
+      }
+      // Entry (solid, thick, green) — drawn last so it sits on top
+      if (m.entry != null) {
+        const y = yAt(m.entry);
+        svg += `<line x1="${xL}" y1="${y.toFixed(1)}" x2="${xR}" y2="${y.toFixed(1)}" stroke="#10b981" stroke-width="2" />`;
+        svg += buildTag(y, `Entry $${m.entry.toFixed(2)}`, '#10b981');
+      }
+    }
+
     svg += '</svg>';
 
     // Legend
@@ -6017,7 +7158,7 @@ const Chart = (() => {
       ${rsBadge}
       ${svg}
       ${legend}
-      <div class="chart-info">آخر ${n} يوم تداول • <span data-term="Candlestick">Candlestick</span> مع متوسطات متحركة</div>
+      <div class="chart-info">آخر ${n} يوم تداول • <span data-term="Candlestick">Candlestick</span> مع متوسطات متحركة${tradeMarkers ? ' • 🎯 Entry/Stop/Targets معروضة على الشارت' : ''}</div>
     </div>`;
   }
 
@@ -6032,6 +7173,87 @@ const Builder = (() => {
   let symbolData = null;
   let lastRec = null;
   let currentAssetMode = 'option';  // M10-A: 'option' | 'stock'
+  let selectedTradeStrategyId = 'auto';  // R2: 'auto' | trade strategy id
+
+  // R2: Get the effective trade strategy for current selection
+  // If 'auto', uses the primary screener's defaultTradeStrategyId
+  function getEffectiveTradeStrategy() {
+    if (selectedTradeStrategyId !== 'auto') {
+      return TradeStrategyLookup.get(selectedTradeStrategyId);
+    }
+    // Auto: pick from primary selected screener
+    if (selected.size === 0) return TradeStrategyLookup.get('standard-swing');
+    // Pick first selected screener (or could use most aggressive)
+    const firstId = Array.from(selected)[0];
+    const screener = STRATEGIES.find(s => s.id === firstId);
+    return TradeStrategyLookup.get(screener?.defaultTradeStrategyId || 'standard-swing');
+  }
+
+  // R2: Set trade strategy and re-render preview
+  function setTradeStrategy(id) {
+    selectedTradeStrategyId = id;
+    renderTradeStrategyPreview();
+  }
+
+  // R2: Render the preview block showing current trade strategy's parameters
+  function renderTradeStrategyPreview() {
+    const preview = document.getElementById('tradeStrategyPreview');
+    const desc = document.getElementById('tradeStrategyDesc');
+    const badge = document.getElementById('tradeStrategyAutoBadge');
+    if (!preview || !desc) return;
+
+    const ts = getEffectiveTradeStrategy();
+    if (!ts) {
+      preview.innerHTML = '';
+      desc.textContent = '';
+      return;
+    }
+
+    // Badge: show whether auto or manual
+    if (badge) {
+      badge.textContent = selectedTradeStrategyId === 'auto'
+        ? `🤖 تلقائي: ${ts.icon} ${ts.name}`
+        : `✋ يدوي: ${ts.icon} ${ts.name}`;
+    }
+
+    // Use stocks structure for preview (more intuitive than premium %)
+    const stopPct  = (ts.stop.value * 100).toFixed(1);
+    const t1Pct    = '+' + (ts.target1.value * 100).toFixed(1);
+    const t2Pct    = '+' + (ts.target2.value * 100).toFixed(1);
+
+    preview.innerHTML = `
+      <div class="tsp-item">
+        <div class="tsp-label">🔴 Stop</div>
+        <div class="tsp-value down">${stopPct}%</div>
+      </div>
+      <div class="tsp-item">
+        <div class="tsp-label">🟠 Target 1</div>
+        <div class="tsp-value up">${t1Pct}%</div>
+      </div>
+      <div class="tsp-item">
+        <div class="tsp-label">🟢 Target 2</div>
+        <div class="tsp-value up">${t2Pct}%</div>
+      </div>
+      <div class="tsp-item">
+        <div class="tsp-label">⏱️ Time Stop</div>
+        <div class="tsp-value">${ts.timeStopDays} يوم</div>
+      </div>
+    `;
+    desc.textContent = `${ts.description} — مناسب لـ: ${ts.fitFor}`;
+  }
+
+  // R2: Populate the dropdown options
+  function renderTradeStrategyDropdown() {
+    const sel = document.getElementById('tradeStrategySelect');
+    if (!sel) return;
+    // Keep first 'auto' option, add all trade strategies
+    const autoOption = '<option value="auto">🤖 تلقائي (حسب الـ Screener المختار)</option>';
+    const options = TradeStrategyLookup.all().map(ts =>
+      `<option value="${ts.id}">${ts.icon} ${ts.name} — ${ts.nameAr}</option>`
+    ).join('');
+    sel.innerHTML = autoOption + options;
+    sel.value = selectedTradeStrategyId;
+  }
 
   // M10-A: Check if strategy is applicable to current asset mode
   function isStrategyApplicable(strategy, mode = currentAssetMode) {
@@ -6068,6 +7290,8 @@ const Builder = (() => {
 
   function init() {
     renderStrategyGrid();
+    renderTradeStrategyDropdown();  // R2
+    renderTradeStrategyPreview();   // R2
   }
 
   function renderStrategyGrid() {
@@ -6121,6 +7345,8 @@ const Builder = (() => {
       card.classList.add('selected');
       chk.textContent = '☑';
     }
+    // R2: Re-render trade strategy preview if in auto mode (effective strategy may have changed)
+    if (selectedTradeStrategyId === 'auto') renderTradeStrategyPreview();
   }
 
   async function fetchSymbol() {
@@ -6370,53 +7596,87 @@ const Builder = (() => {
           </div>
         </div>
 
-        ${Chart.render({ history, days: 90, rsRating: indicators.rsRating })}`;
+        <!-- M10-C: Chart placeholder — replaced after mode-specific data is computed -->
+        __CHART_PLACEHOLDER__`;
 
       // M10-B: Stock mode — separate flow, computes entry/stop/targets in stock prices
       if (currentAssetMode === 'stock') {
+        let stockTradeMarkers = null;  // M10-C: populated below if matched
+
         if (matched.length > 0) {
-          // Pick primary by largest position size
-          const primary = matched.reduce((b, s) => {
-            const sSize = (s.stockStructure && s.stockStructure.positionSizePct) || 0;
-            const bSize = (b.stockStructure && b.stockStructure.positionSizePct) || 0;
-            return sSize > bSize ? s : b;
-          });
-          const st = primary.stockStructure;
-          if (!st) {
+          // R5: Primary is first matched screener (used for display only; trade params come from selected TradeStrategy)
+          const primary = matched[0];
+          // R5: Trade params come from the selected Trade Strategy (not the screener)
+          const ts = getEffectiveTradeStrategy();
+          if (!ts) {
             html += `<div class="rec-section" style="background:var(--red-bg);padding:14px;border-radius:var(--radius-sm);color:var(--red);">
-              ⚠️ هذه الاستراتيجية لا تدعم وضع الأسهم.
+              ⚠️ لم يتم اختيار Trade Strategy.
             </div>`;
           } else {
             const entry = price;
-            const stopPrice = entry * (1 + st.stop.value);
-            const t1Price   = entry * (1 + st.target1.value);
-            const t2Price   = entry * (1 + st.target2.value);
-            const capital = PaperPortfolio.get().initialBalance || CONFIG.PAPER_DEFAULT_BALANCE;
-            const positionDollars = capital * (st.positionSizePct / 100);
-            // M10-B: Allow fractional shares (Alpaca paper supports them) — useful for small accounts + expensive stocks
-            const sharesRaw = positionDollars / entry;
-            const shares = sharesRaw >= 1 ? Math.floor(sharesRaw * 100) / 100 : +sharesRaw.toFixed(4);
-            const actualCost = shares * entry;
+            const stopPrice = entry * (1 + ts.stop.value);
+            const t1Price   = entry * (1 + ts.target1.value);
+            const t2Price   = entry * (1 + ts.target2.value);
+
+            // R5: Position sizing now uses Portfolio + PositionSizer (risk-based, dynamic)
+            const openRisk = PositionSizer.computeOpenRisk();
+            const sizing = PositionSizer.compute({
+              entry,
+              stop: stopPrice,
+              usedRiskDollars: openRisk.totalRisk,
+              slotMode: 'base'
+            });
+
+            const capital = Portfolio.get().capital;
+            const shares = sizing.allowed ? sizing.shares : 0;
+            const actualCost = sizing.allowed ? sizing.actualPositionDollars : 0;
             const riskPerShare = entry - stopPrice;
-            const totalRisk = shares * riskPerShare;
-            const totalRiskPct = capital ? (totalRisk / capital) * 100 : 0;
+            const totalRisk = sizing.allowed ? sizing.actualRiskDollars : 0;
+            const totalRiskPct = sizing.allowed ? sizing.riskPctOfCapital : 0;
             const rrRatio = riskPerShare > 0 ? ((t2Price - entry) / riskPerShare) : 0;
             const rrClass = rrRatio >= 2.5 ? 'good' : rrRatio >= 1.5 ? 'ok' : 'bad';
             const sharesDisplay = shares >= 1 ? shares.toFixed(2) : shares.toFixed(4);
-            const fractionalNote = shares < 1 ? ' <span style="font-size:10px;color:var(--yellow);">(كسري)</span>' : '';
+            const fractionalNote = shares < 1 && shares > 0 ? ' <span style="font-size:10px;color:var(--yellow);">(كسري)</span>' : '';
 
-            const stopPctTxt = (st.stop.value * 100).toFixed(1);
-            const t1PctTxt   = '+' + (st.target1.value * 100).toFixed(1);
-            const t2PctTxt   = '+' + (st.target2.value * 100).toFixed(1);
+            // M10-C: Capture trade markers for chart rendering below
+            stockTradeMarkers = { entry, stop: stopPrice, t1: t1Price, t2: t2Price };
 
-            html += `
-              <div class="rec-section">
-                <div class="rec-section-title">✅ الاستراتيجية المطابقة:</div>
-                <div style="padding:12px;background:var(--green-bg);border-radius:var(--radius-sm);border-right:3px solid var(--green);">
-                  <div style="font-weight:700;">${primary.icon} ${primary.name}<span class="stock-trade-type-badge">📊 Long Stock</span></div>
-                  <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">${primary.description}</div>
+            const stopPctTxt = (ts.stop.value * 100).toFixed(1);
+            const t1PctTxt   = '+' + (ts.target1.value * 100).toFixed(1);
+            const t2PctTxt   = '+' + (ts.target2.value * 100).toFixed(1);
+
+            // R5: Block if PositionSizer rejected (e.g., no budget left)
+            const stageInfo = Portfolio.getStageInfo();
+            const budgetWarning = !sizing.allowed ? `
+              <div class="rec-section" style="background:var(--red-bg);padding:14px;border-radius:var(--radius-sm);border-right:4px solid var(--red);">
+                <div style="font-weight:700;color:var(--red);margin-bottom:6px;">🛑 لا يمكن فتح هذه الصفقة</div>
+                <div style="font-size:13px;color:var(--text);">${sizing.reason || 'تجاوزت حد المخاطرة'}</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">
+                  افتح <strong>🛡️ Risk Console</strong> لمراجعة الصفقات المفتوحة أو تعديل المرحلة.
                 </div>
               </div>
+            ` : '';
+
+            const concentrationWarning = sizing.warning ? `
+              <div style="background:rgba(251, 191, 36, 0.1);border:1px solid var(--yellow);padding:10px;border-radius:var(--radius-sm);margin-bottom:12px;font-size:12px;color:var(--yellow);">
+                ${sizing.warning}
+              </div>
+            ` : '';
+
+            html += budgetWarning + `
+              <div class="rec-section">
+                <div class="rec-section-title">✅ الـ Screener المطابق + أسلوب الصفقة:</div>
+                <div style="padding:12px;background:var(--green-bg);border-radius:var(--radius-sm);border-right:3px solid var(--green);margin-bottom:8px;">
+                  <div style="font-weight:700;">🔍 ${primary.icon} ${primary.name}<span class="stock-trade-type-badge">📊 Long Stock</span></div>
+                  <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">${primary.description}</div>
+                </div>
+                <div style="padding:12px;background:var(--purple-bg);border-radius:var(--radius-sm);border-right:3px solid var(--purple);">
+                  <div style="font-weight:700;">📐 ${ts.icon} <span data-term="Trade Strategy">${ts.name}</span> — ${ts.nameAr}</div>
+                  <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">${ts.description}</div>
+                </div>
+              </div>
+
+              ${concentrationWarning}
 
               <div class="rec-section">
                 <div class="rec-section-title">🎯 خطة الدخول:</div>
@@ -6426,20 +7686,24 @@ const Builder = (() => {
                     <div class="stock-plan-item-value">$${entry.toFixed(2)}</div>
                   </div>
                   <div class="stock-plan-item">
-                    <div class="stock-plan-item-label">عدد الأسهم</div>
+                    <div class="stock-plan-item-label">عدد الأسهم (<span data-term="Position Sizing">من Risk Budget</span>)</div>
                     <div class="stock-plan-item-value">${sharesDisplay}${fractionalNote} <span style="font-size:11px;color:var(--text-muted);">سهم</span></div>
                   </div>
                   <div class="stock-plan-item">
-                    <div class="stock-plan-item-label">التكلفة (${st.positionSizePct}% من ${capital})</div>
+                    <div class="stock-plan-item-label">التكلفة</div>
                     <div class="stock-plan-item-value">$${actualCost.toFixed(0)}</div>
                   </div>
                   <div class="stock-plan-item">
                     <div class="stock-plan-item-label">نوع الأمر</div>
-                    <div class="stock-plan-item-value" style="font-size:13px;">${st.orderType === 'limit' ? '🎯 Limit' : '⚡ Market'}</div>
+                    <div class="stock-plan-item-value" style="font-size:13px;">${ts.orderType === 'limit' ? '🎯 Limit' : '⚡ Market'}</div>
                   </div>
                   <div class="stock-plan-item">
-                    <div class="stock-plan-item-label">Time Stop</div>
-                    <div class="stock-plan-item-value" style="font-size:13px;">${st.timeStop?.value || '—'} يوم</div>
+                    <div class="stock-plan-item-label"><span data-term="Time Stop">Time Stop</span></div>
+                    <div class="stock-plan-item-value" style="font-size:13px;">${ts.timeStopDays} يوم</div>
+                  </div>
+                  <div class="stock-plan-item">
+                    <div class="stock-plan-item-label"><span data-term="Market Stage">المرحلة</span></div>
+                    <div class="stock-plan-item-value" style="font-size:13px;">${stageInfo.emoji} Stage ${stageInfo.stage}</div>
                   </div>
                 </div>
               </div>
@@ -6455,7 +7719,7 @@ const Builder = (() => {
                   <div class="stock-risk-item t1">
                     <div class="stock-risk-label" style="color:#fb923c;">🟠 Target 1</div>
                     <div class="stock-risk-price" style="color:#fb923c;">$${t1Price.toFixed(2)}</div>
-                    <div class="stock-risk-detail">${t1PctTxt}% → بيع ${st.target1.exitPct}%</div>
+                    <div class="stock-risk-detail">${t1PctTxt}% → بيع ${ts.target1.exitPct}%</div>
                   </div>
                   <div class="stock-risk-item t2">
                     <div class="stock-risk-label" style="color:var(--green);">🟢 Target 2</div>
@@ -6485,6 +7749,8 @@ const Builder = (() => {
               sym,
               matched,
               strategies: matched.map(s => s.name).join('، '),
+              tradeStrategyId: ts.id,
+              tradeStrategyName: ts.name,
               confidence: Math.min(95, 50 + matched.length * 15),
               entry: +entry.toFixed(2),
               stop: +stopPrice.toFixed(2),
@@ -6495,12 +7761,16 @@ const Builder = (() => {
               risk: +totalRisk.toFixed(2),
               riskPct: +totalRiskPct.toFixed(2),
               rrRatio: rrRatio.toFixed(2),
-              orderType: st.orderType,
-              positionSizePct: st.positionSizePct,
-              timeStop: st.timeStop,
-              stopPct: st.stop.value,
-              t1Pct: st.target1.value,
-              t2Pct: st.target2.value
+              orderType: ts.orderType,
+              timeStopDays: ts.timeStopDays,
+              stopPct: ts.stop.value,
+              t1Pct: ts.target1.value,
+              t2Pct: ts.target2.value,
+              // R5: Risk Console context at trade time
+              stage: Portfolio.get().stage,
+              capitalAtTrade: Portfolio.get().capital,
+              riskBudgetAtTrade: Portfolio.getRiskBudget(),
+              allowed: sizing.allowed
             };
           }
         } else {
@@ -6547,6 +7817,15 @@ const Builder = (() => {
             </button>
           </div>` : ''}
         </div>`;
+
+        // M10-C: Replace chart placeholder with markers-enabled chart for stock mode
+        const stockChart = Chart.render({
+          history,
+          days: 90,
+          rsRating: indicators.rsRating,
+          tradeMarkers: stockTradeMarkers
+        });
+        html = html.replace('__CHART_PLACEHOLDER__', stockChart);
 
         // Render and exit (tooltip event delegation handles dynamic data-term automatically)
         out.innerHTML = html;
@@ -6738,6 +8017,14 @@ const Builder = (() => {
           </button>
         </div>` : ''}
       </div>`;
+
+      // M10-C: Options mode — chart without trade markers (premium-based, not stock-price-based)
+      const optionChart = Chart.render({
+        history,
+        days: 90,
+        rsRating: indicators.rsRating
+      });
+      html = html.replace('__CHART_PLACEHOLDER__', optionChart);
 
       out.innerHTML = html;
     } catch (e) {
@@ -6940,14 +8227,18 @@ const Builder = (() => {
 
     // M10-B: Stock journal entry (separate from options shape)
     if (lastRec.assetType === 'stock') {
+      const stageInfo = lastRec.stage ? Portfolio.getStageInfo(lastRec.stage) : null;
       const notes = [
         `📊 ${lastRec.sym} Long Stock @ $${lastRec.entry?.toFixed(2)}`,
+        `📐 ${lastRec.tradeStrategyName || 'Standard'}`,
+        stageInfo ? `${stageInfo.emoji} Stage ${lastRec.stage}` : null,
         `📦 ${lastRec.shares} سهم • تكلفة $${lastRec.cost}`,
         `🎯 T1 $${lastRec.t1} | T2 $${lastRec.t2} | Stop $${lastRec.stop}`,
         `⚖️ R:R 1:${lastRec.rrRatio}`,
+        `🛡️ Risk: $${lastRec.risk} (${lastRec.riskPct}%)`,
         `🧠 ${lastRec.strategies}`,
         `💯 ثقة ${lastRec.confidence}%`,
-        `⏱️ Time Stop: ${lastRec.timeStop?.value || '—'} يوم`
+        `⏱️ Time Stop: ${lastRec.timeStopDays || '—'} يوم`
       ].filter(Boolean).join(' | ');
 
       journal.unshift({
@@ -6966,10 +8257,15 @@ const Builder = (() => {
         riskPct: lastRec.riskPct,
         rrRatio: lastRec.rrRatio,
         orderType: lastRec.orderType,
-        positionSizePct: lastRec.positionSizePct,
-        timeStop: lastRec.timeStop,
+        timeStopDays: lastRec.timeStopDays,
         strategies: lastRec.strategies,
         confidence: lastRec.confidence,
+        // R6: Trade Strategy + Portfolio context at trade time
+        tradeStrategyId: lastRec.tradeStrategyId,
+        tradeStrategyName: lastRec.tradeStrategyName,
+        stage: lastRec.stage,
+        capitalAtTrade: lastRec.capitalAtTrade,
+        riskBudgetAtTrade: lastRec.riskBudgetAtTrade,
         date: new Date().toLocaleString('ar-SA'),
         notes,
         closed: false,
@@ -6979,7 +8275,8 @@ const Builder = (() => {
       State.update({ journal });
       UIRenderer.renderJournal();
       UIRenderer.renderOpenPositions();
-      alert(`✅ تم حفظ توصية الأسهم (${lastRec.sym}) في السجل\n\nالدخول: $${lastRec.entry?.toFixed(2)} • ${lastRec.shares} سهم • تكلفة $${lastRec.cost}\nStop: $${lastRec.stop} | T1: $${lastRec.t1} | T2: $${lastRec.t2}\nR:R 1:${lastRec.rrRatio}`);
+      RiskConsole.refresh();  // R6: Update Risk Console (used risk changed)
+      alert(`✅ تم حفظ توصية الأسهم (${lastRec.sym}) في السجل\n\n📐 ${lastRec.tradeStrategyName || 'Standard'} • ${stageInfo ? stageInfo.emoji + ' Stage ' + lastRec.stage : ''}\nالدخول: $${lastRec.entry?.toFixed(2)} • ${lastRec.shares} سهم • تكلفة $${lastRec.cost}\nStop: $${lastRec.stop} | T1: $${lastRec.t1} | T2: $${lastRec.t2}\nR:R 1:${lastRec.rrRatio} • Risk: $${lastRec.risk}`);
       return;
     }
 
@@ -7021,7 +8318,7 @@ const Builder = (() => {
     alert(`✅ تم حفظ التوصية (${lastRec.sym}) في السجل\n\nالـ Strike: $${lastRec.strike?.toFixed(2)} | Premium: $${lastRec.estPremium}\nT1: $${lastRec.t1} | T2: $${lastRec.t2} | Stop: $${lastRec.stop}`);
   }
 
-  return { init, toggle, fetchSymbol, generate, scanMarket, openRecommendation, saveToJournal, executeOnAlpaca, toggleLimitPrice, submitExecute, setAssetMode };
+  return { init, toggle, fetchSymbol, generate, scanMarket, openRecommendation, saveToJournal, executeOnAlpaca, toggleLimitPrice, submitExecute, setAssetMode, setTradeStrategy };
 })();
 
 // ============================================================
