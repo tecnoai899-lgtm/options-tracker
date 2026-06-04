@@ -5814,7 +5814,83 @@ const PositionSizer = (() => {
     };
   }
 
-  return { compute, computeOpenRisk };
+  // ===== Options sizing (Phase O) =====
+  // For long options, max risk = premium paid (option expires worthless).
+  // Per contract: risk = premium × 100 (standard option multiplier).
+  //
+  // Inputs:
+  //   premium: estimated option premium per share (e.g., $1.50)
+  //   usedRiskDollars: total risk currently allocated to open positions
+  //   slotMode: 'base' or 'flexible' (uses up to 1.5× per-slot)
+  function computeForOption({ premium, usedRiskDollars = 0, slotMode = 'base' }) {
+    if (!premium || premium <= 0) {
+      return { allowed: false, reason: 'Premium must be positive', contracts: 0 };
+    }
+
+    const config = Portfolio.get();
+    const totalBudget = Portfolio.getRiskBudget();
+    const perSlot = Portfolio.getRiskPerSlot();
+    const remaining = totalBudget - usedRiskDollars;
+
+    if (remaining <= 0) {
+      return {
+        allowed: false,
+        reason: 'تجاوزت الـ Risk Budget — أغلق صفقة قبل ما تفتح جديدة',
+        contracts: 0,
+        totalBudget, usedRiskDollars, remaining: 0
+      };
+    }
+
+    // Risk per contract = full premium (max loss if expires worthless)
+    const riskPerContract = premium * 100;
+
+    const allocatedRisk = slotMode === 'flexible'
+      ? Math.min(remaining, perSlot * 1.5)
+      : Math.min(perSlot, remaining);
+
+    // Options contracts are whole numbers (no fractional contracts)
+    const contractsRaw = allocatedRisk / riskPerContract;
+    const contracts = Math.max(0, Math.floor(contractsRaw));
+
+    if (contracts === 0) {
+      return {
+        allowed: false,
+        reason: `Risk per contract ($${riskPerContract.toFixed(0)}) > allocated budget ($${allocatedRisk.toFixed(0)}). جرّب premium أقل أو زيد المرحلة.`,
+        contracts: 0,
+        riskPerContract,
+        allocatedRisk
+      };
+    }
+
+    const actualCost = contracts * riskPerContract;
+    const actualRiskDollars = actualCost;
+    const positionPctOfCapital = config.capital ? (actualCost / config.capital) * 100 : 0;
+    const riskPctOfCapital = positionPctOfCapital;
+
+    let warning = null;
+    if (positionPctOfCapital > 15) {
+      warning = `⚠️ هذي الـ ${contracts} عقود تستهلك ${positionPctOfCapital.toFixed(1)}% من رأس المال — تركيز مرتفع`;
+    }
+
+    return {
+      allowed: true,
+      contracts,
+      premium,
+      riskPerContract,
+      allocatedRisk: +allocatedRisk.toFixed(2),
+      actualCost: +actualCost.toFixed(2),
+      actualRiskDollars: +actualRiskDollars.toFixed(2),
+      positionPctOfCapital: +positionPctOfCapital.toFixed(2),
+      riskPctOfCapital: +riskPctOfCapital.toFixed(2),
+      slotMode,
+      totalBudget,
+      usedRiskDollars,
+      remaining: +remaining.toFixed(2),
+      warning
+    };
+  }
+
+  return { compute, computeOpenRisk, computeForOption };
 })();
 
 const PaperPortfolio = (() => {
@@ -7834,8 +7910,22 @@ const Builder = (() => {
 
       // Matched strategies + entry/exit plan
       if (matched.length > 0) {
-        const primary = matched.reduce((b, s) => s.structure.positionSizePct > b.structure.positionSizePct ? s : b);
-        const st = primary.structure;
+        // Phase O: Primary = first matched screener (for moneyness/optionType selection)
+        const primary = matched[0];
+        const screenerStruct = primary.structure;
+        // Phase O: TradeStrategy provides stop/target/DTE (exit rules + duration)
+        const ts = getEffectiveTradeStrategy();
+        const optStruct = (ts && ts.optionStructure) || screenerStruct;
+
+        // Hybrid: screener controls WHAT contract (moneyness, type), TradeStrategy controls HOW (stop/targets/DTE)
+        const st = {
+          ...screenerStruct,
+          stop:     optStruct.stop,
+          target1:  optStruct.target1,
+          target2:  optStruct.target2,
+          dteRange: optStruct.dteRange,
+          orderType: (ts && ts.orderType) || screenerStruct.orderType
+        };
 
         // ===== جلب Options Chain حقيقي (MVP 4) =====
         let estPremium = price * 0.022;
@@ -7890,6 +7980,17 @@ const Builder = (() => {
         const reward = +(t2Price - estPremium).toFixed(2);
         const rrRatio = risk > 0 ? (reward / risk).toFixed(1) : '—';
 
+        // Phase O: Position sizing for options (contracts based on Risk Budget)
+        const openRisk = PositionSizer.computeOpenRisk();
+        const sizing = PositionSizer.computeForOption({
+          premium: estPremium,
+          usedRiskDollars: openRisk.totalRisk,
+          slotMode: 'base'
+        });
+        const stageInfo = Portfolio.getStageInfo();
+        const contracts = sizing.allowed ? sizing.contracts : 0;
+        const totalCostUSD = sizing.allowed ? sizing.actualCost : 0;
+
         // Badge للـ source
         const sourceBadge = premiumSource === 'mid'
           ? `<span style="background:var(--green-bg);color:var(--green);padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;margin-inline-start:6px;">🟢 سعر حقيقي (mid)</span>`
@@ -7899,7 +8000,21 @@ const Builder = (() => {
 
         const dteActual = selectedExpiry ? selectedExpiry.dte : null;
 
-        html += `
+        // Phase O: Budget warning if PositionSizer rejected
+        const budgetWarning = !sizing.allowed ? `
+          <div class="rec-section" style="background:var(--red-bg);padding:14px;border-radius:var(--radius-sm);border-right:4px solid var(--red);">
+            <div style="font-weight:700;color:var(--red);margin-bottom:6px;">🛑 لا يمكن فتح هذه الصفقة</div>
+            <div style="font-size:13px;color:var(--text);">${sizing.reason}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">افتح <strong>🛡️ Risk Console</strong> لمراجعة المراكز المفتوحة أو تعديل المرحلة.</div>
+          </div>
+        ` : '';
+        const concentrationWarning = sizing.warning ? `
+          <div style="background:rgba(251, 191, 36, 0.1);border:1px solid var(--yellow);padding:10px;border-radius:var(--radius-sm);margin-bottom:12px;font-size:12px;color:var(--yellow);">
+            ${sizing.warning}
+          </div>
+        ` : '';
+
+        html += budgetWarning + `
         <div class="rec-section">
           <div class="rec-section-title">✅ مطابقة لـ ${matched.length} ${matched.length === 1 ? 'استراتيجية' : 'استراتيجيات'}:</div>
           ${matched.map(s => `
@@ -7908,7 +8023,15 @@ const Builder = (() => {
               <span class="rsm-name">${s.name}</span>
               <span class="rsm-reason">— كل الفلاتر المطلوبة (${s.reqPassed}/${s.reqTotal}) ✓</span>
             </div>`).join('')}
+          ${ts ? `
+            <div style="margin-top:10px;padding:10px;background:var(--purple-bg);border-radius:var(--radius-sm);border-right:3px solid var(--purple);">
+              <div style="font-weight:700;font-size:13px;">📐 ${ts.icon} <span data-term="Trade Strategy">${ts.name}</span> — ${ts.nameAr}</div>
+              <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">${ts.description}</div>
+            </div>
+          ` : ''}
         </div>
+
+        ${concentrationWarning}
 
         <div class="rec-section">
           <div class="rec-section-title">📈 خطة الدخول:</div>
@@ -7916,7 +8039,8 @@ const Builder = (() => {
             <div class="rec-item"><div class="ri-label">الـ Strike (${st.moneyness})</div><div class="ri-value">$${(selectedStrike || price).toFixed(2)} ${st.optionType}</div></div>
             <div class="rec-item"><div class="ri-label">انتهاء</div><div class="ri-value">${selectedExpiryDate ? selectedExpiryDate + ' (' + dteActual + 'd)' : st.dteRange.min + '–' + st.dteRange.max + ' يوم'}</div></div>
             <div class="rec-item"><div class="ri-label">سعر العقد ${sourceBadge}</div><div class="ri-value">$${estPremium.toFixed(2)} (${st.orderType})</div></div>
-            <div class="rec-item"><div class="ri-label">حجم الصفقة</div><div class="ri-value">${st.positionSizePct}% من المحفظة</div></div>
+            <div class="rec-item"><div class="ri-label">عدد العقود (<span data-term="Position Sizing">من Risk Budget</span>)</div><div class="ri-value">${contracts} × $${(estPremium*100).toFixed(0)} = <strong>$${totalCostUSD.toFixed(0)}</strong></div></div>
+            <div class="rec-item"><div class="ri-label"><span data-term="Market Stage">المرحلة</span></div><div class="ri-value">${stageInfo.emoji} Stage ${stageInfo.stage} (${stageInfo.ar})</div></div>
             ${selectedIV ? `<div class="rec-item"><div class="ri-label">Implied Vol</div><div class="ri-value">${(selectedIV * 100).toFixed(1)}%</div></div>` : ''}
             ${selectedOI ? `<div class="rec-item"><div class="ri-label">Open Interest</div><div class="ri-value">${selectedOI.toLocaleString()}</div></div>` : ''}
           </div>
@@ -7971,7 +8095,15 @@ const Builder = (() => {
           rrRatio,
           iv: selectedIV,
           oi: selectedOI,
-          positionSizePct: st.positionSizePct
+          // Phase O: Trade Strategy + Portfolio context
+          tradeStrategyId: ts ? ts.id : null,
+          tradeStrategyName: ts ? ts.name : null,
+          stage: Portfolio.get().stage,
+          capitalAtTrade: Portfolio.get().capital,
+          riskBudgetAtTrade: Portfolio.getRiskBudget(),
+          suggestedContracts: contracts,
+          suggestedCost: totalCostUSD,
+          allowed: sizing.allowed
         };
       } else {
         html += `
@@ -8102,8 +8234,8 @@ const Builder = (() => {
           </div>
         </div>
 
-        <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">عدد العقود</label>
-        <input id="be_contracts" type="number" min="1" value="1" class="form-input" style="width:100%;margin-bottom:12px;">
+        <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">عدد العقود ${r.suggestedContracts ? `<span style="color:var(--purple);">(اقتراح: ${r.suggestedContracts} حسب Risk Budget)</span>` : ''}</label>
+        <input id="be_contracts" type="number" min="1" value="${r.suggestedContracts || 1}" class="form-input" style="width:100%;margin-bottom:12px;">
 
         <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">نوع الأمر</label>
         <select id="be_orderType" class="form-input" style="width:100%;margin-bottom:12px;" onchange="Builder.toggleLimitPrice()">
